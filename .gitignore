@@ -1,0 +1,78 @@
+# === BACKEND (Spring Boot) ===
+backend/HELP.md
+backend/target/
+backend/.mvn/wrapper/maven-wrapper.jar
+!backend/**/src/main/**/target/
+!backend/**/src/test/**/target/
+
+# IDE - Backend
+backend/.apt_generated
+backend/.classpath
+backend/.factorypath
+backend/.project
+backend/.settings
+backend/.springBeans
+backend/.sts4-cache
+backend/*.iws
+backend/*.iml
+backend/*.ipr
+backend/nbproject/private/
+backend/nbbuild/
+backend/dist/
+backend/nbdist/
+backend/.nb-gradle/
+backend/build/
+!backend/**/src/main/**/build/
+!backend/**/src/test/**/build/
+
+# === FRONTEND (React) ===
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+frontend/build/
+frontend/*.local
+
+# Logs - Frontend
+frontend/logs/
+frontend/*.log
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/pnpm-debug.log*
+frontend/lerna-debug.log*
+
+# === GLOBAL (IDE & OS) ===
+# VS Code
+.vscode/
+!.vscode/extensions.json
+
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# OS
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# === DOCKER & ENV ===
+.env
+.env.local
+.env.*.local
+docker-compose.override.yml
+
+# === PROJECT SPECIFIC ===
+# Documentation temporaire
+*.tmp.md
+# Fichiers de configuration locale
+config/local.properties
+
+# === LOGS GLOBAUX ===
+*.log
+
+docs
