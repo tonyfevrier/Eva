@@ -7,7 +7,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.eva.backend.model.User;
-import com.eva.backend.model.UserPrincipal;
 import com.eva.backend.repository.UserRepository;
 
 @Service
@@ -23,7 +22,6 @@ public class MyUserDetailsService implements UserDetailsService {
         if (user == null){
             throw new UsernameNotFoundException("No user corresponding to username");
         }
-
-        return new UserPrincipal(user);
+        return user;
     }
 }
