@@ -1,6 +1,6 @@
 export type CircleArgs = {
     href: string,
-    id: string,
+    Id: string,
     circleDimensions: CircleDimensions,
     color?: string,
 };
