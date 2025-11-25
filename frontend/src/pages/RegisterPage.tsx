@@ -18,18 +18,12 @@ export function RegisterPage({}){
         e.preventDefault();
         if (registerForm.current !== null){
             const formData = new FormData(registerForm.current); 
-            const allInputsAreFilled = formData.get("firstname") === "" && formData.get("lastname") === "" && formData.get("mail") === "" && formData.get("password") === "";
+            const allInputsAreFilled = !(formData.get("firstname") === "" || formData.get("lastname") === "" || formData.get("mail") === "" || formData.get("password") === "");
 
             if (allInputsAreFilled){
                 sendFormData(formData, setFormState);
             } else {
-                setFormState({
-                    isFirstnameEmpty : formData.get("firstname") === "",
-                    isLastnameEmpty : formData.get("lastname") === "",
-                    isUsernameEmpty : formData.get("mail") === "",
-                    isPasswordEmpty : formData.get("password") === "",
-                    data: formState.data,
-                    error: formState.error});
+                displayEmptyInputs(formData, setFormState);
             }
         }
     }
@@ -52,8 +46,22 @@ export function RegisterPage({}){
 }
 
 async function sendFormData(formData:FormData, setFormState:React.Dispatch<React.SetStateAction<FormBoolean<any>>>){
+    /* Envoie les données du formulaire et modifie data ou error dans l'état caractérisant le formulaire */
     try {
-        const response = await fetch("http://localhost:9000/api/register", {
+        const response = await fetchData(formData);         
+        const text = await response.text();
+                    
+        if (response.ok) {
+            const data = JSON.parse(text);
+            setFormState(prev => ({...prev, data: data}));
+        }
+    } catch (error) {
+        setFormState(prev => ({...prev, error:error as Error}));
+    }
+}
+
+async function fetchData(formData: FormData){
+    const response = await fetch("http://localhost:9000/api/register", {
         method : "POST",
         body : JSON.stringify({
             firstname : formData.get("firstname"),
@@ -66,14 +74,14 @@ async function sendFormData(formData:FormData, setFormState:React.Dispatch<React
             'Accept': 'application/json',
         }
         });
-                                        
-        const text = await response.text();
-                    
-        if (response.ok) {
-            const data = JSON.parse(text);
-            setFormState(prev => ({...prev, data: data}));
-        }
-    } catch (error) {
-        setFormState(prev => ({...prev, error:error as Error}));
-    }
+    return response;
+}
+
+
+function displayEmptyInputs(formData:FormData, setFormState:React.Dispatch<React.SetStateAction<FormBoolean<any>>>){
+    setFormState(prev => ({...prev,
+                isFirstnameEmpty : formData.get("firstname") === "",
+                isLastnameEmpty : formData.get("lastname") === "",
+                isUsernameEmpty : formData.get("mail") === "",
+                isPasswordEmpty : formData.get("password") === ""}));
 }

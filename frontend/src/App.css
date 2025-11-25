@@ -9,3 +9,8 @@
   font-size: 12pt;
   font-weight: 600;
 }
+
+input {
+  display: block;
+  margin: 1em;
+}

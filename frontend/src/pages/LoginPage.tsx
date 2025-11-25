@@ -1,5 +1,4 @@
 
-
 export function LoginPage({}){
     return <>
         <h1> Se connecter</h1>

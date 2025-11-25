@@ -37,6 +37,7 @@ public class UserController {
     
     @PostMapping("/login")
     public String login(@RequestBody User user) {
+        // Faudra surement retourner ResponseEntity pour renvoyer un json
         return userService.verify(user);
     }
     
