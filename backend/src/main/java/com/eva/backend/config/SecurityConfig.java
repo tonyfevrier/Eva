@@ -1,11 +1,15 @@
 package com.eva.backend.config;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -14,6 +18,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity //replace default security config 
@@ -21,6 +29,9 @@ public class SecurityConfig {
 
     @Autowired
     private UserDetailsService userDetailsService;
+
+    @Autowired
+    private JwtFilter jwtFilter;
 
     /* Par défaut spring security applique une série de filtres en cas de requête
     il exige un login par exemple. On peut remplacer cette série et customizer ces filtres
@@ -45,10 +56,29 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
         return http.csrf(customizer -> customizer.disable()) //désactive csrf par exemple s'il 
-                   .authorizeHttpRequests(request -> request.anyRequest().authenticated()) //filtre exigeant l'authentification pour tout requête
+                    .cors(Customizer.withDefaults())
+                    .authorizeHttpRequests(request -> request
+                        .requestMatchers("/api/register", "/api/login").permitAll() //ces url sont accessibles à tous
+                        .anyRequest().authenticated()) //filtre exigeant l'authentification pour tout requête
                    .httpBasic(Customizer.withDefaults()) // popup obligeant à s'authentifier
                    .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Détruit la session à chaque requête
+                   .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                    .build();
+    }
+
+    /* Gestion des url qui peuvent effectuer des requêtes à l'api */
+    
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(List.of("http://localhost:5173"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowCredentials(true); // ← Nécessaire pour JWT/Auth
+        
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 
     /* Il faut aussi fournir un fournisseur d'authentication qui va traiter les requêtes 
@@ -64,4 +94,8 @@ public class SecurityConfig {
         return provider;
     }
 
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception{
+        return config.getAuthenticationManager();
+    }
 }
