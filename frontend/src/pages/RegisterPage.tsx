@@ -1,5 +1,6 @@
 import { useRef, useState, type FormEvent } from "react";
 import type { FormBoolean, SendingStatus } from "../types/types";
+import { Form } from "../components/Form";
  
 
 
@@ -17,10 +18,11 @@ export function RegisterPage(){
         error: null
     })
 
-    /*const InputsToStateMapping = {"firstname": formState.isFirstnameEmpty, 
+    const InputsToStateMapping: Record<string, boolean> = {
+                          "firstname": formState.isFirstnameEmpty, 
                           "lastname": formState.isLastnameEmpty,
                           "mail": formState.isUsernameEmpty,
-                          "password": formState.isPasswordEmpty};*/
+                          "password": formState.isPasswordEmpty};
 
     const handleClick = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -29,7 +31,7 @@ export function RegisterPage(){
             const allInputsAreFilled = !(formData.get("firstname") === "" || formData.get("lastname") === "" || formData.get("mail") === "" || formData.get("password") === "");
 
             if (allInputsAreFilled){
-                sendFormData(formData, setSendingState);
+                sendFormData(formData, setSendingState, setFormState);
             } else {
                 displayEmptyInputs(formData, setFormState);
             }
@@ -45,18 +47,7 @@ export function RegisterPage(){
 
     return <>
                 <h1> Inscription </h1>
-                <form ref={registerForm} onSubmit={handleClick}>
-                    <input type="text" placeholder="firstname" name="firstname"/>
-                    {formState.isFirstnameEmpty && <p>Il faut remplir ce champ</p>}
-                    <input type="text" placeholder="lastname" name="lastname"/>
-                    {formState.isLastnameEmpty && <p>Il faut remplir ce champ</p>}
-                    <input type="text" placeholder="mail" name="mail"/>
-                    {formState.isUsernameEmpty && <p>Il faut remplir ce champ</p>}
-                    <input type="password" placeholder="mot de passe" name="password"/>
-                    {formState.isPasswordEmpty && <p>Il faut remplir ce champ</p>}
-                    <input type="submit" />
-                </form>
-                {sendingState.error !== null && <p> {sendingState.error} </p>}
+                <Form ref={registerForm} mapping={InputsToStateMapping} sendingState={sendingState} onSubmit={handleClick}></Form>
                 <div>
                     <p>Vous souhaitez vous connecter?</p>
                     <a href="/login"> Connectez-vous ici.</a>
@@ -64,15 +55,16 @@ export function RegisterPage(){
            </>;
 }
 
-async function sendFormData(formData:FormData, setSendingState:React.Dispatch<React.SetStateAction<SendingStatus<any>>>){
+async function sendFormData(formData:FormData, setSendingState:React.Dispatch<React.SetStateAction<SendingStatus<any>>>, setFormState:React.Dispatch<React.SetStateAction<FormBoolean>>){
     /* Envoie les données du formulaire et modifie data ou error dans l'état caractérisant le formulaire */
     const response = await fetchData(formData);         
     const text = await response.text();
-               
+
     if (response.ok) {
         const data = JSON.parse(text);
         setSendingState(prev => ({...prev, data: data}));
     } else {
+        displayEmptyInputs(formData, setFormState);
         setSendingState(prev => ({...prev, error: text}))
     }
 }

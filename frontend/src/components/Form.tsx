@@ -1,27 +1,24 @@
-import type { FormBoolean } from "../types/types"
+import { forwardRef, type FormEventHandler } from "react"
+import type { SendingStatus } from "../types/types"
 
 type FormProps = {
-    formState: FormBoolean<any>, 
-    names: Array<string>
+    mapping: Record<string, boolean>, 
+    sendingState: SendingStatus<any>,
+    onSubmit: FormEventHandler
 }
 
-export function Form({InputsToStateMapping}){
+export const Form = forwardRef<HTMLFormElement, FormProps>(
+    ({mapping, sendingState, onSubmit},ref) => {
     return <>
-                <form ref={registerForm} onSubmit={handleClick}>
-                    {names.map(name => <div key={name}>
-                                            <input type="text" placeholder={name} name={name}/>
-                                            {InputsToStateMapping[name] && <p>Il faut remplir ce champ</p>}
-                                        </div>)}
-                    <input type="text" placeholder="firstname" name="firstname"/>
-                    {formState.isFirstnameEmpty && <p>Il faut remplir ce champ</p>}
-                    <input type="text" placeholder="lastname" name="lastname"/>
-                    {formState.isLastnameEmpty && <p>Il faut remplir ce champ</p>}
-                    <input type="text" placeholder="mail" name="mail"/>
-                    {formState.isUsernameEmpty && <p>Il faut remplir ce champ</p>}
-                    <input type="password" placeholder="mot de passe" name="password"/>
-                    {formState.isPasswordEmpty && <p>Il faut remplir ce champ</p>}
+                <form ref={ref} onSubmit={onSubmit}>
+                    {Object.keys(mapping).map(name => 
+                            <div key={name}>
+                                <input type="text" placeholder={name} name={name}/>
+                                {mapping[name] && <p>Il faut remplir ce champ</p>}
+                            </div>)}
                     <input type="submit" />
                 </form>
-                {formState.error !== null && <p> {formState.error} </p>}
+                {sendingState.error !== null && <p> {sendingState.error} </p>}
            </>
-}
+    }
+);
