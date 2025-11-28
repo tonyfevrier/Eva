@@ -16,6 +16,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Size;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -32,10 +34,12 @@ public class User implements UserDetails {
 
     private String lastname;
 
+    @Email(message = "Email invalide.")
     @Column(unique = true, nullable = false)
     private String mail;   
     
     @Column(nullable = false)
+    @Size(min = 8, message = "Le mot de passe doit contenir au moins 8 caractères.")
     private String password;
 
     @Builder.Default

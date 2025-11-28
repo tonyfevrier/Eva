@@ -3,6 +3,8 @@ package com.eva.backend;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.hamcrest.Matchers.is;
 
@@ -29,6 +31,9 @@ public class AuthenticationTests {
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
     @Test
     @WithMockUser(roles = "ADMIN")
     public void testRegisterUser() throws Exception {
@@ -36,10 +41,9 @@ public class AuthenticationTests {
                         .firstname("tony")
                         .lastname("fevrier")
                         .mail("tony.fevrier@gmail.com")
-                        .password("test")
+                        .password("c!!21Cdq")
                         .build();
         
-        ObjectMapper objectMapper = new ObjectMapper();
         String userJson = objectMapper.writeValueAsString(user);
 
         mockMvc.perform(post("/api/register")
@@ -51,6 +55,41 @@ public class AuthenticationTests {
                        .andExpect(jsonPath("$[0].firstname", is("tony")))
                        .andExpect(jsonPath("$[0].lastname", is("fevrier")))
                        .andExpect(jsonPath("$[0].mail", is("tony.fevrier@gmail.com")));
-
     } 
+
+    @Test
+    public void testBadMailInput() throws Exception {
+        User user = User.builder()
+                        .firstname("tony")
+                        .lastname("fevrier")
+                        .mail("tony")
+                        .password("c!!21Cdq")
+                        .build();
+        
+        String userJson = objectMapper.writeValueAsString(user);
+        
+        mockMvc.perform(post("/api/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(userJson))
+                        .andExpect(status().isBadRequest())
+                        .andExpect(content().string("Email invalide."));
+    }
+
+    @Test
+    public void testBadPasswordInput() throws Exception {
+        User user = User.builder()
+                        .firstname("tony")
+                        .lastname("fevrier")
+                        .mail("tony.fevrier@gmail.com")
+                        .password("test")
+                        .build();
+        
+        String userJson = objectMapper.writeValueAsString(user);
+        
+        mockMvc.perform(post("/api/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(userJson))
+                        .andExpect(status().isBadRequest())
+                        .andExpect(content().string("Le mot de passe doit contenir au moins 8 caractères."));
+    }
 }

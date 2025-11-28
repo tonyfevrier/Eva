@@ -10,6 +10,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.eva.backend.model.User;
 import com.eva.backend.service.UserService;
+
+import jakarta.validation.Valid;
+
 import org.springframework.web.bind.annotation.GetMapping;
 
 
@@ -21,19 +24,15 @@ public class UserController {
 
     private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
 
+    // @Valid valide les contraintes de forme des inputs (mail, pwd) avant d'entrer dans la méthode.
+    // Permet de le faire sur le mot de passe original et pas hashé.
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody User user){
-        try {
-            System.out.println("User: " + user.getMail());
-            user.setPassword(encoder.encode(user.getPassword()));
-            User savedUser = userService.saveUser(user);
-            System.out.println("User saved successfully: " + savedUser.getId());
-            return ResponseEntity.ok(savedUser);
-        } catch (Exception e) {
-            System.err.println("Registration error: " + e.getMessage());
-            e.printStackTrace();
-            return ResponseEntity.badRequest().body("Registration failed: " + e.getMessage());
-        }
+    public ResponseEntity<?> register(@Valid @RequestBody User user){
+        System.out.println("User: " + user.getMail());
+        user.setPassword(encoder.encode(user.getPassword()));
+        User savedUser = userService.saveUser(user);
+        System.out.println("User saved successfully: " + savedUser.getId());
+        return ResponseEntity.ok(savedUser);
     }  
     
     @PostMapping("/login")
