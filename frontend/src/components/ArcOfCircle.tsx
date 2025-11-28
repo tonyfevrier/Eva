@@ -9,16 +9,6 @@ export function ArcOfCircle({children, href, Id, circleDimensions,  color='blue'
     const D1x = circleDimensions.endPoint[0];
     const D1y = circleDimensions.endPoint[1];
     const sense = circleDimensions.rotationSense;
-    
-    /*return <a id={Id} className="arc-circle" href={href}>
-               <path id={Id} d={`M ${D0x} ${D0y} A 75 75 0 0 ${sense} ${D1x} ${D1y}`} 
-                   stroke={color} stroke-width="30" fill="none"/>
-               <text className="arcCircleText" font-size="10" fill="white">
-                   <textPath href={`#${Id}`} startOffset="50%" text-anchor="middle" dominantBaseline="middle">
-                       {children}
-                   </textPath>
-               </text>
-           </a> */
 
     return (
         <g> {/* ✅ Groupe SVG */}

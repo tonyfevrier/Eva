@@ -24,6 +24,10 @@ public class UserService {
     private JWTService jwtService; 
 
     public User saveUser(User user){
+        User existingUser = userRepository.findByMail(user.getMail());
+        if (existingUser != null){
+            throw new IllegalArgumentException("Cet email est déjà associé à un compte");
+        }
         return userRepository.save(user);
     }
 

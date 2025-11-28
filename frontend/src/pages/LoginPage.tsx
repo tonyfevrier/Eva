@@ -9,7 +9,7 @@ export function LoginPage({}){
             <input type="submit" />
             <div>
                 <p>Vous n'avez pas encore de compte?</p>
-                <a href="/register">Inscrivez-vous ici</a>
+                <a href="/register">Inscrivez-vous ici.</a>
             </div>
         </form>
 

@@ -11,14 +11,17 @@ export type CircleDimensions = {
     rotationSense: number
 }
 
-export type FormBoolean<T> = {
+export type FormBoolean = {
     isFirstnameEmpty: boolean,
     isLastnameEmpty: boolean,
     isUsernameEmpty: boolean,
     isPasswordEmpty: boolean,
-    data: T | null,
-    error:Error | null
 };
+
+export type SendingStatus<T> = {
+    data: T | null,
+    error: string | null
+}
 
 export type FormAction = {
     type: "submitForm";
