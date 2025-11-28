@@ -1,6 +1,5 @@
 package com.eva.backend.controller;
 
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -11,6 +10,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.eva.backend.model.User;
 import com.eva.backend.service.UserService;
+import org.springframework.web.bind.annotation.GetMapping;
+
 
 @RestController
 @RequestMapping("/api")
@@ -39,6 +40,11 @@ public class UserController {
     public String login(@RequestBody User user) {
         // Faudra surement retourner ResponseEntity pour renvoyer un json
         return userService.verify(user);
+    }
+    
+    @GetMapping("/users")
+    public Iterable<User> getUsers() {
+        return userService.getAllUsers();
     }
     
 

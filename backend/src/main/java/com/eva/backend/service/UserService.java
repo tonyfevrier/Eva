@@ -1,5 +1,7 @@
 package com.eva.backend.service;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -33,5 +35,9 @@ public class UserService {
             return jwtService.generateToken(user.getUsername());
         }
         return "Fail";
+    }
+
+    public Iterable<User> getAllUsers(){
+        return userRepository.findAll();
     }
 }

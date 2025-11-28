@@ -12,9 +12,14 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Data
 @Table(name = "users")
 @Entity
@@ -33,7 +38,8 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String password;
 
-    private String role;
+    @Builder.Default
+    private String role = "USER";
 
     @Override
     public String getUsername(){
