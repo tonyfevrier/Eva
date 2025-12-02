@@ -16,7 +16,7 @@ export function RegisterPage(){
             const formHandler = new FormHandler<RegisterFormBoolean>({formData, setFormState, setSendingState, inputToStateKeyMapping});
 
             if (formHandler.allInputsAreFilled()){
-                formHandler.sendFormData();
+                formHandler.sendFormData("http://localhost:9000/api/register");
             } else {
                 formHandler.displayEmptyInputs();
             }

@@ -1,5 +1,7 @@
 package com.eva.backend.controller;
 
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -36,9 +38,14 @@ public class UserController {
     }  
     
     @PostMapping("/login")
-    public String login(@RequestBody User user) {
+    public ResponseEntity<?> login(@RequestBody User user) {
         // Faudra surement retourner ResponseEntity pour renvoyer un json
-        return userService.verify(user);
+        String generatedToken = userService.verify(user);
+        return ResponseEntity.ok(Map.of(
+            "token", generatedToken,
+            "type", "Bearer",
+            "expiresIn", 3600000 // 1 heure en ms
+        ));
     }
     
     @GetMapping("/users")

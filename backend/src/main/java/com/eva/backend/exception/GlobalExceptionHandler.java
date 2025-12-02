@@ -2,6 +2,7 @@ package com.eva.backend.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -48,6 +49,14 @@ public class GlobalExceptionHandler {
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
             .body(e.getMessage());
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<String> handleIllegalArgument(BadCredentialsException e) {
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body("Identifiants incorrects");
+            //.body(e.getMessage());
     }
     
  

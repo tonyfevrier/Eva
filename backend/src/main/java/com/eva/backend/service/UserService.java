@@ -34,11 +34,13 @@ public class UserService {
     public String verify(User user){
         Authentication authentication = authManager.authenticate(
             new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
-        
+        System.err.println(authentication.isAuthenticated());
         if (authentication.isAuthenticated()){
+            System.err.println("on ejffffffffffffffffffffff");
+
             return jwtService.generateToken(user.getUsername());
-        }
-        return "Fail";
+        } 
+        return "";
     }
 
     public Iterable<User> getAllUsers(){

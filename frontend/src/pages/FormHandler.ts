@@ -14,8 +14,8 @@ export class FormHandler<T> {
         this.inputToStateKeyMapping = formHandler.inputToStateKeyMapping;
     }
 
-    async sendFormData(){
-        const response = await this._fetchData();         
+    async sendFormData(url:string){
+        const response = await this._fetchData(url);         
         const text = await response.text();
         this.displayEmptyInputs(); // évite qu'une erreur de non complétion d'inputs reste affichée après soumission du formulaire
 
@@ -44,9 +44,9 @@ export class FormHandler<T> {
         return formKeys.every(key => this.formData.get(key) !== "");
     }
 
-    async _fetchData(){
+    async _fetchData(url:string){
         const body = this._createBody();
-        const response = await fetch("http://localhost:9000/api/register", {
+        const response = await fetch(url, {
             method : "POST",
             body : body,
             headers: {

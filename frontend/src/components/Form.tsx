@@ -13,7 +13,7 @@ export const Form = forwardRef<HTMLFormElement, FormProps>(
                 <form ref={ref} onSubmit={onSubmit}>
                     {Object.keys(mapping).map(name => 
                             <div key={name}>
-                                <input type="text" placeholder={name} name={name}/>
+                                {name !== "password" ? <input type="text" placeholder={name} name={name} /> : <input type={name} placeholder={name} name={name}/>}
                                 {mapping[name] && <p>Il faut remplir ce champ</p>}
                             </div>)}
                     <input type="submit" />
