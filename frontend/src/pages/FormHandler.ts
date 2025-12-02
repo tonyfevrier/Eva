@@ -1,28 +1,18 @@
-import type { FormBoolean, FormHandlerInput, SendingStatus } from "../types/types";
+import type { FormHandlerInput, SendingStatus } from "../types/types";
 
-export class FormHandler {
+export class FormHandler<T> {
 
     private formData: FormData;
-    private setFormState: React.Dispatch<React.SetStateAction<FormBoolean>>;
+    private setFormState: React.Dispatch<React.SetStateAction<T>>;
     private setSendingState:React.Dispatch<React.SetStateAction<SendingStatus<any>>>;
-    private inputToStateKeyMapping: Record<string, keyof FormBoolean>;
+    private inputToStateKeyMapping: Record<string, keyof T>;
     
-    constructor(formHandler:FormHandlerInput){
+    constructor(formHandler:FormHandlerInput<T>){
         this.formData = formHandler.formData;
         this.setFormState = formHandler.setFormState;
         this.setSendingState = formHandler.setSendingState;
         this.inputToStateKeyMapping = formHandler.inputToStateKeyMapping;
     }
-
-    /*constructor(formData: FormData,
-                setFormState: React.Dispatch<React.SetStateAction<FormBoolean>>,
-                setSendingState:React.Dispatch<React.SetStateAction<SendingStatus<any>>>,
-                inputToStateKeyMapping: Record<string, keyof FormBoolean>){
-        this.formData = formData;
-        this.setFormState = setFormState;
-        this.setSendingState = setSendingState;
-        this.inputToStateKeyMapping = inputToStateKeyMapping;
-    } */  
 
     async sendFormData(){
         const response = await this._fetchData();         
@@ -43,7 +33,7 @@ export class FormHandler {
             const newState = {...prev};
             keys.forEach(key => {
                 const stateKey = this.inputToStateKeyMapping[key];
-                newState[stateKey] = this.formData.get(key) === ""; 
+                newState[stateKey] = (this.formData.get(key) === "") as T[keyof T]; 
             })
             return newState;
         });

@@ -2,6 +2,7 @@ import { useRef, type FormEvent } from "react";
 import { Form } from "../components/Form";
 import { FormHandler } from "./FormHandler";
 import { useRegisterForm } from "../hooks/useRegisterForm";
+import type { RegisterFormBoolean } from "../types/types";
  
 
 export function RegisterPage(){
@@ -12,7 +13,7 @@ export function RegisterPage(){
         e.preventDefault();
         if (registerForm.current !== null){
             const formData = new FormData(registerForm.current); 
-            const formHandler = new FormHandler({formData, setFormState, setSendingState, inputToStateKeyMapping});
+            const formHandler = new FormHandler<RegisterFormBoolean>({formData, setFormState, setSendingState, inputToStateKeyMapping});
 
             if (formHandler.allInputsAreFilled()){
                 formHandler.sendFormData();

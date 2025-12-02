@@ -11,9 +11,14 @@ export type CircleDimensions = {
     rotationSense: number
 }
 
-export type FormBoolean = {
+export type RegisterFormBoolean = {
     isFirstnameEmpty: boolean,
     isLastnameEmpty: boolean,
+    isUsernameEmpty: boolean,
+    isPasswordEmpty: boolean,
+};
+
+export type LoginFormBoolean = { 
     isUsernameEmpty: boolean,
     isPasswordEmpty: boolean,
 };
@@ -28,9 +33,9 @@ export type FormAction = {
     formRef: HTMLFormElement | null;
 };
 
-export type FormHandlerInput = {
+export type FormHandlerInput<T> = {
     formData: FormData,
-    setFormState: React.Dispatch<React.SetStateAction<FormBoolean>>,
+    setFormState: React.Dispatch<React.SetStateAction<T>>,
     setSendingState:React.Dispatch<React.SetStateAction<SendingStatus<any>>>,
-    inputToStateKeyMapping: Record<string, keyof FormBoolean>  
+    inputToStateKeyMapping: Record<string, keyof T>  
 }

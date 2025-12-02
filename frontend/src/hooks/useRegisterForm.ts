@@ -1,8 +1,8 @@
 import { useState } from "react";
-import type { FormBoolean, SendingStatus } from "../types/types";
+import type { RegisterFormBoolean, SendingStatus } from "../types/types";
 
 export function useRegisterForm(){
-    const [formState, setFormState] = useState<FormBoolean>({
+    const [formState, setFormState] = useState<RegisterFormBoolean>({
             isFirstnameEmpty : false,
             isLastnameEmpty : false,
             isUsernameEmpty : false,
@@ -14,7 +14,7 @@ export function useRegisterForm(){
         error: null
     })
     
-    const inputToStateKeyMapping: Record<string, keyof FormBoolean> = {
+    const inputToStateKeyMapping: Record<string, keyof RegisterFormBoolean> = {
                           "firstname": "isFirstnameEmpty", 
                           "lastname": "isLastnameEmpty",
                           "mail": "isUsernameEmpty",
