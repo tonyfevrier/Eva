@@ -27,3 +27,10 @@ export type FormAction = {
     type: "submitForm";
     formRef: HTMLFormElement | null;
 };
+
+export type FormHandlerInput = {
+    formData: FormData,
+    setFormState: React.Dispatch<React.SetStateAction<FormBoolean>>,
+    setSendingState:React.Dispatch<React.SetStateAction<SendingStatus<any>>>,
+    inputToStateKeyMapping: Record<string, keyof FormBoolean>  
+}
