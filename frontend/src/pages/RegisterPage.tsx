@@ -18,6 +18,12 @@ export function RegisterPage(){
         error: null
     })
 
+    const InputsToStateKeyMapping: Record<string, keyof FormBoolean> = {
+                          "firstname": "isFirstnameEmpty", 
+                          "lastname": "isLastnameEmpty",
+                          "mail": "isUsernameEmpty",
+                          "password": "isPasswordEmpty"};
+
     const InputsToStateMapping: Record<string, boolean> = {
                           "firstname": formState.isFirstnameEmpty, 
                           "lastname": formState.isLastnameEmpty,
@@ -28,12 +34,12 @@ export function RegisterPage(){
         e.preventDefault();
         if (registerForm.current !== null){
             const formData = new FormData(registerForm.current); 
-            const allInputsAreFilled = !(formData.get("firstname") === "" || formData.get("lastname") === "" || formData.get("mail") === "" || formData.get("password") === "");
-
+            const formKeys = Array.from(formData.keys());
+            const allInputsAreFilled = formKeys.every(key => formData.get(key) !== "");
             if (allInputsAreFilled){
-                sendFormData(formData, setSendingState, setFormState);
+                sendFormData(formData, setSendingState, setFormState, InputsToStateKeyMapping);
             } else {
-                displayEmptyInputs(formData, setFormState);
+                displayEmptyInputs(formData, setFormState, InputsToStateKeyMapping);
             }
         }
     }
@@ -55,7 +61,7 @@ export function RegisterPage(){
            </>;
 }
 
-async function sendFormData(formData:FormData, setSendingState:React.Dispatch<React.SetStateAction<SendingStatus<any>>>, setFormState:React.Dispatch<React.SetStateAction<FormBoolean>>){
+async function sendFormData(formData:FormData, setSendingState:React.Dispatch<React.SetStateAction<SendingStatus<any>>>, setFormState:React.Dispatch<React.SetStateAction<FormBoolean>>, InputsToStateKeyMapping: Record<string, keyof FormBoolean>){
     /* Envoie les données du formulaire et modifie data ou error dans l'état caractérisant le formulaire */
     const response = await fetchData(formData);         
     const text = await response.text();
@@ -64,7 +70,7 @@ async function sendFormData(formData:FormData, setSendingState:React.Dispatch<Re
         const data = JSON.parse(text);
         setSendingState(prev => ({...prev, data: data}));
     } else {
-        displayEmptyInputs(formData, setFormState);
+        displayEmptyInputs(formData, setFormState, InputsToStateKeyMapping);
         setSendingState(prev => ({...prev, error: text}))
     }
 }
@@ -86,10 +92,20 @@ async function fetchData(formData: FormData){
     return response;
 }
 
-
-function displayEmptyInputs(formData:FormData, setFormState:React.Dispatch<React.SetStateAction<FormBoolean>>){
-    setFormState({isFirstnameEmpty : formData.get("firstname") === "",
+function displayEmptyInputs(formData:FormData, setFormState:React.Dispatch<React.SetStateAction<FormBoolean>>, InputsToStateKeyMapping: Record<string, keyof FormBoolean>){
+    /*setFormState({isFirstnameEmpty : formData.get("firstname") === "",
                 isLastnameEmpty : formData.get("lastname") === "",
                 isUsernameEmpty : formData.get("mail") === "",
-                isPasswordEmpty : formData.get("password") === ""});
+                isPasswordEmpty : formData.get("password") === ""});*/
+    
+    const keys = Array.from(formData.keys());
+    setFormState(prev => {
+        const newState = {...prev};
+        keys.forEach(key => {
+            const stateKey = InputsToStateKeyMapping[key];
+            newState[stateKey] = formData.get(key) === ""; 
+            
+        })
+        return newState;
+    });
 }
