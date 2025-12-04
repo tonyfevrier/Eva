@@ -16,6 +16,7 @@ import com.eva.backend.service.MyUserDetailsService;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -56,9 +57,29 @@ public class JwtFilter extends OncePerRequestFilter{
         String token = null;
 
         if (authHeader != null && authHeader.startsWith("Bearer")){
-            token = authHeader.substring(7); // token is after Bearer in the string authHeader
-            username = jwtService.extractUsername(token);
+            return getTokenAndeUsernameFromAuthorization(authHeader);
         }
+
+        if (token == null && request.getCookies() != null) {
+            return getTokenAndeUsernameFromCookie(request);
+        }
+        return new TokenInfo(username, token);
+    }
+
+    private TokenInfo getTokenAndeUsernameFromAuthorization(String authHeader){
+        String token = authHeader.substring(7); // token is after Bearer in the string authHeader
+        String username = jwtService.extractUsername(token);
+        return new TokenInfo(username, token);
+    }
+    private TokenInfo getTokenAndeUsernameFromCookie(HttpServletRequest request){
+        String token = "";
+        String username = "";
+        for (Cookie cookie : request.getCookies()) {
+                if ("jwt".equals(cookie.getName())) {
+                    token = cookie.getValue();
+                    username = jwtService.extractUsername(token);
+                }
+            }
         return new TokenInfo(username, token);
     }
 

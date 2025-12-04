@@ -1,6 +1,5 @@
 package com.eva.backend.service;
 
-import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.Date;
@@ -11,6 +10,7 @@ import java.util.function.Function;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -36,8 +36,19 @@ public class JWTService {
         }
         
     }
+
+    public ResponseCookie generateCookie(String username){
+        String token = generateToken(username);
+        return ResponseCookie.from("jwt", token)
+                      .httpOnly(true) //empêche les attaques JS
+                      .secure(true)   //https
+                      .path("/")      //accessible pour tout
+                      .maxAge(tokenDurationInSec) 
+                      .sameSite("Strict") //protection csrf
+                      .build();
+    }
     
-    public String generateToken(String username){
+    private String generateToken(String username){
         Map<String, Object> claims = new HashMap<>();
         return Jwts.builder()
                     .claims()

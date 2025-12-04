@@ -1,7 +1,5 @@
 package com.eva.backend.service;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -36,9 +34,7 @@ public class UserService {
             new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
         System.err.println(authentication.isAuthenticated());
         if (authentication.isAuthenticated()){
-            System.err.println("on ejffffffffffffffffffffff");
-
-            return jwtService.generateToken(user.getUsername());
+            return jwtService.generateCookie(user.getUsername()).toString();
         } 
         return "";
     }

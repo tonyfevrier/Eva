@@ -4,6 +4,7 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -39,13 +40,12 @@ public class UserController {
     
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody User user) {
-        // Faudra surement retourner ResponseEntity pour renvoyer un json
-        String generatedToken = userService.verify(user);
-        return ResponseEntity.ok(Map.of(
-            "token", generatedToken,
-            "type", "Bearer",
-            "expiresIn", 3600000 // 1 heure en ms
-        ));
+        // Au premier login, user est vérifié et le jwt token est envoyé via un http only cookie pour plus de sécurité        
+        String stringCookie = userService.verify(user);
+ 
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, stringCookie)
+                .body(Map.of("message", "Login réussi")); 
     }
     
     @GetMapping("/users")
