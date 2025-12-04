@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 export type CircleArgs = {
     href: string,
     Id: string,
@@ -38,4 +40,8 @@ export type FormHandlerInput<T> = {
     setFormState: React.Dispatch<React.SetStateAction<T>>,
     setSendingState:React.Dispatch<React.SetStateAction<SendingStatus<any>>>,
     inputToStateKeyMapping: Record<string, keyof T>  
+}
+
+export type PrivateRouteProps = {
+    children: ReactNode
 }

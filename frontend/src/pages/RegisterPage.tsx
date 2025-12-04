@@ -26,7 +26,7 @@ export function RegisterPage(){
     if (sendingState.data !== null){
         return <>
                     <h1> Votre inscription a bien été réalisée.</h1>
-                    <a href="/">Retournez à la page d'accueil.</a>
+                    <a href="/login"> Cliquez ici pour vous logger</a>
                </>
     }
 

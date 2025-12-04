@@ -25,7 +25,7 @@ export function LoginPage({}){
         if (sendingState.data !== null){
             return <>
                         <h1> Vous êtes bien connecté.</h1>
-                        <a href="/">Retournez à la page d'accueil.</a>
+                        <a href="/"> Retournez à la page d'accueil. </a>
                    </>
         }
      
