@@ -22,7 +22,7 @@ import io.jsonwebtoken.security.Keys;
 public class JWTService {
     /* Service de génération de JWT token */
     private String secretKey;
-    private long tokenDurationInMin = 60;
+    private long tokenDurationInMin = 10;
     public long tokenDurationInMilliSec = tokenDurationInMin * 60 * 1000;
 
     public JWTService(){

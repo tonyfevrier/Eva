@@ -5,6 +5,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,6 +19,8 @@ import com.eva.backend.records.CookieEssentials;
 import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 
 @RestController
@@ -55,6 +58,15 @@ public class UserController {
     public Iterable<User> getUsers() {
         return userService.getAllUsers();
     }
+
+    @GetMapping("/logout")
+    public ResponseEntity<?> logout() {
+        ResponseCookie cookie = userService.logout();
+        return ResponseEntity.ok()
+               .header(HttpHeaders.SET_COOKIE, cookie.toString())
+               .body(Map.of("message", "Le logout est réussi"));
+    }
+    
     
 
 }

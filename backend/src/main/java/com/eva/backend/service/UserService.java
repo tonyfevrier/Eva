@@ -42,6 +42,14 @@ public class UserService {
         return new CookieEssentials("", 0);
     }
 
+    public ResponseCookie logout() {
+        // cookie qui remplace le précédent
+        return ResponseCookie.from("jwt", "")
+                                .path("/")
+                                .maxAge(0)
+                                .build();
+    }
+
     private CookieEssentials generateCookie(User user){
         String token = jwtService.generateToken(user.getUsername());
         ResponseCookie cookie = ResponseCookie.from("jwt", token)
