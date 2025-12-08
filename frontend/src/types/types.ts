@@ -48,5 +48,5 @@ export type PrivateRouteProps = {
 
 export type AuthContextSetterType = {
     toggleIsAuthenticated: () => void;
-    setExpirationTimestamp: React.Dispatch<React.SetStateAction<number>>;
+    setExpirationTime: React.Dispatch<React.SetStateAction<number>>;
 }

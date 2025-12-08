@@ -36,7 +36,6 @@ public class UserService {
     public CookieEssentials verify(User user){
         Authentication authentication = authManager.authenticate(
             new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
-        System.err.println(authentication.isAuthenticated());
         if (authentication.isAuthenticated()){
             return generateCookie(user);
         } 
@@ -49,11 +48,11 @@ public class UserService {
                   .httpOnly(true) //empêche les attaques JS
                   .secure(true)   //https
                   .path("/")      //accessible pour tout
-                  .maxAge(jwtService.tokenDurationInSec) 
+                  .maxAge(jwtService.tokenDurationInMilliSec) 
                   .sameSite("Strict") //protection csrf
                   .build();
         return new CookieEssentials(cookie.toString(),
-                                    jwtService.tokenDurationInSec);
+                                    jwtService.tokenDurationInMilliSec);
     }
 
     public Iterable<User> getAllUsers(){

@@ -1,10 +1,12 @@
-import { useState, type ReactNode } from "react"
+import { useTheme } from "../hooks/useTheme"
+import type { PrivateRouteProps } from "../types/types";
 
-
-
-export function PrivateRoute({children}:PrivateRouteProps){ 
-    /* il faudra récupérer les états du useContext */
-    if (userConnected && !tokenExpired){
+export function PrivateRoute({children}:PrivateRouteProps){
+    const {isAuthenticated, expirationTime} = useTheme();
+    const tokenExpired = Date.now() > expirationTime;
+    console.log(isAuthenticated, Date.now(), expirationTime);
+    
+    if (isAuthenticated && !tokenExpired){
         return <>{children}</>
     } else {
         return <> 
@@ -13,3 +15,4 @@ export function PrivateRoute({children}:PrivateRouteProps){
                </>
     }
 }
+

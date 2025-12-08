@@ -22,7 +22,7 @@ import io.jsonwebtoken.security.Keys;
 public class JWTService {
     /* Service de génération de JWT token */
     private String secretKey;
-    public long tokenDurationInSec = 3600 * 10;
+    public long tokenDurationInMilliSec = 3600 * 10 * 1000;
 
     public JWTService(){
         /* Construction et encodage d'une clé pour signer le token */
@@ -43,7 +43,7 @@ public class JWTService {
                     .add(claims)
                     .subject(username)
                     .issuedAt(new Date(System.currentTimeMillis()))
-                    .expiration(new Date(System.currentTimeMillis() + tokenDurationInSec))
+                    .expiration(new Date(System.currentTimeMillis() + tokenDurationInMilliSec))
                     .and()
                     .signWith(getKey())
                     .compact();

@@ -7,7 +7,7 @@ export class FormHandler<T> {
     private setSendingState:React.Dispatch<React.SetStateAction<SendingStatus<any>>>;
     private inputToStateKeyMapping: Record<string, keyof T>;
     private toggleIsAuthenticated: () => void;
-    private setExpirationTimestamp: React.Dispatch<React.SetStateAction<number>>;
+    private setExpirationTime: React.Dispatch<React.SetStateAction<number>>;
     
     constructor(formHandler:FormHandlerInput<T>, authSetterContext:AuthContextSetterType){
         this.formData = formHandler.formData;
@@ -15,7 +15,7 @@ export class FormHandler<T> {
         this.setSendingState = formHandler.setSendingState;
         this.inputToStateKeyMapping = formHandler.inputToStateKeyMapping;
         this.toggleIsAuthenticated = authSetterContext.toggleIsAuthenticated;
-        this.setExpirationTimestamp = authSetterContext.setExpirationTimestamp;
+        this.setExpirationTime = authSetterContext.setExpirationTime;
     }
 
     async sendFormData(url:string){
@@ -26,7 +26,7 @@ export class FormHandler<T> {
             const data = JSON.parse(text);
             this.setSendingState(prev => ({...prev, data: data}));
             this.toggleIsAuthenticated();
-            this.setExpirationTimestamp(Date.now() + data.expiresIn);
+            this.setExpirationTime(Date.now() + data.expiresIn);
         } else {
             this.setSendingState(prev => ({...prev, error: text}))
         }

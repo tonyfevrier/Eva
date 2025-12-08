@@ -4,6 +4,7 @@ import { HomePage } from './pages/HomePage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { PrivateRoute } from './components/PrivateRoute';
+import { TestPage } from './pages/TestPage';
 
 const routes: RouteObject[] = [
   {
@@ -24,7 +25,7 @@ const routes: RouteObject[] = [
     children : [
         {
           index : true,
-          element : "à remplacer",
+          element : <TestPage/>,
         },
         {
           path : "à remplacer",

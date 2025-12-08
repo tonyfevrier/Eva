@@ -8,14 +8,14 @@ import { Form } from "../components/Form";
 export function LoginPage({}){
     const loginForm = useRef<HTMLFormElement>(null);
     const {inputToStateMapping, setFormState, sendingState, setSendingState, inputToStateKeyMapping} = useLoginForm();
-    const {toggleIsAuthenticated, setExpirationTimestamp} = useTheme();
+    const {isAuthenticated, toggleIsAuthenticated, setExpirationTime} = useTheme();
     
     const handleClick = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (loginForm.current !== null){
             const formData = new FormData(loginForm.current); 
             const formHandler = new FormHandler<LoginFormBoolean>({formData, setFormState, setSendingState, inputToStateKeyMapping}, 
-                                                                  {toggleIsAuthenticated, setExpirationTimestamp});
+                                                                  {toggleIsAuthenticated, setExpirationTime});
             if (formHandler.allInputsAreFilled()){
                 await formHandler.sendFormData("http://localhost:9000/api/login");
             } else {
@@ -24,10 +24,11 @@ export function LoginPage({}){
         }
     }
     
+    console.log(isAuthenticated)
     if (sendingState.data !== null){
         return <>
                     <h1> Vous êtes bien connecté.</h1>
-                    <a href="/"> Retournez à la page d'accueil. </a>
+                    <a href="/application"> Retournez à la page d'accueil. </a>
                </>
     }
      
