@@ -1,7 +1,7 @@
 import { useRef, type FormEvent } from "react";
 import { Form } from "../components/Form";
 import { useRegisterForm } from "../hooks/useRegisterForm";
-import { RegisterFormHandler } from "./RegisterFormHandler";
+import { RegisterFormHandler } from "../utils/authentication/RegisterFormHandler";
  
 
 export function RegisterPage(){

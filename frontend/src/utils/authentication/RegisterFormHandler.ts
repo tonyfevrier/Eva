@@ -1,4 +1,4 @@
-import type { RegisterFormBoolean } from "../types/types";
+import type { RegisterFormBoolean } from "../../types/types";
 import { FormHandler } from "./FormHandler";
 
 export class RegisterFormHandler extends FormHandler<RegisterFormBoolean> {

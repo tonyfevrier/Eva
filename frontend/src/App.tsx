@@ -7,6 +7,7 @@ import { PrivateRoute } from './components/PrivateRoute';
 import { TestPage } from './pages/TestPage';
 import { NavBar } from './components/NavBar';
 import { useTheme } from './hooks/useTheme';
+import { useHandleAuth } from './hooks/useHandleAuth';
 
 const routes: RouteObject[] = [
   {
@@ -47,26 +48,13 @@ const routes: RouteObject[] = [
 const browserRouter = createBrowserRouter(routes);
 
 function App() {
+  useHandleAuth();    
   return <RouterProvider router={browserRouter}/>
 }
 
 function Layout(){
-  const {isAuthenticated, toggleIsAuthenticated, setExpirationTime} = useTheme();
-
-  const handleClick = async () => {
-    toggleIsAuthenticated();
-    setExpirationTime(0);
-    const response = await fetch("http://localhost:9000/api/logout", {
-      headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-      },
-      credentials:'include'
-    });
-  console.log(response);
-
-  }
- 
+  const {isAuthenticated, logout} = useTheme();
+  const handleClick = async () => {logout()}
   return <>
           <NavBar>
               {isAuthenticated && <button onClick={handleClick}>Se déconnecter</button>}
@@ -74,7 +62,6 @@ function Layout(){
           <Outlet/>
        </>
   }
- 
 
 function AuthenticatedLayout(){
   return <PrivateRoute>

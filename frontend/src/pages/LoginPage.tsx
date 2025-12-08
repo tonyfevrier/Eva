@@ -2,7 +2,7 @@ import { useRef, type FormEvent } from "react";
 import { useLoginForm } from "../hooks/useLoginForm";
 import { useTheme } from "../hooks/useTheme";
 import { Form } from "../components/Form";
-import { LoginFormHandler } from "./LoginFormHandler";
+import { LoginFormHandler } from "../utils/authentication/LoginFormHandler";
 
 export function LoginPage({}){
     const loginForm = useRef<HTMLFormElement>(null);

@@ -1,4 +1,4 @@
-import type {FormHandlerInput, SendingStatus } from "../types/types";
+import type {FormHandlerInput, SendingStatus } from "../../types/types";
 
 export abstract class FormHandler<T> {
 

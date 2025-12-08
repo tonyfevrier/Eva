@@ -1,6 +1,5 @@
-import type { CircleDimensions } from "../types/types";
 import { ArcOfCircle } from "../components/ArcOfCircle";
-import { homepageGeometry } from "../geometry/homepageGeometry";
+import { homepageGeometry } from "../utils/geometry/homepageGeometry";
 
 export function HomePage(){
   const circleDimensions = homepageGeometry();

@@ -40,15 +40,21 @@ public class JwtFilter extends OncePerRequestFilter{
              */
             
             String path = request.getRequestURI();
-            if (path.equals("/api/register") || path.equals("/api/login") || path.equals("/api/logout")) {
+            if (isUrlAnAllUsersPermittedUrl(path)) {
                 filterChain.doFilter(request, response);
                 return;
             }
+
+            // for request with path necessitating an authentication to be accepted
             TokenInfo tokenInfo = getTokenAndeUsernameFrom(request);
             if (tokenInfo.username != null && authenticationObjectDoesNotExist()){
                 createNewAuthenticationObject(tokenInfo, request);
             }
             filterChain.doFilter(request, response);
+    }
+
+    private boolean isPathAnAllUsersPermittedPath(String path){
+        return path.equals("/api/register") || path.equals("/api/login") || path.equals("/api/logout");
     }
 
     private TokenInfo getTokenAndeUsernameFrom(HttpServletRequest request){

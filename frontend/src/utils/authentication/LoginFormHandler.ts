@@ -1,4 +1,4 @@
-import type { AuthContextSetterType, FormHandlerInput, LoginFormBoolean} from "../types/types";
+import type { AuthContextSetterType, FormHandlerInput, LoginFormBoolean} from "../../types/types";
 import { FormHandler } from "./FormHandler";
 
 export class LoginFormHandler extends FormHandler<LoginFormBoolean> {

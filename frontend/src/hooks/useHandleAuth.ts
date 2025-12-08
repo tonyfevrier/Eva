@@ -1,13 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useTheme } from "./useTheme";
 
 export function useHandleAuth(){
-    const lastIsAuthenticated = localStorage.getItem("isAuthenticated");
-    const lastExpirationTime = localStorage.getItem("expirationTime");
-    const [isAuthenticated, setIsAuthenticated] = useState<boolean>(lastIsAuthenticated? lastIsAuthenticated === "true":false);
-    const [expirationTime, setExpirationTime] = useState<number>(lastExpirationTime? Number(lastExpirationTime): 0);
-    const toggleIsAuthenticated = () => {
-        isAuthenticated ? setIsAuthenticated(false) : setIsAuthenticated(true);
-    };
+    const {isAuthenticated, expirationTime, logout} = useTheme();
 
     // Enregistrement des états en mémoire en cas de changement
     useEffect(() => {
@@ -18,10 +13,11 @@ export function useHandleAuth(){
     // Remise de l'état à non authentifié après expiration du token
     useEffect(() => {
         if (expirationTime !== 0 && Date.now() > expirationTime) {
-            setIsAuthenticated(false);
-            setExpirationTime(0);
+            logout();
         }
     }, []);
 
-    return {isAuthenticated, toggleIsAuthenticated, expirationTime, setExpirationTime};
+    useEffect(() => {
+        
+    }, [expirationTime])
 }
