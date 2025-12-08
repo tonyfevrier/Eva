@@ -1,36 +1,20 @@
-import type { AuthContextSetterType, FormHandlerInput, SendingStatus } from "../types/types";
+import type {FormHandlerInput, SendingStatus } from "../types/types";
 
-export class FormHandler<T> {
+export abstract class FormHandler<T> {
 
-    private formData: FormData;
-    private setFormState: React.Dispatch<React.SetStateAction<T>>;
-    private setSendingState:React.Dispatch<React.SetStateAction<SendingStatus<any>>>;
-    private inputToStateKeyMapping: Record<string, keyof T>;
-    private toggleIsAuthenticated: () => void;
-    private setExpirationTime: React.Dispatch<React.SetStateAction<number>>;
-    
-    constructor(formHandler:FormHandlerInput<T>, authSetterContext:AuthContextSetterType){
+    protected formData: FormData;
+    protected setFormState: React.Dispatch<React.SetStateAction<T>>;
+    protected setSendingState:React.Dispatch<React.SetStateAction<SendingStatus<any>>>;
+    protected inputToStateKeyMapping: Record<string, keyof T>;    
+
+    constructor(formHandler:FormHandlerInput<T>){
         this.formData = formHandler.formData;
         this.setFormState = formHandler.setFormState;
         this.setSendingState = formHandler.setSendingState;
         this.inputToStateKeyMapping = formHandler.inputToStateKeyMapping;
-        this.toggleIsAuthenticated = authSetterContext.toggleIsAuthenticated;
-        this.setExpirationTime = authSetterContext.setExpirationTime;
     }
 
-    async sendFormData(url:string){
-        const response = await this._fetchData(url);         
-        const text = await response.text();
-        this.displayEmptyInputs(); // évite qu'une erreur de non complétion d'inputs reste affichée après soumission du formulaire
-        if (response.ok) {
-            const data = JSON.parse(text);
-            this.setSendingState(prev => ({...prev, data: data}));
-            this.toggleIsAuthenticated();
-            this.setExpirationTime(Date.now() + data.expiresIn);
-        } else {
-            this.setSendingState(prev => ({...prev, error: text}))
-        }
-    }
+    abstract sendFormData(url: string): Promise<void>;
 
     displayEmptyInputs(){
         const keys = Array.from(this.formData.keys());

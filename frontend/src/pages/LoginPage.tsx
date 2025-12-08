@@ -1,9 +1,8 @@
 import { useRef, type FormEvent } from "react";
-import { FormHandler } from "./FormHandler";
-import type { LoginFormBoolean } from "../types/types";
 import { useLoginForm } from "../hooks/useLoginForm";
 import { useTheme } from "../hooks/useTheme";
 import { Form } from "../components/Form";
+import { LoginFormHandler } from "./LoginFormHandler";
 
 export function LoginPage({}){
     const loginForm = useRef<HTMLFormElement>(null);
@@ -14,7 +13,7 @@ export function LoginPage({}){
         e.preventDefault();
         if (loginForm.current !== null){
             const formData = new FormData(loginForm.current); 
-            const formHandler = new FormHandler<LoginFormBoolean>({formData, setFormState, setSendingState, inputToStateKeyMapping}, 
+            const formHandler = new LoginFormHandler({formData, setFormState, setSendingState, inputToStateKeyMapping}, 
                                                                   {toggleIsAuthenticated, setExpirationTime});
             if (formHandler.allInputsAreFilled()){
                 await formHandler.sendFormData("http://localhost:9000/api/login");
@@ -24,8 +23,7 @@ export function LoginPage({}){
         }
     }
     
-    console.log(isAuthenticated)
-    if (sendingState.data !== null){
+    if (isAuthenticated){
         return <>
                     <h1> Vous êtes bien connecté.</h1>
                     <a href="/application"> Retournez à la page d'accueil. </a>
