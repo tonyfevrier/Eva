@@ -45,3 +45,8 @@ export type FormHandlerInput<T> = {
 export type PrivateRouteProps = {
     children: ReactNode
 }
+
+export type AuthContextSetterType = {
+    toggleIsAuthenticated: () => void;
+    setExpirationTimestamp: React.Dispatch<React.SetStateAction<number>>;
+}

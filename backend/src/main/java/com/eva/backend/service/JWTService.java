@@ -10,7 +10,6 @@ import java.util.function.Function;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 
-import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -23,7 +22,7 @@ import io.jsonwebtoken.security.Keys;
 public class JWTService {
     /* Service de génération de JWT token */
     private String secretKey;
-    private long tokenDurationInSec = 3600 * 10;
+    public long tokenDurationInSec = 3600 * 10;
 
     public JWTService(){
         /* Construction et encodage d'une clé pour signer le token */
@@ -36,19 +35,8 @@ public class JWTService {
         }
         
     }
-
-    public ResponseCookie generateCookie(String username){
-        String token = generateToken(username);
-        return ResponseCookie.from("jwt", token)
-                      .httpOnly(true) //empêche les attaques JS
-                      .secure(true)   //https
-                      .path("/")      //accessible pour tout
-                      .maxAge(tokenDurationInSec) 
-                      .sameSite("Strict") //protection csrf
-                      .build();
-    }
     
-    private String generateToken(String username){
+    public String generateToken(String username){
         Map<String, Object> claims = new HashMap<>();
         return Jwts.builder()
                     .claims()
@@ -94,7 +82,7 @@ public class JWTService {
         return extractExpiration(token).before(new Date());
     }
 
-    private Date extractExpiration(String token) {
+    public Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
     }
 }

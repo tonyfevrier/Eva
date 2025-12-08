@@ -1,4 +1,4 @@
-import type { FormHandlerInput, SendingStatus } from "../types/types";
+import type { AuthContextSetterType, FormHandlerInput, SendingStatus } from "../types/types";
 
 export class FormHandler<T> {
 
@@ -6,22 +6,27 @@ export class FormHandler<T> {
     private setFormState: React.Dispatch<React.SetStateAction<T>>;
     private setSendingState:React.Dispatch<React.SetStateAction<SendingStatus<any>>>;
     private inputToStateKeyMapping: Record<string, keyof T>;
+    private toggleIsAuthenticated: () => void;
+    private setExpirationTimestamp: React.Dispatch<React.SetStateAction<number>>;
     
-    constructor(formHandler:FormHandlerInput<T>){
+    constructor(formHandler:FormHandlerInput<T>, authSetterContext:AuthContextSetterType){
         this.formData = formHandler.formData;
         this.setFormState = formHandler.setFormState;
         this.setSendingState = formHandler.setSendingState;
         this.inputToStateKeyMapping = formHandler.inputToStateKeyMapping;
+        this.toggleIsAuthenticated = authSetterContext.toggleIsAuthenticated;
+        this.setExpirationTimestamp = authSetterContext.setExpirationTimestamp;
     }
 
     async sendFormData(url:string){
         const response = await this._fetchData(url);         
         const text = await response.text();
         this.displayEmptyInputs(); // évite qu'une erreur de non complétion d'inputs reste affichée après soumission du formulaire
-
         if (response.ok) {
             const data = JSON.parse(text);
             this.setSendingState(prev => ({...prev, data: data}));
+            this.toggleIsAuthenticated();
+            this.setExpirationTimestamp(Date.now() + data.expiresIn);
         } else {
             this.setSendingState(prev => ({...prev, error: text}))
         }

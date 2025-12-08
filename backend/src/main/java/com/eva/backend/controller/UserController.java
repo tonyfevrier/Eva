@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.eva.backend.model.User;
 import com.eva.backend.service.UserService;
+import com.eva.backend.records.CookieEssentials;
 
 import jakarta.validation.Valid;
 
@@ -41,11 +42,13 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody User user) {
         // Au premier login, user est vérifié et le jwt token est envoyé via un http only cookie pour plus de sécurité        
-        String stringCookie = userService.verify(user);
+        CookieEssentials essentials = userService.verify(user);
  
         return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, stringCookie)
-                .body(Map.of("message", "Login réussi")); 
+                .header(HttpHeaders.SET_COOKIE, essentials.cookie())
+                .body(Map.of("message", "Login réussi",
+                             "expiresIn", essentials.expiresIn() 
+                )); 
     }
     
     @GetMapping("/users")
