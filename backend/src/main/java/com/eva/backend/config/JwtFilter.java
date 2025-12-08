@@ -40,7 +40,7 @@ public class JwtFilter extends OncePerRequestFilter{
              */
             
             String path = request.getRequestURI();
-            if (path.equals("/api/register") || path.equals("/api/login")) {
+            if (path.equals("/api/register") || path.equals("/api/login") || path.equals("/api/logout")) {
                 filterChain.doFilter(request, response);
                 return;
             }

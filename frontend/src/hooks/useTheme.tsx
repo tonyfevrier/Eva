@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, type Dispatch, type PropsWithChildren, type SetStateAction } from "react"
+import { createContext, useContext, type Dispatch, type PropsWithChildren, type SetStateAction } from "react"
 import { useHandleAuth } from "./useHandleAuth";
 
 type ThemeContextType = {
@@ -27,7 +27,6 @@ export function useTheme(){
 
 export function ThemeProvider({children}:PropsWithChildren){
     const {isAuthenticated, toggleIsAuthenticated, expirationTime, setExpirationTime} = useHandleAuth();    
-
     return <ThemeContext.Provider value={{isAuthenticated, toggleIsAuthenticated, expirationTime, setExpirationTime}}>
                 {children}
            </ThemeContext.Provider>

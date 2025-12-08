@@ -54,16 +54,16 @@ public class SecurityConfig {
         C'est ce qu'on utilise pour une API REST     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
-        return http.csrf(customizer -> customizer.disable()) //désactive csrf par exemple s'il 
+        return  http.csrf(customizer -> customizer.disable()) //désactive csrf par exemple s'il 
                     .cors(Customizer.withDefaults())
                     .authorizeHttpRequests(request -> request
-                        .requestMatchers("/api/register", "/api/login").permitAll() //ces url sont accessibles à tous
+                        .requestMatchers("/api/register", "/api/login", "/api/logout").permitAll() //ces url sont accessibles à tous
                         .requestMatchers("/api/users").hasRole("ADMIN")
                         .anyRequest().authenticated()) //filtre exigeant l'authentification pour tout requête
-                   .httpBasic(Customizer.withDefaults()) // popup obligeant à s'authentifier
-                   .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Détruit la session à chaque requête
-                   .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
-                   .build();
+                    .httpBasic(Customizer.withDefaults()) // popup obligeant à s'authentifier
+                    .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Détruit la session à chaque requête
+                    .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+                    .build();
     }
 
     /* Gestion des url qui peuvent effectuer des requêtes à l'api */
