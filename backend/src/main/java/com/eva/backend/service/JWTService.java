@@ -22,7 +22,8 @@ import io.jsonwebtoken.security.Keys;
 public class JWTService {
     /* Service de génération de JWT token */
     private String secretKey;
-    public long tokenDurationInMilliSec = 3600 * 10 * 1000;
+    private long tokenDurationInMin = 60;
+    public long tokenDurationInMilliSec = tokenDurationInMin * 60 * 1000;
 
     public JWTService(){
         /* Construction et encodage d'une clé pour signer le token */

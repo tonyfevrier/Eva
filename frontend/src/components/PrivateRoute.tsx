@@ -4,7 +4,6 @@ import type { PrivateRouteProps } from "../types/types";
 export function PrivateRoute({children}:PrivateRouteProps){
     const {isAuthenticated, expirationTime} = useTheme();
     const tokenExpired = Date.now() > expirationTime;
-    console.log(isAuthenticated, Date.now(), expirationTime);
     
     if (isAuthenticated && !tokenExpired){
         return <>{children}</>

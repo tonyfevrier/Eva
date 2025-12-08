@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState, type Dispatch, type PropsWithChildren, type SetStateAction } from "react"
+import { useHandleAuth } from "./useHandleAuth";
 
 type ThemeContextType = {
     isAuthenticated: boolean,
@@ -25,18 +26,7 @@ export function useTheme(){
 }
 
 export function ThemeProvider({children}:PropsWithChildren){
-    const lastIsAuthenticated = localStorage.getItem("isAuthenticated");
-    const lastExpirationTime = localStorage.getItem("expirationTime");
-    const [isAuthenticated, setIsAuthenticated] = useState(lastIsAuthenticated? Boolean(lastIsAuthenticated):false);
-    const [expirationTime, setExpirationTime] = useState(lastExpirationTime? Number(lastExpirationTime): 0);
-    const toggleIsAuthenticated = () => {
-        isAuthenticated ? setIsAuthenticated(false) : setIsAuthenticated(true);
-    };
-
-    useEffect(() => {
-        localStorage.setItem("isAuthenticated", String(isAuthenticated));
-        localStorage.setItem("expirationTime", String(expirationTime));
-    }, [isAuthenticated]);
+    const {isAuthenticated, toggleIsAuthenticated, expirationTime, setExpirationTime} = useHandleAuth();    
 
     return <ThemeContext.Provider value={{isAuthenticated, toggleIsAuthenticated, expirationTime, setExpirationTime}}>
                 {children}
