@@ -12,6 +12,7 @@ import org.springframework.http.ResponseCookie;
 import com.eva.backend.model.User;
 import com.eva.backend.repository.UserRepository;
 import com.eva.backend.records.CookieEssentials;
+import com.eva.backend.records.TwoCookies;
 
 @Service
 public class UserService {

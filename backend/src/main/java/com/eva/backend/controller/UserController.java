@@ -66,6 +66,13 @@ public class UserController {
                .header(HttpHeaders.SET_COOKIE, cookie.toString())
                .body(Map.of("message", "Le logout est réussi"));
     }
+
+    /*@GetMapping("/refresh")
+    public ResponseEntity<?> refresh() {
+        return ResponseEntity.ok()
+                             .header(HttpHeaders.SET_COOKIE2, cookie)
+                             .body(Map.of());
+    }*/
     
     
 
