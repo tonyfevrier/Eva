@@ -1,7 +1,5 @@
 package com.eva.backend.service;
 
-import java.util.Date;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -24,7 +22,7 @@ public class UserService {
     private AuthenticationManager authManager;
 
     @Autowired
-    private JWTService jwtService; 
+    private CookieService cookieService;
 
     public User saveUser(User user){
         User existingUser = userRepository.findByMail(user.getMail());
@@ -34,35 +32,26 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public CookieEssentials verify(User user){
+    public TwoCookies<CookieEssentials> verify(User user){
         Authentication authentication = authManager.authenticate(
             new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
         if (authentication.isAuthenticated()){
-            return generateCookie(user);
+            CookieEssentials accessCookie = cookieService.generateAccessCookie(user);
+            CookieEssentials refreshCookie = cookieService.generateRefreshCookie(user);
+            return new TwoCookies<CookieEssentials>(accessCookie, refreshCookie);
         } 
-        return new CookieEssentials("", 0);
+        return null; 
     }
 
-    public ResponseCookie logout() {
-        // cookie qui remplace le précédent
-        return ResponseCookie.from("jwt", "")
-                                .path("/")
-                                .maxAge(0)
-                                .build();
+    public TwoCookies<ResponseCookie> logout() {
+        // cookies qui remplacent les précédents
+        ResponseCookie delAccessCookie = ResponseCookie.from("jwt", "").path("/").maxAge(0).build();
+        ResponseCookie delRefreshCookie = ResponseCookie.from("jwt-refresh", "").path("/").maxAge(0).build();
+        return new TwoCookies<ResponseCookie>(delAccessCookie, delRefreshCookie);
     }
 
-    private CookieEssentials generateCookie(User user){
-        String token = jwtService.generateToken(user.getUsername());
-        ResponseCookie cookie = ResponseCookie.from("jwt", token)
-                  .httpOnly(true) //empêche les attaques JS
-                  .secure(true)   //https
-                  .path("/")      //accessible pour tout
-                  .maxAge(jwtService.tokenDurationInMilliSec) 
-                  .sameSite("Strict") //protection csrf
-                  .build();
-        return new CookieEssentials(cookie.toString(),
-                                    jwtService.tokenDurationInMilliSec);
-    }
+    /*public CookieEssentials refresh(User user){
+        return;*/
 
     public Iterable<User> getAllUsers(){
         return userRepository.findAll();

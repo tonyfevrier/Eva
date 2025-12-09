@@ -1,3 +1,3 @@
 package com.eva.backend.records;
 
-public record TwoCookies(CookieEssentials cookieEssentials1, CookieEssentials cookieEssentials2) {}
+public record TwoCookies<T>(T accessCookie, T refreshCookie) {}

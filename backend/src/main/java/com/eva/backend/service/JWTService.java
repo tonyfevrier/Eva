@@ -22,8 +22,6 @@ import io.jsonwebtoken.security.Keys;
 public class JWTService {
     /* Service de génération de JWT token */
     private String secretKey;
-    private long tokenDurationInMin = 10;
-    public long tokenDurationInMilliSec = tokenDurationInMin * 60 * 1000;
 
     public JWTService(){
         /* Construction et encodage d'une clé pour signer le token */
@@ -37,7 +35,7 @@ public class JWTService {
         
     }
     
-    public String generateToken(String username){
+    public String generateToken(String username, long tokenDurationInMilliSec){
         Map<String, Object> claims = new HashMap<>();
         return Jwts.builder()
                     .claims()

@@ -15,12 +15,11 @@ import org.springframework.web.bind.annotation.RestController;
 import com.eva.backend.model.User;
 import com.eva.backend.service.UserService;
 import com.eva.backend.records.CookieEssentials;
+import com.eva.backend.records.TwoCookies;
 
 import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-
 
 
 @RestController
@@ -45,13 +44,15 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody User user) {
         // Au premier login, user est vérifié et le jwt token est envoyé via un http only cookie pour plus de sécurité        
-        CookieEssentials essentials = userService.verify(user);
+        TwoCookies<CookieEssentials> twoCookies = userService.verify(user);
  
         return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, essentials.cookie())
+                .header(HttpHeaders.SET_COOKIE, twoCookies.accessCookie().cookie())
+                .header(HttpHeaders.SET_COOKIE, twoCookies.refreshCookie().cookie())
                 .body(Map.of("message", "Login réussi",
-                             "expiresIn", essentials.expiresIn() 
-                )); 
+                             "accessExpiresIn", twoCookies.accessCookie().expiresIn(), 
+                             "refreshExpiresIn", twoCookies.refreshCookie().expiresIn() 
+                ));
     }
     
     @GetMapping("/users")
@@ -61,9 +62,10 @@ public class UserController {
 
     @GetMapping("/logout")
     public ResponseEntity<?> logout() {
-        ResponseCookie cookie = userService.logout();
+        TwoCookies<ResponseCookie> twoCookies = userService.logout();
         return ResponseEntity.ok()
-               .header(HttpHeaders.SET_COOKIE, cookie.toString())
+               .header(HttpHeaders.SET_COOKIE, twoCookies.accessCookie().toString())
+               .header(HttpHeaders.SET_COOKIE, twoCookies.refreshCookie().toString())
                .body(Map.of("message", "Le logout est réussi"));
     }
 
@@ -74,6 +76,4 @@ public class UserController {
                              .body(Map.of());
     }*/
     
-    
-
 }
