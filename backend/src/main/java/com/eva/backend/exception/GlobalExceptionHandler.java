@@ -52,11 +52,17 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<String> handleIllegalArgument(BadCredentialsException e) {
+    public ResponseEntity<String> handleBadCredentials(BadCredentialsException e) {
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
             .body("Identifiants incorrects");
-            //.body(e.getMessage());
+    }
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<String> handleRuntime(RuntimeException e) {
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(e.getMessage());
     }
     
  

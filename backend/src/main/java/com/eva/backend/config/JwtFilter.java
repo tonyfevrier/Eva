@@ -54,7 +54,10 @@ public class JwtFilter extends OncePerRequestFilter{
     }
 
     private boolean isPathAnAllUsersPermittedPath(String path){
-        return path.equals("/api/register") || path.equals("/api/login") || path.equals("/api/logout");
+        return path.equals("/api/register") 
+            || path.equals("/api/login") 
+            || path.equals("/api/logout")
+            || path.equals("/api/refresh");
     }
 
     private TokenInfo getTokenAndeUsernameFrom(HttpServletRequest request){
@@ -62,10 +65,12 @@ public class JwtFilter extends OncePerRequestFilter{
         String username = null;
         String token = null;
 
+        // Utile si on stockait le token dans le local storage
         if (authHeader != null && authHeader.startsWith("Bearer")){
             return getTokenAndeUsernameFromAuthorization(authHeader);
         }
 
+        // Adapté au cookie http.only utilisé dans mon cas
         if (token == null && request.getCookies() != null) {
             return getTokenAndeUsernameFromCookie(request);
         }

@@ -17,6 +17,8 @@ import com.eva.backend.service.UserService;
 import com.eva.backend.records.CookieEssentials;
 import com.eva.backend.records.TwoCookies;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.GetMapping;
@@ -69,11 +71,33 @@ public class UserController {
                .body(Map.of("message", "Le logout est réussi"));
     }
 
-    /*@GetMapping("/refresh")
-    public ResponseEntity<?> refresh() {
-        return ResponseEntity.ok()
-                             .header(HttpHeaders.SET_COOKIE2, cookie)
-                             .body(Map.of());
-    }*/
+    @GetMapping("/refresh")
+    public ResponseEntity<?> refresh(HttpServletRequest request) {
+        /* Si le refreshToken n'est pas expiré, envoie un nouvel accessToken */
+        String refreshToken = getRefreshTokenFromRequest(request);
+
+        if (refreshToken != ""){
+            CookieEssentials accessCookie = userService.refresh(refreshToken);
+            return ResponseEntity.ok()
+                                 .header(HttpHeaders.SET_COOKIE, accessCookie.cookie())
+                                 .body(Map.of("message", "token rafraîchi",
+                                             "accessExpiresIn", accessCookie.expiresIn()
+                                 ));
+        }
+        return ResponseEntity.status(401).body(Map.of("message", "Refresh token manquant"));
+
+        
+    }
+
+    private String getRefreshTokenFromRequest(HttpServletRequest request){
+        if (request.getCookies() != null){
+            for (Cookie cookie : request.getCookies()) {
+                if ("jwt-refresh".equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
+        }
+        return "";
+    }
     
 }
