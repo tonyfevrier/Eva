@@ -28,11 +28,35 @@ export function useTheme(){
                             'Content-Type': 'application/json',
                             'Accept': 'application/json',
                 },
-                credentials:'include'
-                });
-
+                credentials: "include" // envoyer les cookies
+            });
             setIsAuthenticated(false);
             setExpirationTime(0);
+        } catch(error){
+            console.log(error);
+        };        
+    }
+
+    const refresh = async () => {
+        try{
+            // Réception de l'éventuel nouveau access token et update de la date d'expiration
+            const response = await fetch("http://localhost:9000/api/refresh", {
+                headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                },
+                credentials: "include"
+            });
+            const text = await response.text();
+
+            if (response.ok){
+                const data = JSON.parse(text);
+                setIsAuthenticated(true);
+                setExpirationTime(Date.now() + data.accessExpiresIn);    
+            } else {
+                setIsAuthenticated(false);
+                setExpirationTime(0);
+            }
         } catch(error){
             console.log(error);
         };        
@@ -43,6 +67,7 @@ export function useTheme(){
         setIsAuthenticated: setIsAuthenticated, 
         toggleIsAuthenticated: toggleIsAuthenticated,
         logout: logout,
+        refresh: refresh,
         expirationTime: expirationTime,
         setExpirationTime: setExpirationTime
     };

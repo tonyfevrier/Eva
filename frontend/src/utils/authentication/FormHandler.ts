@@ -41,7 +41,8 @@ export abstract class FormHandler<T> {
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
-            }
+            },
+            credentials: "include" // Pour recevoir et stocker ou envoyer des cookies
         });
         return response;    
     }

@@ -2,7 +2,8 @@ import { useEffect } from "react";
 import { useTheme } from "./useTheme";
 
 export function useHandleAuth(){
-    const {isAuthenticated, expirationTime, logout} = useTheme();
+    const {isAuthenticated, expirationTime, refresh} = useTheme();
+    const checkIfExpiredTimeInMin = 0.1;
 
     // Enregistrement des états en mémoire en cas de changement
     useEffect(() => {
@@ -11,17 +12,19 @@ export function useHandleAuth(){
     }, [isAuthenticated]);
 
 
-    // Remise de l'état à non authentifié après expiration du token
+    // Tentative de rafraîchissement après expiration du token
     useEffect(() => {
-        const logoutIfExpired = async () => {
+        const refreshIfExpired = async () => {
             if (expirationTime !== 0 && Date.now() > expirationTime) {
-                await logout();
+                await refresh();
             }
         }
+
         if (expirationTime !== 0){
-            const intervalId = setInterval(logoutIfExpired, 60000);
+            const intervalId = setInterval(refreshIfExpired, checkIfExpiredTimeInMin * 60 * 1000);
             return () => clearInterval(intervalId);
         }
+        
         return;
     }, [expirationTime]);
 }

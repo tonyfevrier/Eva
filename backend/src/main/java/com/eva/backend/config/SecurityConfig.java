@@ -56,7 +56,7 @@ public class SecurityConfig {
         return  http.csrf(customizer -> customizer.disable()) //désactive csrf par exemple s'il 
                     .cors(Customizer.withDefaults())
                     .authorizeHttpRequests(request -> request
-                        .requestMatchers("/api/register", "/api/login", "/api/logout").permitAll() //ces url sont accessibles à tous
+                        .requestMatchers("/api/register", "/api/login", "/api/logout", "/api/register").permitAll() //ces url sont accessibles à tous
                         .requestMatchers("/api/users").hasRole("ADMIN")
                         .anyRequest().authenticated()) //filtre exigeant l'authentification pour tout requête
                     .httpBasic(Customizer.withDefaults()) // popup obligeant à s'authentifier

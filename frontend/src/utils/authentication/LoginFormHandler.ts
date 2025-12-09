@@ -21,7 +21,7 @@ export class LoginFormHandler extends FormHandler<LoginFormBoolean> {
             const data = JSON.parse(text);
             this.setSendingState(prev => ({...prev, data: data}));
             this.toggleIsAuthenticated();
-            this.setExpirationTime(Date.now() + data.expiresIn);
+            this.setExpirationTime(Date.now() + data.accessExpiresIn);
         } else {
             this.setSendingState(prev => ({...prev, error: text}))
         }
