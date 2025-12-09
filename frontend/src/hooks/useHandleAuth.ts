@@ -10,14 +10,18 @@ export function useHandleAuth(){
         localStorage.setItem("expirationTime", String(expirationTime));    
     }, [isAuthenticated]);
 
+
     // Remise de l'état à non authentifié après expiration du token
     useEffect(() => {
-        if (expirationTime !== 0 && Date.now() > expirationTime) {
-            logout();
+        const logoutIfExpired = async () => {
+            if (expirationTime !== 0 && Date.now() > expirationTime) {
+                await logout();
+            }
         }
-    }, []);
-
-    useEffect(() => {
-        
-    }, [expirationTime])
+        if (expirationTime !== 0){
+            const intervalId = setInterval(logoutIfExpired, 60000);
+            return () => clearInterval(intervalId);
+        }
+        return;
+    }, [expirationTime]);
 }

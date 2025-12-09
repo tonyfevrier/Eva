@@ -40,7 +40,7 @@ public class JwtFilter extends OncePerRequestFilter{
              */
             
             String path = request.getRequestURI();
-            if (isUrlAnAllUsersPermittedUrl(path)) {
+            if (isPathAnAllUsersPermittedPath(path)) {
                 filterChain.doFilter(request, response);
                 return;
             }
