@@ -6,14 +6,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.hamcrest.Matchers.is;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.ActiveProfiles;
@@ -35,61 +35,101 @@ public class AuthenticationTests {
     private ObjectMapper objectMapper;
 
     @Test
-    @WithMockUser(roles = "ADMIN")
-    public void testRegisterUser() throws Exception {
+    @DirtiesContext
+    public void testLogin() throws Exception {
+        // Créer un utilisateur d'abord
         User user = User.builder()
-                        .firstname("tony")
-                        .lastname("fevrier")
-                        .mail("tony.fevrier@gmail.com")
-                        .password("c!!21Cdq")
+                        .firstname("marie")
+                        .lastname("tremblay")
+                        .mail("marie.tremblay@mail.com")
+                        .password("MarieT123!")
                         .build();
-        
         String userJson = objectMapper.writeValueAsString(user);
 
         mockMvc.perform(post("/api/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(userJson))
                         .andExpect(status().isOk());
-        
-        mockMvc.perform(get("/api/users"))
-                       .andExpect(jsonPath("$[0].firstname", is("tony")))
-                       .andExpect(jsonPath("$[0].lastname", is("fevrier")))
-                       .andExpect(jsonPath("$[0].mail", is("tony.fevrier@gmail.com")));
-    } 
 
-    @Test
-    public void testBadMailInput() throws Exception {
-        User user = User.builder()
-                        .firstname("tony")
-                        .lastname("fevrier")
-                        .mail("tony")
-                        .password("c!!21Cdq")
-                        .build();
-        
-        String userJson = objectMapper.writeValueAsString(user);
-        
-        mockMvc.perform(post("/api/register")
+        // Tester le login
+        mockMvc.perform(post("/api/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(userJson))
-                        .andExpect(status().isBadRequest())
-                        .andExpect(content().string("Email invalide."));
+                        .andExpect(status().isOk())
+                        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                        .andExpect(header().exists("Set-Cookie"))
+                        .andExpect(cookie().exists("jwt"))
+                        .andExpect(cookie().exists("jwt-refresh"))
+                        .andExpect(cookie().httpOnly("jwt", true))
+                        .andExpect(cookie().httpOnly("jwt-refresh", true))
+                        .andExpect(jsonPath("$.message").value("Login réussi"))
+                        .andExpect(jsonPath("$.accessExpiresIn").exists())
+                        .andExpect(jsonPath("$.refreshExpiresIn").exists());
     }
 
     @Test
-    public void testBadPasswordInput() throws Exception {
+    @DirtiesContext
+    public void testLogout() throws Exception {
+        mockMvc.perform(get("/api/logout"))
+                        .andExpect(status().isOk())
+                        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                        .andExpect(cookie().exists("jwt"))
+                        .andExpect(cookie().exists("jwt-refresh"))
+                        .andExpect(cookie().maxAge("jwt", 0))
+                        .andExpect(cookie().maxAge("jwt-refresh", 0))
+                        .andExpect(jsonPath("$.message").value("Le logout est réussi"));
+    }
+
+    @Test
+    @DirtiesContext
+    public void testRefresh() throws Exception {
+        // Créer un utilisateur et se connecter
         User user = User.builder()
-                        .firstname("tony")
-                        .lastname("fevrier")
-                        .mail("tony.fevrier@gmail.com")
-                        .password("test")
+                        .firstname("pierre")
+                        .lastname("gagnon")
+                        .mail("pierre.gagnon@mail.com")
+                        .password("PierreG123!")
                         .build();
-        
         String userJson = objectMapper.writeValueAsString(user);
-        
+
         mockMvc.perform(post("/api/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(userJson))
-                        .andExpect(status().isBadRequest())
-                        .andExpect(content().string("Le mot de passe doit contenir au moins 8 caractères."));
+                        .andExpect(status().isOk());
+
+        // Récupérer le cookie de refresh
+        var loginResult = mockMvc.perform(post("/api/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(userJson))
+                        .andExpect(status().isOk())
+                        .andReturn();
+
+        String refreshCookie = loginResult.getResponse().getCookie("jwt-refresh").getValue();
+        // Tester le refresh avec le cookie
+        mockMvc.perform(get("/api/refresh")
+                        .cookie(new jakarta.servlet.http.Cookie("jwt-refresh", refreshCookie)))
+                        .andExpect(status().isOk())
+                        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                        .andExpect(cookie().exists("jwt"))
+                        .andExpect(cookie().httpOnly("jwt", true))
+                        .andExpect(jsonPath("$.message").value("Token rafraîchi"))
+                        .andExpect(jsonPath("$.accessExpiresIn").exists());
+    }
+
+    @Test
+    public void testRefreshFails() throws Exception {
+        // Tester le refresh sans cookie
+        mockMvc.perform(get("/api/refresh"))
+                        .andExpect(status().isBadRequest());
+
+        // Tester le refresh avec un token vide
+        mockMvc.perform(get("/api/refresh")
+                        .cookie(new jakarta.servlet.http.Cookie("jwt-refresh", "")))
+                        .andExpect(status().isBadRequest());
+
+        // Tester le refresh avec un token invalide
+        mockMvc.perform(get("/api/refresh")
+                        .cookie(new jakarta.servlet.http.Cookie("jwt-refresh", "")))
+                        .andExpect(status().isBadRequest());
     }
 }

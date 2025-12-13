@@ -75,18 +75,12 @@ public class UserController {
     public ResponseEntity<?> refresh(HttpServletRequest request) {
         /* Si le refreshToken n'est pas expiré, envoie un nouvel accessToken */
         String refreshToken = getRefreshTokenFromRequest(request);
-
-        if (refreshToken != ""){
-            CookieEssentials accessCookie = userService.refresh(refreshToken);
-            return ResponseEntity.ok()
-                                 .header(HttpHeaders.SET_COOKIE, accessCookie.cookie())
-                                 .body(Map.of("message", "token rafraîchi",
-                                             "accessExpiresIn", accessCookie.expiresIn()
-                                 ));
-        }
-        return ResponseEntity.status(401).body(Map.of("message", "Refresh token manquant"));
-
-        
+        CookieEssentials accessCookie = userService.refresh(refreshToken);
+        return ResponseEntity.ok()
+                             .header(HttpHeaders.SET_COOKIE, accessCookie.cookie())
+                             .body(Map.of("message", "Token rafraîchi",
+                                          "accessExpiresIn", accessCookie.expiresIn()
+                             ));
     }
 
     private String getRefreshTokenFromRequest(HttpServletRequest request){
