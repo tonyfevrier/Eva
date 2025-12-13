@@ -37,21 +37,8 @@ public class AuthenticationTests {
     @Test
     @DirtiesContext
     public void testLogin() throws Exception {
-        // Créer un utilisateur d'abord
-        User user = User.builder()
-                        .firstname("marie")
-                        .lastname("tremblay")
-                        .mail("marie.tremblay@mail.com")
-                        .password("MarieT123!")
-                        .build();
-        String userJson = objectMapper.writeValueAsString(user);
+        String userJson = registerAUser(); 
 
-        mockMvc.perform(post("/api/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(userJson))
-                        .andExpect(status().isOk());
-
-        // Tester le login
         mockMvc.perform(post("/api/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(userJson))
@@ -83,19 +70,7 @@ public class AuthenticationTests {
     @Test
     @DirtiesContext
     public void testRefresh() throws Exception {
-        // Créer un utilisateur et se connecter
-        User user = User.builder()
-                        .firstname("pierre")
-                        .lastname("gagnon")
-                        .mail("pierre.gagnon@mail.com")
-                        .password("PierreG123!")
-                        .build();
-        String userJson = objectMapper.writeValueAsString(user);
-
-        mockMvc.perform(post("/api/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(userJson))
-                        .andExpect(status().isOk());
+        String userJson = registerAUser();
 
         // Récupérer le cookie de refresh
         var loginResult = mockMvc.perform(post("/api/login")
@@ -131,5 +106,21 @@ public class AuthenticationTests {
         mockMvc.perform(get("/api/refresh")
                         .cookie(new jakarta.servlet.http.Cookie("jwt-refresh", "")))
                         .andExpect(status().isBadRequest());
+    }
+
+    private String registerAUser() throws Exception{
+        User user = User.builder()
+                        .firstname("marie")
+                        .lastname("tremblay")
+                        .mail("marie.tremblay@mail.com")
+                        .password("MarieT123!")
+                        .build();
+        String userJson = objectMapper.writeValueAsString(user);
+
+        mockMvc.perform(post("/api/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(userJson))
+                        .andExpect(status().isOk());
+        return userJson;
     }
 }
