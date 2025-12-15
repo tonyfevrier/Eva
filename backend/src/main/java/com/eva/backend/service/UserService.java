@@ -73,11 +73,12 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    public void delete(final Long id){
-        userRepository.deleteById(id);
+    public void delete(User user){
+        userRepository.delete(user);
     }
 
-    public Optional<User> findById(Long id){
-        return userRepository.findById(id);
+    public User findByToken(String token){
+        String username = jwtService.extractUsername(token);
+        return userRepository.findByMail(username);
     }
 }

@@ -3,6 +3,7 @@ package com.eva.backend;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -23,6 +24,8 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.eva.backend.model.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import jakarta.servlet.http.Cookie;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -97,13 +100,15 @@ public class CrudUserTests {
 
     @Test
     @WithMockUser(roles = "ADMIN")
+    @DirtiesContext
     public void testDeleteUser() throws Exception {
-        registerAUser();
+        String accessCookie = registerLogUserAndGetAccessCookie();
 
         mockMvc.perform(get("/auth/users"))
                         .andExpect(jsonPath("$",hasSize(1)));
 
-        mockMvc.perform(delete("/auth/delete/1"));
+        mockMvc.perform(delete("/auth/delete")
+                        .cookie(new jakarta.servlet.http.Cookie("jwt", accessCookie)));
 
         mockMvc.perform(get("/auth/users"))
                         .andExpect(jsonPath("$",hasSize(0)));
@@ -111,17 +116,19 @@ public class CrudUserTests {
 
     @Test
     @WithMockUser(roles = "ADMIN")
+    @DirtiesContext
     public void testUpdateUser() throws Exception {
-        registerAUser();
+        String accessCookie = registerLogUserAndGetAccessCookie();
 
         User updatedUser = User.builder()
                                .firstname("toto")
                                .password("newpassword")
                                .build();
-        
+
         String userJson = objectMapper.writeValueAsString(updatedUser);
 
-        mockMvc.perform(post("/auth/update/1")
+        mockMvc.perform(put("/auth/update")
+                        .cookie(new jakarta.servlet.http.Cookie("jwt", accessCookie))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(userJson))
                         .andExpect(status().isOk());
@@ -138,7 +145,7 @@ public class CrudUserTests {
         // Ma config de spring security exige que toute requête post login ait le cookie d'authentification.
         String accessCookie = registerLogUserAndGetAccessCookie();                        
         
-        mockMvc.perform(get("/auth/profile/1")
+        mockMvc.perform(get("/auth/profile")
                         .cookie(new jakarta.servlet.http.Cookie("jwt", accessCookie)))
                         .andExpect(status().isOk())
                         .andExpect(jsonPath("$.firstname", is("tony")))

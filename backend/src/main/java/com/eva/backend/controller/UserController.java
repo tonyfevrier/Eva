@@ -9,6 +9,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -79,7 +80,7 @@ public class UserController {
     @GetMapping("/refresh")
     public ResponseEntity<?> refresh(HttpServletRequest request) {
         /* Si le refreshToken n'est pas expiré, envoie un nouvel accessToken */
-        String refreshToken = getRefreshTokenFromRequest(request);
+        String refreshToken = getTokenFromRequest(request, "jwt-refresh");
         CookieEssentials accessCookie = userService.refresh(refreshToken);
         return ResponseEntity.ok()
                              .header(HttpHeaders.SET_COOKIE, accessCookie.cookie())
@@ -88,10 +89,10 @@ public class UserController {
                              ));
     }
 
-    private String getRefreshTokenFromRequest(HttpServletRequest request){
+    private String getTokenFromRequest(HttpServletRequest request, String tokenName){
         if (request.getCookies() != null){
             for (Cookie cookie : request.getCookies()) {
-                if ("jwt-refresh".equals(cookie.getName())) {
+                if (tokenName.equals(cookie.getName())) {
                     return cookie.getValue();
                 }
             }
@@ -99,33 +100,29 @@ public class UserController {
         return "";
     }
 
-    @GetMapping("/profile/{id}")
-    public ResponseEntity<?> getUserInfos(@PathVariable("id") final Long id) {
-        Optional<User> optionalUser = userService.findById(id);
-        if (optionalUser.isPresent()){
-            User user = optionalUser.get();
-            return ResponseEntity.ok(Map.of("firstname", user.getFirstname(),
-                                            "lastname", user.getLastname(),
-                                            "mail", user.getUsername()));
-        }
-        return null;
+    @GetMapping("/profile")
+    public ResponseEntity<?> getUserInfos(HttpServletRequest request) {
+        String token = getTokenFromRequest(request, "jwt");
+        User user = userService.findByToken(token);
+        return ResponseEntity.ok(Map.of("firstname", user.getFirstname(),
+                                        "lastname", user.getLastname(),
+                                        "mail", user.getUsername()));
+        
     }
 
-    @DeleteMapping("/delete/{id}")
-    public void delete(@PathVariable("id") final Long id) {
-        userService.delete(id);
+    @DeleteMapping("/delete")
+    public void delete(HttpServletRequest request) {
+        String token = getTokenFromRequest(request, "jwt");
+        User user = userService.findByToken(token);
+        userService.delete(user);
     }
 
-    @PostMapping("/update/{id}")
-    public ResponseEntity<?> update(@RequestBody User newUser, @PathVariable("id") final Long id) {
-        Optional<User> optionalUpdatedUser = userService.findById(id);
-        if (optionalUpdatedUser.isPresent()){
-            User updatedUser = optionalUpdatedUser.get();
-            updateUserInfos(newUser, updatedUser);
-            return ResponseEntity.ok(updatedUser);
-        }
-        return null;
-
+    @PutMapping("/update")
+    public ResponseEntity<?> update(@RequestBody User newUser, HttpServletRequest request) {
+        String token = getTokenFromRequest(request, "jwt");
+        User updatedUser = userService.findByToken(token);
+        updateUserInfos(newUser, updatedUser);
+        return ResponseEntity.ok(updatedUser);
     }
 
     private void updateUserInfos(User newUser, User userToUpdate){
