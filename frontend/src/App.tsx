@@ -8,6 +8,7 @@ import { TestPage } from './pages/TestPage';
 import { NavBar } from './components/NavBar';
 import { useTheme } from './hooks/useTheme';
 import { useHandleAuth } from './hooks/useHandleAuth';
+import { ProfilePage } from './pages/ProfilePage';
 
 const routes: RouteObject[] = [
   {
@@ -35,8 +36,8 @@ const routes: RouteObject[] = [
               element : <TestPage/>,
             },
             {
-              path : "à remplacer",
-              element : "à remplacer",
+              path : "profile",
+              element : <ProfilePage/>,
             }
         ]
         
@@ -57,6 +58,7 @@ function Layout(){
   const handleClick = async () => {logout()}
   return <>
           <NavBar>
+              {isAuthenticated && <a href="/application/profile">Profil</a> }
               {isAuthenticated && <button onClick={handleClick}>Se déconnecter</button>}
           </NavBar>
           <Outlet/>
