@@ -132,6 +132,20 @@ public class CrudUserTests {
                        .andExpect(jsonPath("$[0].mail", is("tony.fevrier@gmail.com")));
         }
 
+    @Test
+    @DirtiesContext
+    public void testGetOneUser() throws Exception {
+        // Ma config de spring security exige que toute requête post login ait le cookie d'authentification.
+        String accessCookie = registerLogUserAndGetAccessCookie();                        
+        
+        mockMvc.perform(get("/auth/profile/1")
+                        .cookie(new jakarta.servlet.http.Cookie("jwt", accessCookie)))
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$.firstname", is("tony")))
+                        .andExpect(jsonPath("$.lastname", is("fevrier")))
+                        .andExpect(jsonPath("$.mail", is("tony.fevrier@gmail.com")));
+    }
+
     private String registerAUser() throws Exception{
         User user = User.builder()
                         .firstname("tony")
@@ -147,5 +161,23 @@ public class CrudUserTests {
                         .content(userJson))
                         .andExpect(status().isOk());
         return userJson;
+    }
+
+    private String registerLogUserAndGetAccessCookie() throws Exception{
+        registerAUser();
+        // Créer les credentials pour le login avec le mot de passe en clair
+        User loginUser = User.builder()
+                        .mail("tony.fevrier@gmail.com")
+                        .password("c!!21Cdq")
+                        .build();
+        
+        String loginJson = objectMapper.writeValueAsString(loginUser);
+
+        var loginResult = mockMvc.perform(post("/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginJson))
+                        .andExpect(status().isOk())
+                        .andReturn();
+        return loginResult.getResponse().getCookie("jwt").getValue(); 
     }
 }

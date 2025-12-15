@@ -99,6 +99,18 @@ public class UserController {
         return "";
     }
 
+    @GetMapping("/profile/{id}")
+    public ResponseEntity<?> getUserInfos(@PathVariable("id") final Long id) {
+        Optional<User> optionalUser = userService.findById(id);
+        if (optionalUser.isPresent()){
+            User user = optionalUser.get();
+            return ResponseEntity.ok(Map.of("firstname", user.getFirstname(),
+                                            "lastname", user.getLastname(),
+                                            "mail", user.getUsername()));
+        }
+        return null;
+    }
+
     @DeleteMapping("/delete/{id}")
     public void delete(@PathVariable("id") final Long id) {
         userService.delete(id);
