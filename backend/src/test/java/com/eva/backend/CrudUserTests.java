@@ -1,11 +1,13 @@
 package com.eva.backend;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 
 import org.junit.jupiter.api.Test;
@@ -26,7 +28,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @AutoConfigureMockMvc
 @ActiveProfiles("test") // Utilise application-test.properties
 @DirtiesContext(classMode = ClassMode.BEFORE_EACH_TEST_METHOD) // Réinitialise le contexte (et la bdd) à chaque test
-public class RegisterTests {
+public class CrudUserTests {
 
     @Autowired
     private MockMvc mockMvc;
@@ -35,7 +37,7 @@ public class RegisterTests {
     private ObjectMapper objectMapper;
 
     @Test
-    @WithMockUser(roles = "ADMIN")
+    @WithMockUser(roles = "ADMIN") // Pour récupérer les users
     public void testRegisterUser() throws Exception {
         User user = User.builder()
                         .firstname("tony")
@@ -91,5 +93,59 @@ public class RegisterTests {
                         .content(userJson))
                         .andExpect(status().isBadRequest())
                         .andExpect(content().string("Le mot de passe doit contenir au moins 8 caractères."));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    public void testDeleteUser() throws Exception {
+        registerAUser();
+
+        mockMvc.perform(get("/auth/users"))
+                        .andExpect(jsonPath("$",hasSize(1)));
+
+        mockMvc.perform(delete("/auth/delete/1"));
+
+        mockMvc.perform(get("/auth/users"))
+                        .andExpect(jsonPath("$",hasSize(0)));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    public void testUpdateUser() throws Exception {
+        registerAUser();
+
+        User updatedUser = User.builder()
+                               .firstname("toto")
+                               .password("newpassword")
+                               .build();
+        
+        String userJson = objectMapper.writeValueAsString(updatedUser);
+
+        mockMvc.perform(post("/auth/update/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(userJson))
+                        .andExpect(status().isOk());
+        
+        mockMvc.perform(get("/auth/users"))
+                       .andExpect(jsonPath("$[0].firstname", is("toto")))
+                       .andExpect(jsonPath("$[0].lastname", is("fevrier")))
+                       .andExpect(jsonPath("$[0].mail", is("tony.fevrier@gmail.com")));
+        }
+
+    private String registerAUser() throws Exception{
+        User user = User.builder()
+                        .firstname("tony")
+                        .lastname("fevrier")
+                        .mail("tony.fevrier@gmail.com")
+                        .password("c!!21Cdq")
+                        .build();
+        
+        String userJson = objectMapper.writeValueAsString(user);
+
+        mockMvc.perform(post("/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(userJson))
+                        .andExpect(status().isOk());
+        return userJson;
     }
 }

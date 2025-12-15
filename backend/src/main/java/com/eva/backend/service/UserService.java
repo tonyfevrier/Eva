@@ -73,8 +73,7 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    public void delete(Long id){
-        /* retrouver le user via l'id et le supprimer */
+    public void delete(final Long id){
         userRepository.deleteById(id);
     }
 

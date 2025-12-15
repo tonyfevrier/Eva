@@ -22,7 +22,9 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
 
@@ -97,21 +99,21 @@ public class UserController {
         return "";
     }
 
-    @GetMapping("/delete/{id}")
-    public void delete(@RequestParam Long id) {
+    @DeleteMapping("/delete/{id}")
+    public void delete(@PathVariable("id") final Long id) {
         userService.delete(id);
     }
 
     @PostMapping("/update/{id}")
-    public void update(@RequestBody User newUser, @RequestParam Long id) {
-        /* retrouver le user 
-        s'il existe, changer ce qui est à changer
-        sauver le user*/
+    public ResponseEntity<?> update(@RequestBody User newUser, @PathVariable("id") final Long id) {
         Optional<User> optionalUpdatedUser = userService.findById(id);
         if (optionalUpdatedUser.isPresent()){
             User updatedUser = optionalUpdatedUser.get();
             updateUserInfos(newUser, updatedUser);
+            return ResponseEntity.ok(updatedUser);
         }
+        return null;
+
     }
 
     private void updateUserInfos(User newUser, User userToUpdate){
@@ -132,7 +134,5 @@ public class UserController {
 
         userService.saveUpdatedUser(userToUpdate);
     }
-    
-    
     
 }
