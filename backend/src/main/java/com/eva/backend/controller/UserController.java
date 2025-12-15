@@ -102,6 +102,7 @@ public class UserController {
 
     @GetMapping("/profile")
     public ResponseEntity<?> getUserInfos(HttpServletRequest request) {
+        // User is found thanks to the access Cookie.
         String token = getTokenFromRequest(request, "jwt");
         User user = userService.findByToken(token);
         return ResponseEntity.ok(Map.of("firstname", user.getFirstname(),

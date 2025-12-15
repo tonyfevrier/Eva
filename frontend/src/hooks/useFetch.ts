@@ -14,19 +14,21 @@ export function useFetch<T>(url: string, options: FetchOptions = {}) {
     useEffect(() => {
         setLoading(true);
         setError(null);
-        
+
         fetch(url, {
             ...options,
             headers: {
-                'Accept': 'application/json, charset=UTF-8',
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
                 ...(options.headers || {})
-            }
+            },
+            credentials: 'include'
         })
         .then(response => response.json())
         .then(data => setData(data)) 
         .catch(error => setError(error.message))
         .finally(() => setLoading(false));
-    }, [url]);
+    }, []);
     
     return { loading, data, error }
 }
