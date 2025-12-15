@@ -46,12 +46,12 @@ public class RegisterTests {
         
         String userJson = objectMapper.writeValueAsString(user);
 
-        mockMvc.perform(post("/api/register")
+        mockMvc.perform(post("/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(userJson))
                         .andExpect(status().isOk());
         
-        mockMvc.perform(get("/api/users"))
+        mockMvc.perform(get("/auth/users"))
                        .andExpect(jsonPath("$[0].firstname", is("tony")))
                        .andExpect(jsonPath("$[0].lastname", is("fevrier")))
                        .andExpect(jsonPath("$[0].mail", is("tony.fevrier@gmail.com")));
@@ -68,7 +68,7 @@ public class RegisterTests {
         
         String userJson = objectMapper.writeValueAsString(user);
         
-        mockMvc.perform(post("/api/register")
+        mockMvc.perform(post("/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(userJson))
                         .andExpect(status().isBadRequest())
@@ -86,7 +86,7 @@ public class RegisterTests {
         
         String userJson = objectMapper.writeValueAsString(user);
         
-        mockMvc.perform(post("/api/register")
+        mockMvc.perform(post("/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(userJson))
                         .andExpect(status().isBadRequest())

@@ -39,7 +39,7 @@ public class AuthenticationTests {
     public void testLogin() throws Exception {
         String userJson = registerAUser(); 
 
-        mockMvc.perform(post("/api/login")
+        mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(userJson))
                         .andExpect(status().isOk())
@@ -57,7 +57,7 @@ public class AuthenticationTests {
     @Test
     @DirtiesContext
     public void testLogout() throws Exception {
-        mockMvc.perform(get("/api/logout"))
+        mockMvc.perform(get("/auth/logout"))
                         .andExpect(status().isOk())
                         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                         .andExpect(cookie().exists("jwt"))
@@ -73,7 +73,7 @@ public class AuthenticationTests {
         String userJson = registerAUser();
 
         // Récupérer le cookie de refresh
-        var loginResult = mockMvc.perform(post("/api/login")
+        var loginResult = mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(userJson))
                         .andExpect(status().isOk())
@@ -81,7 +81,7 @@ public class AuthenticationTests {
 
         String refreshCookie = loginResult.getResponse().getCookie("jwt-refresh").getValue();
         // Tester le refresh avec le cookie
-        mockMvc.perform(get("/api/refresh")
+        mockMvc.perform(get("/auth/refresh")
                         .cookie(new jakarta.servlet.http.Cookie("jwt-refresh", refreshCookie)))
                         .andExpect(status().isOk())
                         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -94,16 +94,16 @@ public class AuthenticationTests {
     @Test
     public void testRefreshFails() throws Exception {
         // Tester le refresh sans cookie
-        mockMvc.perform(get("/api/refresh"))
+        mockMvc.perform(get("/auth/refresh"))
                         .andExpect(status().isBadRequest());
 
         // Tester le refresh avec un token vide
-        mockMvc.perform(get("/api/refresh")
+        mockMvc.perform(get("/auth/refresh")
                         .cookie(new jakarta.servlet.http.Cookie("jwt-refresh", "")))
                         .andExpect(status().isBadRequest());
 
         // Tester le refresh avec un token invalide
-        mockMvc.perform(get("/api/refresh")
+        mockMvc.perform(get("/auth/refresh")
                         .cookie(new jakarta.servlet.http.Cookie("jwt-refresh", "")))
                         .andExpect(status().isBadRequest());
     }
@@ -117,7 +117,7 @@ public class AuthenticationTests {
                         .build();
         String userJson = objectMapper.writeValueAsString(user);
 
-        mockMvc.perform(post("/api/register")
+        mockMvc.perform(post("/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(userJson))
                         .andExpect(status().isOk());

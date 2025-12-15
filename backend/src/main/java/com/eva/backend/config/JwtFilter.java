@@ -54,10 +54,10 @@ public class JwtFilter extends OncePerRequestFilter{
     }
 
     private boolean isPathAnAllUsersPermittedPath(String path){
-        return path.equals("/api/register") 
-            || path.equals("/api/login") 
-            || path.equals("/api/logout")
-            || path.equals("/api/refresh");
+        return path.equals("/auth/register") 
+            || path.equals("/auth/login") 
+            || path.equals("/auth/logout")
+            || path.equals("/auth/refresh");
     }
 
     private TokenInfo getTokenAndeUsernameFrom(HttpServletRequest request){

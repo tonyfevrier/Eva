@@ -23,7 +23,7 @@ export function useTheme(){
 
     const logout = async () => {
         try{
-            await fetch("http://localhost:9000/api/logout", {
+            await fetch("http://localhost:9000/auth/logout", {
                 headers: {
                             'Content-Type': 'application/json',
                             'Accept': 'application/json',
@@ -40,7 +40,7 @@ export function useTheme(){
     const refresh = async () => {
         try{
             // Réception de l'éventuel nouveau access token et update de la date d'expiration
-            const response = await fetch("http://localhost:9000/api/refresh", {
+            const response = await fetch("http://localhost:9000/auth/refresh", {
                 headers: {
                             'Content-Type': 'application/json',
                             'Accept': 'application/json',

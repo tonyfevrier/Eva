@@ -16,7 +16,7 @@ export function LoginPage({}){
             const formHandler = new LoginFormHandler({formData, setFormState, setSendingState, inputToStateKeyMapping}, 
                                                                   {toggleIsAuthenticated, setExpirationTime});
             if (formHandler.allInputsAreFilled()){
-                await formHandler.sendFormData("http://localhost:9000/api/login");
+                await formHandler.sendFormData("http://localhost:9000/auth/login");
             } else {
                 formHandler.displayEmptyInputs();
             }
