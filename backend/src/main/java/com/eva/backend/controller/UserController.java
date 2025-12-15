@@ -1,6 +1,7 @@
 package com.eva.backend.controller;
 
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +23,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 
 @RestController
@@ -93,5 +96,43 @@ public class UserController {
         }
         return "";
     }
+
+    @GetMapping("/delete/{id}")
+    public void delete(@RequestParam Long id) {
+        userService.delete(id);
+    }
+
+    @PostMapping("/update/{id}")
+    public void update(@RequestBody User newUser, @RequestParam Long id) {
+        /* retrouver le user 
+        s'il existe, changer ce qui est à changer
+        sauver le user*/
+        Optional<User> optionalUpdatedUser = userService.findById(id);
+        if (optionalUpdatedUser.isPresent()){
+            User updatedUser = optionalUpdatedUser.get();
+            updateUserInfos(newUser, updatedUser);
+        }
+    }
+
+    private void updateUserInfos(User newUser, User userToUpdate){
+        String firstname = newUser.getFirstname();
+        if (firstname != null){
+            userToUpdate.setFirstname(firstname);
+        }
+
+        String lastname = newUser.getLastname();
+        if (lastname != null){
+            userToUpdate.setLastname(lastname);
+        }
+
+        String password = newUser.getPassword();
+        if (password != null){
+            userToUpdate.setPassword(encoder.encode(password));
+        }
+
+        userService.saveUpdatedUser(userToUpdate);
+    }
+    
+    
     
 }

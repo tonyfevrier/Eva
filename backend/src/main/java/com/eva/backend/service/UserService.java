@@ -1,7 +1,6 @@
 package com.eva.backend.service;
 
-import java.net.http.HttpHeaders;
-import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -9,12 +8,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.http.ResponseCookie;
-import org.springframework.http.ResponseEntity;
 
 import com.eva.backend.model.User;
 import com.eva.backend.repository.UserRepository;
-
-import jakarta.servlet.http.HttpServletRequest;
 
 import com.eva.backend.records.CookieEssentials;
 import com.eva.backend.records.TwoCookies;
@@ -39,6 +35,10 @@ public class UserService {
         if (existingUser != null){
             throw new IllegalArgumentException("Cet email est déjà associé à un compte");
         }
+        return userRepository.save(user);
+    }
+
+    public User saveUpdatedUser(User user){
         return userRepository.save(user);
     }
 
@@ -71,5 +71,14 @@ public class UserService {
 
     public Iterable<User> getAllUsers(){
         return userRepository.findAll();
+    }
+
+    public void delete(Long id){
+        /* retrouver le user via l'id et le supprimer */
+        userRepository.deleteById(id);
+    }
+
+    public Optional<User> findById(Long id){
+        return userRepository.findById(id);
     }
 }
