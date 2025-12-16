@@ -25,10 +25,12 @@ export type LoginFormBoolean = {
     isPasswordEmpty: boolean,
 };
 
-export type UpdateFormBoolean = {
+export type UpdateFormString = {
     firstname: string,
     lastname: string,
-    username: string
+    mail: string,
+    password: string,
+    passwordCopy: string
 };
 
 export type SendingStatus<T> = {
