@@ -2,6 +2,8 @@ import { useEffect, useReducer, type Dispatch} from "react";
 import { useFetch } from "../hooks/useFetch"
 import { Spinner } from "../components/Spinner";
 import type { UpdateFormString } from "../types/types";
+import { UpdateButtons } from "../components/UpdateButtons";
+import { Input } from "../components/Input";
 
 type State = {
     formDataInMemory: UpdateFormString; //Valeur des champs enregistrées actuellement dans la base de données
@@ -96,7 +98,6 @@ export function ProfilePage(){
 
     const handleSavePassword = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-
         const passWordsAreIdentical = (state.formData.password === state.formData.passwordCopy);
         const passwordInputsAreCongruent = (state.formData.password.length >= 8) && passWordsAreIdentical;
         
@@ -109,7 +110,14 @@ export function ProfilePage(){
         sendPutRequest(updatedData, dispatch, "SAVE_PWD");
     } 
  
-    const handleDeleteClick = () => {}
+    const handleDeleteClick = (event:React.MouseEvent<HTMLAnchorElement>) => {
+        event.preventDefault();
+        /* Faire apparaître un modal de confirmation grâce à un état basculé sur true si on clique
+        si on clique sur confirmer, on fait la requête : 
+        si elle marche, on stopPreventDefault
+        sinon on affiche l'erreur
+        si on clique sur annuler, on revient sur la page */
+    }
     
     if (error){
         return <>{error}</>
@@ -122,42 +130,18 @@ export function ProfilePage(){
     return <>
                 <h1> Infos utilisateurs</h1>
                 <form onSubmit={handleSaveInfos}>
-                    <div>
-                        <p>Mail</p>
-                        <input type="text" value={state.formData.mail} name="mail" onChange={handleFormChange} disabled={true}/>
-                        {state.formData.mail === "" && <p> Ce champ doit être rempli </p>}
-                    </div>
-                    <div>
-                        <p>Prénom</p>
-                        <input type="text" value={state.formData.firstname} name="firstname" onChange={handleFormChange} disabled={!state.isEditing}/>
-                        {state.formData.firstname === "" && <p> Ce champ doit être rempli </p>}
-                    </div>
-                    <div>
-                        <p>Nom</p>
-                        <input type="text" value={state.formData.lastname} name="lastname" onChange={handleFormChange} disabled={!state.isEditing}/>
-                        {state.formData.lastname === "" && <p> Ce champ doit être rempli </p>}
-                    </div>
-                    <div className="profile-modify">
-                        {!state.isEditing && <button type="button" onClick={handleToggleEditing}>Modifier les informations</button>}
-                        { state.isEditing && <button type="button" onClick={handleToggleEditing}>Annuler les modifications</button>}
-                        <button disabled={!state.isEditing}>Sauvegarder</button>
-                    </div>
+                    <Input title="Mail" name="mail" value={state.formData.mail} onChange={handleFormChange}/>
+                    <Input title="Prénom" name="firstname" value={state.formData.firstname} onChange={handleFormChange} disabled={!state.isEditing} variant="withErrorMsg"/>
+                    <Input title="Nom" name="lastname" value={state.formData.lastname} onChange={handleFormChange} disabled={!state.isEditing} variant="withErrorMsg"/>
+                    <UpdateButtons toggleButton={state.isEditing} handleToggleButton={handleToggleEditing}/>
                 </form>
                 <form onSubmit={handleSavePassword}>
-                    <div>
-                        <p>Veuillez entrer un nouveau mot de passe</p>
-                        <input type="password" name="password" disabled = {!state.isChangingPassword} value={state.formData.password} onChange={handleFormChange}/>
-                        <p>Veuillez entrer une seconde fois le mot de passe</p>
-                        <input type="password" name="passwordCopy" disabled = {!state.isChangingPassword} value={state.formData.passwordCopy} onChange={handleFormChange}/>
-                    </div>
-                    <div className="profile-modify">
-                        {!state.isChangingPassword && <button type="button" onClick={handleTogglePassword}> Changer le mot de passe</button>}
-                        {state.isChangingPassword && <button type="button" onClick={handleTogglePassword}> Annuler le changement</button>}
-                        <button disabled={!state.isChangingPassword}>Sauvegarder</button>
-                        <a href="" onClick={handleDeleteClick}>Supprimer l'utilisateur</a>
-                    </div>
-                    {state.updateError?.message && <p>{state.updateError?.message}</p> }
+                    <Input title="Veuillez entrer un nouveau mot de passe" type="password" name="password" value={state.formData.password} onChange={handleFormChange} disabled={!state.isChangingPassword}/>
+                    <Input title="Veuillez entrer une seconde fois le mot de passe" type="password" name="passwordCopy" value={state.formData.passwordCopy} onChange={handleFormChange} disabled={!state.isChangingPassword}/>
+                    <UpdateButtons toggleButton={state.isChangingPassword} handleToggleButton={handleTogglePassword} text="Modifier le mot de passe"/>
                 </form>
+                {state.updateError?.message && <p>{state.updateError?.message}</p> }
+                <a href="/" onClick={handleDeleteClick}>Supprimer l'utilisateur</a>
            </>
 }
 
@@ -171,18 +155,18 @@ function fillInputsWithUserInfos(data: any, dispatch:Dispatch<Action>){
 
 async function sendPutRequest(updatedData:string, dispatch:Dispatch<Action>, saveAction: 'SAVE_INFOS'|'SAVE_PWD'){
     const response = await fetch("http://localhost:9000/auth/update", {
-                method: "put",
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                },
-                body: updatedData,
-                credentials: "include"  
-            })
-            .catch(requestError => {
-                dispatch({type: 'SET_ERROR', error: requestError});
-                throw requestError;
-            });
+            method: "put",
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+            },
+            body: updatedData,
+            credentials: "include"  
+        })
+        .catch(requestError => {
+            dispatch({type: 'SET_ERROR', error: requestError});
+            throw requestError;
+        });
 
     // MaJ des états après la requête
     if (response.ok){
