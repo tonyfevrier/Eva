@@ -3,6 +3,7 @@ import { useLoginForm } from "../hooks/useLoginForm";
 import { useTheme } from "../hooks/useTheme";
 import { Form } from "../components/Form";
 import { LoginFormHandler } from "../utils/authentication/LoginFormHandler";
+import { Button } from "../components/Button";
 
 export function LoginPage({}){
     const loginForm = useRef<HTMLFormElement>(null);
@@ -35,7 +36,7 @@ export function LoginPage({}){
                 <Form ref={loginForm} mapping={inputToStateMapping} sendingState={sendingState} onSubmit={handleClick}></Form>
                 <div>
                     <p>Vous n'avez pas encore de compte?</p>
-                    <a href="/register">Inscrivez-vous ici.</a>
+                    <Button href="/register">Inscrivez-vous ici.</Button>
                 </div>
             </>
 }

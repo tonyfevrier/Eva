@@ -2,7 +2,7 @@ import { useRef, type FormEvent } from "react";
 import { Form } from "../components/Form";
 import { useRegisterForm } from "../hooks/useRegisterForm";
 import { RegisterFormHandler } from "../utils/authentication/RegisterFormHandler";
- 
+import { Button } from "../components/Button";
 
 export function RegisterPage(){
     const registerForm = useRef<HTMLFormElement>(null);
@@ -34,7 +34,7 @@ export function RegisterPage(){
                 <Form ref={registerForm} mapping={inputToStateMapping} sendingState={sendingState} onSubmit={handleClick}></Form>
                 <div>
                     <p>Vous souhaitez vous connecter?</p>
-                    <a href="/login"> Connectez-vous ici.</a>
+                    <Button href="/login"> Connectez-vous ici.</Button>
                 </div>  
            </>;
 }
