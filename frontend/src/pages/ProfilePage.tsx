@@ -1,9 +1,12 @@
-import { useEffect, useReducer, type Dispatch} from "react";
+import { useEffect, useReducer, type Dispatch, type SetStateAction} from "react";
 import { useFetch } from "../hooks/useFetch"
 import { Spinner } from "../components/Spinner";
 import type { UpdateFormString } from "../types/types";
 import { UpdateButtons } from "../components/UpdateButtons";
 import { Input } from "../components/Input";
+import { Modal } from "../components/Modal";
+import { useNavigate, type NavigateFunction } from "react-router-dom";
+import { useTheme } from "../hooks/useTheme";
 
 type State = {
     formDataInMemory: UpdateFormString; //Valeur des champs enregistrées actuellement dans la base de données
@@ -11,6 +14,7 @@ type State = {
     isChangingPassword: boolean;
     formData: UpdateFormString; //Valeur en temps réel des inputs
     updateError: Error|null;
+    printModal: boolean;
 };
 
 type Action = 
@@ -20,7 +24,8 @@ type Action =
     | { type: 'SAVE_PWD' }
     | { type: 'UPDATE_FIELD', field: string, value: string }
     | { type: 'UPDATE_FIELD_MEMORY', field: string, value: string }
-    | { type: 'SET_ERROR', error: Error|null };
+    | { type: 'SET_ERROR', error: Error|null }
+    | { type: 'TOGGLE_MODAL' };
 
 function reducer(state:State, action:Action){
     switch(action.type){
@@ -46,14 +51,19 @@ function reducer(state:State, action:Action){
                                                [action.field]: action.value}};
         case 'SET_ERROR':
             return {...state, updateError: action.error};
+        case 'TOGGLE_MODAL':
+            return {...state, printModal: !state.printModal};
     }
 }
 
 export function ProfilePage(){    
     const initialformData = {firstname: "", lastname: "",mail: "", password:"pass", passwordCopy:"pass"};
-    const initialState = {isEditing: false, isChangingPassword: false, formData: initialformData, formDataInMemory: initialformData, updateError: null};
+    const initialState = {isEditing: false, isChangingPassword: false, formData: initialformData, formDataInMemory: initialformData, updateError: null, printModal: false};
     const [state, dispatch] = useReducer(reducer, initialState);
+    const navigate = useNavigate();
+    const {toggleIsAuthenticated} = useTheme();
 
+    // Chargement des données utilisateurs
     const {loading, data, error} = useFetch<any>("http://localhost:9000/auth/profile");
     
     useEffect(() => {
@@ -68,16 +78,16 @@ export function ProfilePage(){
         dispatch({type: "UPDATE_FIELD", field: name , value: value});        
     }
     
-    const handleToggleEditing = () => {
-        dispatch({type: 'TOGGLE_EDITING'});
+    const handleToggleEditing = () => {dispatch({type: 'TOGGLE_EDITING'});}
+    const handleTogglePassword = () => {dispatch({type: 'TOGGLE_PASSWORD_CHANGE'});}
+    const handleToggleModal = () => {dispatch({type: 'TOGGLE_MODAL'});}
+
+    const handleDeleteConfirm = async () => {
+        sendDeleteRequest(dispatch, toggleIsAuthenticated, navigate);
     }
 
-    const handleTogglePassword = () => {
-        dispatch({type: 'TOGGLE_PASSWORD_CHANGE'});
-    }
-    
     const handleSaveInfos = async (event: React.FormEvent<HTMLFormElement>) => {
-        /*on regarde si aucun des éléments n'est vide, si oui on lance une requête */
+        /*Gère la sauvegarde des données utilisateur modifiées */
         event.preventDefault();
 
         if (state.formData.firstname === ""){
@@ -97,6 +107,7 @@ export function ProfilePage(){
     }
 
     const handleSavePassword = async (event: React.FormEvent<HTMLFormElement>) => {
+        /*Gère la modification des mots de passe */
         event.preventDefault();
         const passWordsAreIdentical = (state.formData.password === state.formData.passwordCopy);
         const passwordInputsAreCongruent = (state.formData.password.length >= 8) && passWordsAreIdentical;
@@ -109,15 +120,6 @@ export function ProfilePage(){
         const updatedData = JSON.stringify({password: state.formData.password});
         sendPutRequest(updatedData, dispatch, "SAVE_PWD");
     } 
- 
-    const handleDeleteClick = (event:React.MouseEvent<HTMLAnchorElement>) => {
-        event.preventDefault();
-        /* Faire apparaître un modal de confirmation grâce à un état basculé sur true si on clique
-        si on clique sur confirmer, on fait la requête : 
-        si elle marche, on stopPreventDefault
-        sinon on affiche l'erreur
-        si on clique sur annuler, on revient sur la page */
-    }
     
     if (error){
         return <>{error}</>
@@ -141,7 +143,8 @@ export function ProfilePage(){
                     <UpdateButtons toggleButton={state.isChangingPassword} handleToggleButton={handleTogglePassword} text="Modifier le mot de passe"/>
                 </form>
                 {state.updateError?.message && <p>{state.updateError?.message}</p> }
-                <a href="/" onClick={handleDeleteClick}>Supprimer l'utilisateur</a>
+                <button onClick={handleToggleModal}>Supprimer l'utilisateur</button>
+                {state.printModal && <Modal postTitle="Confirmation de fermeture" postContent="Confirmez-vous la suppression de votre compte utilisateur?" onClose={handleToggleModal} onSave={handleDeleteConfirm}/>}
            </>
 }
 
@@ -171,6 +174,29 @@ async function sendPutRequest(updatedData:string, dispatch:Dispatch<Action>, sav
     // MaJ des états après la requête
     if (response.ok){
         dispatch({type: saveAction}); 
+    } else {
+        dispatch({type: 'SET_ERROR', error: new Error(`Erreur ${response.status}: ${response.statusText}`)});
+    }
+}
+
+async function sendDeleteRequest(dispatch:Dispatch<Action>, toggleIsAuthenticated:() => void, navigate: NavigateFunction){
+    const response = await fetch("http://localhost:9000/auth/delete", {
+            method: "delete",
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+            },
+            credentials: "include"  
+        })
+        .catch(requestError => {
+            dispatch({type: 'SET_ERROR', error: requestError});
+            throw requestError;
+        });
+
+    // Redirection si la requête est acceptée 
+    if (response.ok){
+         navigate("/");
+         toggleIsAuthenticated();
     } else {
         dispatch({type: 'SET_ERROR', error: new Error(`Erreur ${response.status}: ${response.statusText}`)});
     }
