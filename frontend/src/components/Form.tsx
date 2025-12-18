@@ -1,5 +1,6 @@
 import { forwardRef, type FormEventHandler } from "react"
 import type { SendingStatus } from "../types/types"
+import styles from "./Form.module.css"
 
 type FormProps = {
     mapping: Record<string, boolean>, 
@@ -12,11 +13,11 @@ export const Form = forwardRef<HTMLFormElement, FormProps>(
     return <>
                 <form ref={ref} onSubmit={onSubmit}>
                     {Object.keys(mapping).map(name => 
-                            <div key={name}>
+                            <div key={name} className={styles.formField}>
                                 {name !== "password" ? <input type="text" placeholder={name} name={name} /> : <input type={name} placeholder={name} name={name}/>}
                                 {mapping[name] && <p>Il faut remplir ce champ</p>}
                             </div>)}
-                    <input type="submit" />
+                    <button type="submit">Soumettre</button>
                 </form>
                 {sendingState.error !== null && <p> {sendingState.error} </p>}
            </>

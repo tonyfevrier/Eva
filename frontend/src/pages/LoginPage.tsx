@@ -4,6 +4,7 @@ import { useTheme } from "../hooks/useTheme";
 import { Form } from "../components/Form";
 import { LoginFormHandler } from "../utils/authentication/LoginFormHandler";
 import { Button } from "../components/Button";
+import { Goto } from "../components/Goto";
 
 export function LoginPage({}){
     const loginForm = useRef<HTMLFormElement>(null);
@@ -26,17 +27,13 @@ export function LoginPage({}){
     
     if (isAuthenticated){
         return <>
-                    <h1> Vous êtes bien connecté.</h1>
-                    <a href="/application"> Retournez à la page d'accueil. </a>
+                    <h2> Vous êtes bien connecté.</h2>
                </>
     }
      
     return  <>
                 <h1> Se connecter</h1>
                 <Form ref={loginForm} mapping={inputToStateMapping} sendingState={sendingState} onSubmit={handleClick}></Form>
-                <div>
-                    <p>Vous n'avez pas encore de compte?</p>
-                    <Button href="/register">Inscrivez-vous ici.</Button>
-                </div>
+                <Goto href="/register" label="Vous n'avez pas encore de compte?" buttonLabel="Inscrivez-vous ici."/>
             </>
 }

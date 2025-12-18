@@ -1,0 +1,15 @@
+.formField {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.formField > * {
+    margin: 1em 0;
+    padding: 0.5em 1em;
+}
+
+.container > p {
+    font-size: 0.8em;
+    color: red;
+}

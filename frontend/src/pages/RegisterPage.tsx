@@ -3,6 +3,7 @@ import { Form } from "../components/Form";
 import { useRegisterForm } from "../hooks/useRegisterForm";
 import { RegisterFormHandler } from "../utils/authentication/RegisterFormHandler";
 import { Button } from "../components/Button";
+import { Goto } from "../components/Goto";
 
 export function RegisterPage(){
     const registerForm = useRef<HTMLFormElement>(null);
@@ -24,7 +25,7 @@ export function RegisterPage(){
 
     if (sendingState.data !== null){
         return <>
-                    <h1> Votre inscription a bien été réalisée.</h1>
+                    <h2> Votre inscription a bien été réalisée.</h2>
                     <a href="/login"> Cliquez ici pour vous logger</a>
                </>
     }
@@ -32,9 +33,6 @@ export function RegisterPage(){
     return <>
                 <h1> Inscription </h1>
                 <Form ref={registerForm} mapping={inputToStateMapping} sendingState={sendingState} onSubmit={handleClick}></Form>
-                <div>
-                    <p>Vous souhaitez vous connecter?</p>
-                    <Button href="/login"> Connectez-vous ici.</Button>
-                </div>  
+                <Goto href="/login" label="Vous souhaitez vous connecter?"/>
            </>;
 }

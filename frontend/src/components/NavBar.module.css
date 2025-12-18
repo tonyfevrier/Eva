@@ -1,0 +1,29 @@
+.navbar {
+    background-color: #f9f9f9;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.navbar > * {
+    padding: 1em;
+}
+
+.navbar > button {
+    font-weight: 500;
+    color: #646cff;
+    text-decoration: inherit;
+    background-color: transparent;
+}
+
+.navbar > a {
+    display: inline-block;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    transition: border-color 0.25s;
+    border-radius: 8px;
+}
+
+.navbar > a:hover {
+  border-color: #535bf2;
+}

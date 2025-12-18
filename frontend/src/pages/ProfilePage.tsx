@@ -143,8 +143,8 @@ export function ProfilePage(){
                     <UpdateButtons toggleButton={state.isChangingPassword} handleToggleButton={handleTogglePassword} text="Modifier le mot de passe"/>
                 </form>
                 {state.updateError?.message && <p>{state.updateError?.message}</p> }
-                <button onClick={handleToggleModal}>Supprimer l'utilisateur</button>
-                {state.printModal && <Modal postTitle="Confirmation de fermeture" postContent="Confirmez-vous la suppression de votre compte utilisateur?" onClose={handleToggleModal} onSave={handleDeleteConfirm}/>}
+                <button onClick={handleToggleModal} style={{backgroundColor: '#ffebee', color: '#c62828'}}>Supprimer l'utilisateur</button>
+                {state.printModal && <Modal title="Suppression de compte" postTitle="Confirmation de fermeture" postContent="Confirmez-vous la suppression de votre compte utilisateur?" onClose={handleToggleModal} onSave={handleDeleteConfirm}/>}
            </>
 }
 

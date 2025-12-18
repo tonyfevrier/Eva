@@ -1,0 +1,14 @@
+.formField {
+    margin: 2em
+}
+
+.formField > input {
+    margin: 1em 0;
+    padding: 0.5em 1em;
+}
+
+.formField > p {
+    font-size: 0.8em;
+    color: red;
+    text-align: left;
+}
