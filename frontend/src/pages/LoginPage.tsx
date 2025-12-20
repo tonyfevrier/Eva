@@ -35,5 +35,6 @@ export function LoginPage({}){
                 <h1> Se connecter</h1>
                 <Form ref={loginForm} mapping={inputToStateMapping} sendingState={sendingState} onSubmit={handleClick}></Form>
                 <Goto href="/register" label="Vous n'avez pas encore de compte?" buttonLabel="Inscrivez-vous ici."/>
+                <Goto href="/pwdForget" label="Vous avez oublié votre mot de passe?"/>
             </>
 }

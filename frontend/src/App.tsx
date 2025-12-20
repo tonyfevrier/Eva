@@ -10,6 +10,7 @@ import { useTheme } from './hooks/useTheme';
 import { useHandleAuth } from './hooks/useHandleAuth';
 import { ProfilePage } from './pages/ProfilePage';
 import { Button } from './components/Button';
+import { RecoveryPage } from './pages/RecoveryPage';
 
 const routes: RouteObject[] = [
   {
@@ -27,6 +28,10 @@ const routes: RouteObject[] = [
       {
         path : "/register",
         element: <RegisterPage/>
+      },
+      {
+        path : "/pwdForget",
+        element: <RecoveryPage/>
       },
       {
         path : "/application",
