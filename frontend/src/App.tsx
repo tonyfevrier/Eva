@@ -11,6 +11,7 @@ import { useHandleAuth } from './hooks/useHandleAuth';
 import { ProfilePage } from './pages/ProfilePage';
 import { Button } from './components/Button';
 import { RecoveryPage } from './pages/RecoveryPage';
+import { SeekMailPage } from './pages/SeekMailPage';
 
 const routes: RouteObject[] = [
   {
@@ -32,6 +33,10 @@ const routes: RouteObject[] = [
       {
         path : "/pwdForget",
         element: <RecoveryPage/>
+      },
+      {
+        path : "/seeMail",
+        element: <SeekMailPage/>
       },
       {
         path : "/application",

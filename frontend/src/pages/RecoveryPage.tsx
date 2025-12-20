@@ -15,7 +15,7 @@ export function RecoveryPage(){
         if (mailValue === ""){
             setFetchError(new Error("Vous devez remplir le champ"));
         }
-        const response = await fetch("http://localhost:9000/api/resetMail", {
+        const response = await fetch("http://localhost:9000/auth/resetMail", {
             method: "POST",
             headers:{
                 'Content-Type': 'application/json',
