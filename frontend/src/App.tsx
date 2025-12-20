@@ -11,7 +11,7 @@ import { useHandleAuth } from './hooks/useHandleAuth';
 import { ProfilePage } from './pages/ProfilePage';
 import { Button } from './components/Button';
 import { RecoveryPage } from './pages/RecoveryPage';
-import { SeekMailPage } from './pages/SeekMailPage';
+import { Goto } from './components/Goto';
 
 const routes: RouteObject[] = [
   {
@@ -36,7 +36,11 @@ const routes: RouteObject[] = [
       },
       {
         path : "/seeMail",
-        element: <SeekMailPage/>
+        element: <Goto href="/login" label="Un courriel vous a été envoyé, veuillez cliquer sur le lien présent dans ce courriel." buttonLabel="Revenir à la page de login"/>
+      },
+      {
+        path : "/pwdUpdated",
+        element: <Goto href="/login" label="Votre mot de passe a bien été modifié" buttonLabel="Revenir à la page de login"/>
       },
       {
         path : "/application",
