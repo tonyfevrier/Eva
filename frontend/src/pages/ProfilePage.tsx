@@ -132,7 +132,7 @@ export function ProfilePage(){
     return <>
                 <h1> Infos utilisateurs</h1>
                 <form onSubmit={handleSaveInfos}>
-                    <Input title="Mail" name="mail" value={state.formData.mail} onChange={handleFormChange}/>
+                    <Input title="Mail" name="mail" value={state.formData.mail} onChange={handleFormChange} disabled={true}/>
                     <Input title="Prénom" name="firstname" value={state.formData.firstname} onChange={handleFormChange} disabled={!state.isEditing} variant="withErrorMsg"/>
                     <Input title="Nom" name="lastname" value={state.formData.lastname} onChange={handleFormChange} disabled={!state.isEditing} variant="withErrorMsg"/>
                     <UpdateButtons toggleButton={state.isEditing} handleToggleButton={handleToggleEditing}/>
