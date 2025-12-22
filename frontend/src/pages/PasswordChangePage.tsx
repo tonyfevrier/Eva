@@ -3,6 +3,9 @@ import { Button } from "../components/Button";
 import { Input } from "../components/Input";
 import { useNavigate, type NavigateFunction } from "react-router-dom";
 
+/*DANS CETTE PAGE IL FAUDRA PROBABLEMENT AJOUTER CREDENTIALS INCLUDE AFIN DENVOYER LE TOKEN 
+DE REINITIALISATION DE MOT DE PASSE */
+
 export function PasswordChangePage(){
     const [passwords, setPasswords] = useState({password:"", passwordCopy:""})
     const [fetchError, setFetchError] = useState<Error|null>(null);
