@@ -1,28 +1,26 @@
 
-export abstract class Fetch {
-    protected url: string;
+abstract class Fetch {
     protected credentials : 'include'|'omit';
     protected method: string;
 
-    constructor(url:string, credentials: 'include'|'omit', method: string){
-        this.url = url;
+    constructor(credentials: 'include'|'omit', method: string){
         this.credentials = credentials;
         this.method = method;
     }
 
-    abstract sendRequest(): Promise<Response|Error>;
+    abstract sendRequest(url: string): Promise<Response|Error>;
 }
 
 export class FetchWithBody extends Fetch {
     private body: string;
 
-    constructor(url: string, method: string, credentials: 'include'|'omit', body: string){
-        super(url, credentials, method);
+    constructor(method: string, credentials: 'include'|'omit', body: string){
+        super(credentials, method);
         this.body = body;
     }
 
-    async sendRequest(): Promise<Response|Error> {
-        return fetch(this.url, {
+    async sendRequest(url: string): Promise<Response|Error> {
+        return fetch(url, {
             method: this.method,
             headers:{
                 'Content-Type': 'application/json',
@@ -41,14 +39,14 @@ export class FetchWithBody extends Fetch {
 
 export class FetchWithoutBody extends Fetch {
 
-    constructor(url: string, method: string, credentials: 'include'|'omit'){
-        super(url, credentials, method);
+    constructor(method: string, credentials: 'include'|'omit'){
+        super(credentials, method);
     }
 
-    async sendRequest(): Promise<Response|Error> {
-        return fetch(this.url, {
+    async sendRequest(url: string): Promise<Response|Error> {
+        return fetch(url, {
             method: this.method,
-            headers:{
+            headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
             },

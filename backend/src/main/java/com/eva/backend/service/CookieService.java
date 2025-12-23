@@ -28,6 +28,10 @@ public class CookieService {
         return generateCookie(user, accessTokenDurationInMilliSec, "jwt");
     }
 
+    public CookieEssentials generateRecoveryCookie(User user){
+        return generateCookie(user, accessTokenDurationInMilliSec, "jwt-recovery");
+    }
+
     private CookieEssentials generateCookie(User user, long tokenDuration, String cookieName){
         String token = jwtService.generateToken(user.getUsername(), tokenDuration);
         ResponseCookie cookie = ResponseCookie.from(cookieName, token)

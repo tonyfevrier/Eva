@@ -1,11 +1,11 @@
 package com.eva.backend.controller;
 
 import java.util.Map;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,8 +25,6 @@ import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
 
 
 
@@ -144,5 +142,33 @@ public class UserController {
 
         userService.saveUpdatedUser(userToUpdate);
     }
+
+    @PostMapping("/auth/resetMail")
+    public ResponseEntity<?> sendPwdRecoveryMail(@RequestBody Map<String, String> body) {
+        String mail = body.get("mail");
+        CookieEssentials essentials = userService.sendRecoveryMailWithCookie(mail);
+        if (essentials == null){
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body("Aucun compte n'est associé à ce courriel.");
+        }
+        return ResponseEntity.ok()
+                             .header(HttpHeaders.SET_COOKIE, essentials.cookie())
+                             .body(Map.of("message", "Un courriel vous a été envoyé, veuillez consulter votre messagerie.",
+                                          "accessExpiresIn", essentials.expiresIn()));
+    }
+
+    @PostMapping("/auth/recoverPwd")
+    public ResponseEntity<?> registerNewPassword(@RequestBody String entity) {
+        /* on regarde si le cookie reçu est bien non expiré, valide
+        on récupère le user à partir du cookie et on change le mot de passe correspondant
+        on envoie une réponse indiquant que la modification a bien été faite et un cookie jwt-recovery vide
+        si le cookie n'est pas valide, on envoie une réponse disant qu'il faut reprendre la procédure
+        */
+       
+        return null;
+    }
+    
+    
     
 }

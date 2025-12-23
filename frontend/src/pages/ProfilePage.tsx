@@ -1,4 +1,4 @@
-import { useEffect, useReducer, type Dispatch, type SetStateAction} from "react";
+import { useEffect, useReducer, type Dispatch} from "react";
 import { useFetch } from "../hooks/useFetch"
 import { Spinner } from "../components/Spinner";
 import type { UpdateFormString } from "../types/types";
@@ -117,7 +117,7 @@ export function ProfilePage(){
             return;
         }
          
-        const updatedData = JSON.stringify({password: state.formData.password});
+        const updatedData = JSON.stringify({password: state.formData.password});  
         sendPutRequest(updatedData, dispatch, "SAVE_PWD");
     } 
     

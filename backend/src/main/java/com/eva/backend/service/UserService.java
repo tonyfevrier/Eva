@@ -81,4 +81,17 @@ public class UserService {
         String username = jwtService.extractUsername(token);
         return userRepository.findByMail(username);
     }
+
+    public CookieEssentials sendRecoveryMailWithCookie(String username){
+        User user = userRepository.findByMail(username);
+        if (user != null){
+            /* 
+            mail créer et envoyer
+             */
+            CookieEssentials cookie = cookieService.generateRecoveryCookie(user);
+
+            return cookie;
+        }
+        return null;
+    }
 }
