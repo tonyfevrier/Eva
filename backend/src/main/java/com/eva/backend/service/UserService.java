@@ -1,19 +1,23 @@
 package com.eva.backend.service;
 
-import java.util.Optional;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.http.ResponseCookie;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 
 import com.eva.backend.model.User;
 import com.eva.backend.repository.UserRepository;
 
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
+
 import com.eva.backend.records.CookieEssentials;
 import com.eva.backend.records.TwoCookies;
+
 
 @Service
 public class UserService {
@@ -29,6 +33,9 @@ public class UserService {
 
     @Autowired
     private JWTService jwtService;
+
+    @Autowired
+    private JavaMailSender mailSender;
 
     public User saveUser(User user){
         User existingUser = userRepository.findByMail(user.getMail());
@@ -82,16 +89,35 @@ public class UserService {
         return userRepository.findByMail(username);
     }
 
-    public CookieEssentials sendRecoveryMailWithCookie(String username){
+    public CookieEssentials sendRecoveryMailWithCookie(String username) throws MessagingException {
         User user = userRepository.findByMail(username);
         if (user != null){
-            /* 
-            mail créer et envoyer
-             */
             CookieEssentials cookie = cookieService.generateRecoveryCookie(user);
-
+            MimeMessage message = configureMail(cookie, user);
+            mailSender.send(message);
             return cookie;
         }
         return null;
+    }
+
+    private MimeMessage configureMail(CookieEssentials cookie, User user) throws MessagingException{
+        MimeMessage message = mailSender.createMimeMessage();                    
+        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+        helper.setFrom("noreply.eva.application@gmail.com");
+        helper.setTo(user.getMail());
+        helper.setSubject("Récupération de mot de passe pour l'application EVA");
+
+        String recoveryLink = "http://localhost:5173/pwdChange?token=" + cookie.cookie();
+
+        long expirationInMin = cookie.expiresIn().longValue() / 60000;
+
+        helper.setText(
+            "<h3>Réinitialisation de mot de passe de votre compte EVA</h3>" +
+            "<p>Cliquez sur le lien ci-dessous pour réinitialiser votre mot de passe :</p>" +
+            "<a href=\"" + recoveryLink + "\">Réinitialiser mon mot de passe</a>" +
+            "<p>Ce lien expire dans " + expirationInMin + " minutes.</p>",
+            true  // true = HTML, false = texte brut
+        );
+        return message;
     }
 }

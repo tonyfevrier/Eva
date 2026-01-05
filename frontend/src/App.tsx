@@ -12,6 +12,7 @@ import { ProfilePage } from './pages/ProfilePage';
 import { Button } from './components/Button';
 import { RecoveryPage } from './pages/RecoveryPage';
 import { Goto } from './components/Goto';
+import { PasswordChangePage } from './pages/PasswordChangePage';
 
 const routes: RouteObject[] = [
   {
@@ -33,6 +34,10 @@ const routes: RouteObject[] = [
       {
         path : "/pwdForget",
         element: <RecoveryPage/>
+      },
+      {
+        path: "/pwdChange",
+        element: <PasswordChangePage/>
       },
       {
         path : "/seeMail",

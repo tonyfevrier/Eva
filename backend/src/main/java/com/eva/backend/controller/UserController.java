@@ -19,6 +19,7 @@ import com.eva.backend.service.UserService;
 import com.eva.backend.records.CookieEssentials;
 import com.eva.backend.records.TwoCookies;
 
+import jakarta.mail.MessagingException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -143,9 +144,9 @@ public class UserController {
         userService.saveUpdatedUser(userToUpdate);
     }
 
-    @PostMapping("/auth/resetMail")
-    public ResponseEntity<?> sendPwdRecoveryMail(@RequestBody Map<String, String> body) {
-        String mail = body.get("mail");
+    @PostMapping("/resetMail")
+    public ResponseEntity<?> sendPwdRecoveryMail(@RequestBody Map<String, String> body) throws MessagingException {
+        String mail = body.get("mail"); // mail = username in the eva app
         CookieEssentials essentials = userService.sendRecoveryMailWithCookie(mail);
         if (essentials == null){
             return ResponseEntity
@@ -158,7 +159,7 @@ public class UserController {
                                           "accessExpiresIn", essentials.expiresIn()));
     }
 
-    @PostMapping("/auth/recoverPwd")
+    @PostMapping("/recoverPwd")
     public ResponseEntity<?> registerNewPassword(@RequestBody String entity) {
         /* on regarde si le cookie reçu est bien non expiré, valide
         on récupère le user à partir du cookie et on change le mot de passe correspondant

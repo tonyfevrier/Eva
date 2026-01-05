@@ -27,7 +27,7 @@ export function RecoveryPage(){
             </form>
 }
 
-async function sendPostRequest(mailValue:string, setFetchError:Dispatch<SetStateAction<Error|null>>, navigate: NavigateFunction){
+async function sendPostRequest(mailValue:string, setFetchError:Dispatch<SetStateAction<Error|null>>, navigate: NavigateFunction){    
     const response = await fetch("http://localhost:9000/auth/resetMail", {
             method: "POST",
             headers:{
@@ -39,7 +39,6 @@ async function sendPostRequest(mailValue:string, setFetchError:Dispatch<SetState
                 setFetchError(new Error(error.getMessage()))
                 throw error;
         });
-    
     if (response.ok){
         navigate("/seeMail");    
     } else {

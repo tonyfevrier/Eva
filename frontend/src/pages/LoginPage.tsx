@@ -3,7 +3,6 @@ import { useLoginForm } from "../hooks/useLoginForm";
 import { useTheme } from "../hooks/useTheme";
 import { Form } from "../components/Form";
 import { LoginFormHandler } from "../utils/authentication/LoginFormHandler";
-import { Button } from "../components/Button";
 import { Goto } from "../components/Goto";
 
 export function LoginPage({}){
