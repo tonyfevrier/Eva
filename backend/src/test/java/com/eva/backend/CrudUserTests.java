@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.hamcrest.Matchers.hasSize;
@@ -24,8 +25,6 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.eva.backend.model.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import jakarta.servlet.http.Cookie;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -100,7 +99,6 @@ public class CrudUserTests {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    @DirtiesContext
     public void testDeleteUser() throws Exception {
         String accessCookie = registerLogUserAndGetAccessCookie();
 
@@ -116,7 +114,6 @@ public class CrudUserTests {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    @DirtiesContext
     public void testUpdateUser() throws Exception {
         String accessCookie = registerLogUserAndGetAccessCookie();
 
@@ -140,7 +137,6 @@ public class CrudUserTests {
         }
 
     @Test
-    @DirtiesContext
     public void testGetOneUser() throws Exception {
         // Ma config de spring security exige que toute requête post login ait le cookie d'authentification.
         String accessCookie = registerLogUserAndGetAccessCookie();                        
@@ -188,3 +184,5 @@ public class CrudUserTests {
         return loginResult.getResponse().getCookie("jwt").getValue(); 
     }
 }
+
+    

@@ -35,7 +35,6 @@ public class AuthenticationTests {
     private ObjectMapper objectMapper;
 
     @Test
-    @DirtiesContext
     public void testLogin() throws Exception {
         String userJson = registerAUser(); 
 
@@ -55,7 +54,6 @@ public class AuthenticationTests {
     }
 
     @Test
-    @DirtiesContext
     public void testLogout() throws Exception {
         mockMvc.perform(get("/auth/logout"))
                         .andExpect(status().isOk())
@@ -68,7 +66,6 @@ public class AuthenticationTests {
     }
 
     @Test
-    @DirtiesContext
     public void testRefresh() throws Exception {
         String userJson = registerAUser();
 

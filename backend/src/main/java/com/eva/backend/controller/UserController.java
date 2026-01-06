@@ -137,7 +137,7 @@ public class UserController {
         }
 
         String password = newUser.getPassword();
-        if (password != null && !password.isBlank()){
+        if (password != null && password.length() >= 8){
             userToUpdate.setPassword(encoder.encode(password));
         }
 
@@ -148,6 +148,10 @@ public class UserController {
     public ResponseEntity<?> sendPwdRecoveryMail(@RequestBody Map<String, String> body) throws MessagingException {
         String mail = body.get("mail"); // mail = username in the eva app
         User user = userService.sendRecoveryMail(mail);
+        System.out.println("1111111111111111");
+        System.out.println(body);
+        System.out.println(mail);
+        System.out.println(user);
         if (user == null){
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
@@ -163,7 +167,7 @@ public class UserController {
         String token = body.get("token");
         String newPassword = body.get("password");
                 
-        if (newPassword == null || newPassword.isBlank()) {
+        if (newPassword == null || newPassword.length() < 8) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                                 .body(Map.of("message", "Le mot de passe ne peut pas être vide"));
         }
