@@ -1,15 +1,28 @@
-import { useState, type Dispatch, type SetStateAction } from "react";
+import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import { Button } from "../components/Button";
 import { Input } from "../components/Input";
 import { useNavigate, type NavigateFunction } from "react-router-dom";
 
-/*DANS CETTE PAGE IL FAUDRA PROBABLEMENT AJOUTER CREDENTIALS INCLUDE AFIN DENVOYER LE TOKEN 
-DE REINITIALISATION DE MOT DE PASSE */
+
+type DataType = {
+    password: string,
+    token: string
+}
 
 export function PasswordChangePage(){
     const [passwords, setPasswords] = useState({password:"", passwordCopy:""})
     const [fetchError, setFetchError] = useState<Error|null>(null);
     const navigate = useNavigate();
+    const [token, setToken] = useState("");
+
+    /*Extraire le token de l'url au premier chargement de la page */
+    useEffect(() => {
+        const searchParam = new URLSearchParams(window.location.search);
+        const tokenFromUrl = searchParam.get("token")
+        if (tokenFromUrl !== null){
+            setToken(tokenFromUrl);
+        }
+    }, [])
 
     const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
             const {name, value} = e.target;
@@ -25,7 +38,9 @@ export function PasswordChangePage(){
             setFetchError(new Error("Les mots de passe doivent être identiques et contenir au moins 8 caractères."));
             return;
         }
-        sendPostRequest(passwords.password, setFetchError, navigate);
+
+        const data = {password: passwords.password, token: token};          
+        sendPostRequest(data, setFetchError, navigate);
     }
 
     return <>
@@ -40,14 +55,14 @@ export function PasswordChangePage(){
 }
 
 
-async function sendPostRequest(data:string, setFetchError:Dispatch<SetStateAction<Error|null>>, navigate: NavigateFunction){
+async function sendPostRequest(data: DataType, setFetchError:Dispatch<SetStateAction<Error|null>>, navigate: NavigateFunction){
     const response = await fetch("http://localhost:9000/auth/recoverPwd", {
             method: "POST",
             headers:{
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
             },
-            body: JSON.stringify({password: data})})
+            body: JSON.stringify(data)})
             .catch(error => {
                 setFetchError(new Error(error.getMessage()))
                 throw error;

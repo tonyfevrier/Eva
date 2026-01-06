@@ -1,5 +1,7 @@
 package com.eva.backend.service;
 
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -89,35 +91,37 @@ public class UserService {
         return userRepository.findByMail(username);
     }
 
-    public CookieEssentials sendRecoveryMailWithCookie(String username) throws MessagingException {
+    public User sendRecoveryMail(String username) throws MessagingException {
+        /* si le mail username existe, envoie un mail avec un lien comprenant un token */
         User user = userRepository.findByMail(username);
         if (user != null){
-            CookieEssentials cookie = cookieService.generateRecoveryCookie(user);
-            MimeMessage message = configureMail(cookie, user);
+            String token = jwtService.generateToken(username, 600000);
+            MimeMessage message = configureMail(token, username);
             mailSender.send(message);
-            return cookie;
+            return user;
         }
         return null;
     }
 
-    private MimeMessage configureMail(CookieEssentials cookie, User user) throws MessagingException{
+    private MimeMessage configureMail(String token, String username) throws MessagingException{
         MimeMessage message = mailSender.createMimeMessage();                    
         MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
         helper.setFrom("noreply.eva.application@gmail.com");
-        helper.setTo(user.getMail());
+        helper.setTo(username);
         helper.setSubject("Récupération de mot de passe pour l'application EVA");
 
-        String recoveryLink = "http://localhost:5173/pwdChange?token=" + cookie.cookie();
-
-        long expirationInMin = cookie.expiresIn().longValue() / 60000;
+        String recoveryLink = "http://localhost:5173/pwdChange?token=" + token;
 
         helper.setText(
             "<h3>Réinitialisation de mot de passe de votre compte EVA</h3>" +
             "<p>Cliquez sur le lien ci-dessous pour réinitialiser votre mot de passe :</p>" +
-            "<a href=\"" + recoveryLink + "\">Réinitialiser mon mot de passe</a>" +
-            "<p>Ce lien expire dans " + expirationInMin + " minutes.</p>",
+            "<a href=\"" + recoveryLink + "\">Réinitialiser mon mot de passe</a>",
             true  // true = HTML, false = texte brut
         );
         return message;
+    }
+
+    public boolean isTokenExpired(String token){
+         return jwtService.isTokenExpired(token);
     }
 }

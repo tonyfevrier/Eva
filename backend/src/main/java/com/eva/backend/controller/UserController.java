@@ -137,7 +137,7 @@ public class UserController {
         }
 
         String password = newUser.getPassword();
-        if (password != null){
+        if (password != null && !password.isBlank()){
             userToUpdate.setPassword(encoder.encode(password));
         }
 
@@ -147,29 +147,40 @@ public class UserController {
     @PostMapping("/resetMail")
     public ResponseEntity<?> sendPwdRecoveryMail(@RequestBody Map<String, String> body) throws MessagingException {
         String mail = body.get("mail"); // mail = username in the eva app
-        CookieEssentials essentials = userService.sendRecoveryMailWithCookie(mail);
-        if (essentials == null){
+        User user = userService.sendRecoveryMail(mail);
+        if (user == null){
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
                     .body("Aucun compte n'est associé à ce courriel.");
         }
         return ResponseEntity.ok()
-                             .header(HttpHeaders.SET_COOKIE, essentials.cookie())
-                             .body(Map.of("message", "Un courriel vous a été envoyé, veuillez consulter votre messagerie.",
-                                          "accessExpiresIn", essentials.expiresIn()));
+                             .body(Map.of("message", "Un courriel vous a été envoyé, veuillez consulter votre messagerie."));
     }
 
     @PostMapping("/recoverPwd")
-    public ResponseEntity<?> registerNewPassword(@RequestBody String entity) {
-        /* on regarde si le cookie reçu est bien non expiré, valide
-        on récupère le user à partir du cookie et on change le mot de passe correspondant
-        on envoie une réponse indiquant que la modification a bien été faite et un cookie jwt-recovery vide
-        si le cookie n'est pas valide, on envoie une réponse disant qu'il faut reprendre la procédure
-        */
-       
-        return null;
+    public ResponseEntity<?> registerNewPassword(@RequestBody Map<String, String> body) {
+        /* Vérifie si le cookie du lien est toujours valide et change le mot de passe si c'est le cas */
+        String token = body.get("token");
+        String newPassword = body.get("password");
+                
+        if (newPassword == null || newPassword.isBlank()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                                .body(Map.of("message", "Le mot de passe ne peut pas être vide"));
+        }
+        
+        if (token == null || token.isEmpty() || userService.isTokenExpired(token)){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                                .body(Map.of("message", "Le lien fourni a expiré, relancer la procédure"));
+        }
+
+        User user = userService.findByToken(token);
+        if (user != null){
+            user.setPassword(encoder.encode(newPassword));
+            userService.saveUpdatedUser(user);
+            return ResponseEntity.ok(Map.of("message", "Le mot de passe a été modifié"));
+        }    
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                             .body(Map.of("message", "Utilisateur introuvable"));          
     }
-    
-    
-    
 }
