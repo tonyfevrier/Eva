@@ -13,6 +13,7 @@ import { Button } from './components/Button';
 import { RecoveryPage } from './pages/RecoveryPage';
 import { Goto } from './components/Goto';
 import { PasswordChangePage } from './pages/PasswordChangePage';
+import { DescribePage } from './pages/DescribePage';
 
 const routes: RouteObject[] = [
   {
@@ -58,6 +59,10 @@ const routes: RouteObject[] = [
             {
               path : "profile",
               element : <ProfilePage/>,
+            },
+            {
+              path: "describeYou",
+              element : <DescribePage/>, 
             }
         ]
         
