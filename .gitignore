@@ -61,9 +61,9 @@ frontend/lerna-debug.log*
 *.sw?
 
 # === DOCKER & ENV ===
-.env
-.env.local
-.env.*.local
+backend/.env
+backend/.env.local
+backend/.env.*.local
 docker-compose.override.yml
 
 # === PROJECT SPECIFIC ===

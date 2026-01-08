@@ -148,10 +148,6 @@ public class UserController {
     public ResponseEntity<?> sendPwdRecoveryMail(@RequestBody Map<String, String> body) throws MessagingException {
         String mail = body.get("mail"); // mail = username in the eva app
         User user = userService.sendRecoveryMail(mail);
-        System.out.println("1111111111111111");
-        System.out.println(body);
-        System.out.println(mail);
-        System.out.println(user);
         if (user == null){
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
