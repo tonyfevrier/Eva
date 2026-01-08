@@ -5,6 +5,8 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.eva.backend.model.User;
 import com.eva.backend.model.UserAdditionalData;
@@ -14,6 +16,8 @@ import com.eva.backend.service.UserService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 
+@RestController
+@RequestMapping("/user")
 public class UserAdditionalDataController {
     @Autowired
     private UserAdditionalDataService addService;
@@ -27,7 +31,7 @@ public class UserAdditionalDataController {
         User user = userService.findByToken(token);
 
         UserAdditionalData addData = new UserAdditionalData();
-        addData.setId(user.getId());
+        addData.setUser(user);
         addData.setAffiliation((String) body.get("affiliation"));
         addData.setAcceptContact((boolean) body.get("acceptContact"));
         addData.setAcceptMap((boolean) body.get("acceptMap"));

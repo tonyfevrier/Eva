@@ -1,10 +1,12 @@
 package com.eva.backend.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.eva.backend.model.UserAdditionalData;
 import com.eva.backend.repository.UserAdditionalDataRepository;
 
+@Service
 public class UserAdditionalDataService {
     @Autowired
     private UserAdditionalDataRepository addRepository;
