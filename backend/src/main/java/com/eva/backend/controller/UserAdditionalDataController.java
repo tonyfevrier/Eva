@@ -31,14 +31,6 @@ public class UserAdditionalDataController {
         String token = getTokenFromRequest(request, "jwt");
         User user = userService.findByToken(token);
 
-        System.out.println(body);
-        System.out.println(body.get("affiliation"));
-        System.out.println(body.get("acceptMap"));
-        System.out.println(body.get("acceptContact"));
-        System.out.println(body.get("street"));
-        System.out.println(body.get("postcode"));
-        System.out.println(body.get("town"));
-        System.out.println(body.get("phone"));
         UserAdditionalData addData = new UserAdditionalData();
         addData.setUser(user);
         addData.setAffiliation((String) body.get("affiliation"));

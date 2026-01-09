@@ -130,4 +130,17 @@ public class AdditionalDataTests {
                         .cookie(new jakarta.servlet.http.Cookie("jwt", jwtCookie)))
                         .andExpect(status().isBadRequest());
     }
+
+     @Test
+    public void testLoginAfterRegisteringAdditionalData() throws Exception {
+        String userJson = registerAUser();
+        String jwtCookie = login(userJson);        
+        registerAdditionalData(jwtCookie);
+
+        mockMvc.perform(post("/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(userJson))
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$.additionalData").isNotEmpty());
+    }
 }
