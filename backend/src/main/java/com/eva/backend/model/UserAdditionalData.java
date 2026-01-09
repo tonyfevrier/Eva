@@ -1,4 +1,5 @@
 package com.eva.backend.model;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -13,6 +14,8 @@ import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
+import lombok.EqualsAndHashCode;
 
 
 @Data
@@ -29,6 +32,9 @@ public class UserAdditionalData {
     @OneToOne
     @MapsId // colonne qui contiendra l'id du user (qui est l'id de l'objet aussi)
     @JoinColumn(name = "user_id")
+    @ToString.Exclude //Evite une boucle infinie (appel de tostring de user qui réappelle celle de cette classe)
+    @EqualsAndHashCode.Exclude
+    @JsonIgnore // Evite une sérialisation en boucle (User(AddData(User(AddData ...))))
     private User user;
 
     @Column(nullable = false)

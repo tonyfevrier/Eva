@@ -9,14 +9,14 @@ import { DescribePage } from "./DescribePage";
 export function LoginPage({}){
     const loginForm = useRef<HTMLFormElement>(null);
     const {inputToStateMapping, setFormState, sendingState, setSendingState, inputToStateKeyMapping} = useLoginForm();
-    const {isAuthenticated, toggleIsAuthenticated, setExpirationTime} = useTheme();
+    const {isAuthenticated, toggleIsAuthenticated, setExpirationTime, isProfileCompleted, setIsProfileCompleted} = useTheme();
     
     const handleClick = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (loginForm.current !== null){
             const formData = new FormData(loginForm.current); 
             const formHandler = new LoginFormHandler({formData, setFormState, setSendingState, inputToStateKeyMapping}, 
-                                                                  {toggleIsAuthenticated, setExpirationTime});
+                                                                  {toggleIsAuthenticated, setExpirationTime, setIsProfileCompleted});
             if (formHandler.allInputsAreFilled()){
                 await formHandler.sendFormData("http://localhost:9000/auth/login");
             } else {

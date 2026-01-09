@@ -4,7 +4,7 @@ import { useTheme } from "./useTheme";
 export function useHandleAuth(){
     /* Gère l'envoi d'une requête de rafraichissement de token pour */
 
-    const {isAuthenticated, expirationTime, refresh} = useTheme();
+    const {isAuthenticated, expirationTime, refresh, isProfileCompleted} = useTheme();
     const checkIfExpiredTimeInMin = 10; 
     
     const refreshIfExpired = async () => {
@@ -16,8 +16,9 @@ export function useHandleAuth(){
     // Enregistrement des états en mémoire en cas de changement
     useEffect(() => {
         localStorage.setItem("isAuthenticated", String(isAuthenticated));
+        localStorage.setItem("isProfileCompleted", String(isProfileCompleted));
         localStorage.setItem("expirationTime", String(expirationTime));    
-    }, [isAuthenticated, expirationTime]);
+    }, [isAuthenticated, expirationTime, isProfileCompleted]);
 
     // Vérification de l'expiration du token au montage
     useEffect(() => {refreshIfExpired()}, []);

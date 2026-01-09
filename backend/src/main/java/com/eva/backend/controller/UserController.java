@@ -69,7 +69,7 @@ public class UserController {
                 .body(Map.of("message", "Login réussi",
                              "accessExpiresIn", twoCookies.accessCookie().expiresIn(), 
                              "refreshExpiresIn", twoCookies.refreshCookie().expiresIn(), 
-                             "additionalData", additionalData != null? additionalData: "null"
+                             "additionalData", additionalData != null? additionalData : "null"
                 ));
     }
     

@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { Dispatch, ReactNode, SetStateAction } from "react";
 
 export type CircleArgs = {
     href: string,
@@ -57,4 +57,5 @@ export type PrivateRouteProps = {
 export type AuthContextSetterType = {
     toggleIsAuthenticated: () => void;
     setExpirationTime: React.Dispatch<React.SetStateAction<number>>;
+    setIsProfileCompleted: Dispatch<SetStateAction<boolean>>;
 }
