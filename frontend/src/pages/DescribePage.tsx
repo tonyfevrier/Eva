@@ -2,6 +2,7 @@ import { Input } from "../components/Input";
 import { Button } from "../components/Button";
 import { useState, type Dispatch, type SetStateAction } from "react";
 import { useNavigate, type NavigateFunction } from "react-router-dom";
+import { useTheme } from "../hooks/useTheme";
 
 type DescribeFormData = {
     affiliation: string,
@@ -20,7 +21,7 @@ export function DescribePage(){
     Etat de valeur des deux checkbox
 
     */
-
+    const {setIsProfileCompleted} = useTheme();
     const initialformData = {affiliation: "", street: "",  postcode: "", town: "",
                              phone: "", acceptMap: false, acceptContact: false};
     const [formData, setFormData] = useState<DescribeFormData>(initialformData);
@@ -33,13 +34,13 @@ export function DescribePage(){
                 postcode: formData.postcode, town: formData.town,
                 phone: formData.phone, acceptMap: formData.acceptMap, 
                 acceptContact: formData.acceptContact}
-        sendPostRequest(data, setFetchError, navigate);
+        sendPostRequest(data, setFetchError, navigate, setIsProfileCompleted);
     }
 
     return <>
                 <h1>Te décrire</h1>
                 <p> Votre inscription a bien été réalisée. 
-                    Il vous reste quelques informations de profils à compléter.
+                    Il vous reste quelques informations de profils à compléter avant de pouvoir accéder à l'application.
                 </p>
                 <form onSubmit={handleSubmit}>
                     <Input title="Affiliation" name="affiliation" type="text" value={formData.affiliation} onChange={(e)=>{setFormData({...formData, affiliation: e.target.value})}}/>
@@ -56,7 +57,7 @@ export function DescribePage(){
 }
 
 
-async function sendPostRequest(data: DescribeFormData, setFetchError:Dispatch<SetStateAction<Error|null>>, navigate: NavigateFunction){
+async function sendPostRequest(data: DescribeFormData, setFetchError:Dispatch<SetStateAction<Error|null>>, navigate: NavigateFunction, setIsProfileCompleted:Dispatch<SetStateAction<boolean>>){
     const response = await fetch("http://localhost:9000/user/addData", {
             method: "POST",
             headers:{
@@ -69,9 +70,11 @@ async function sendPostRequest(data: DescribeFormData, setFetchError:Dispatch<Se
                 setFetchError(new Error(error.getMessage()))
                 throw error;
         });
-    
+     
+    console.log(response.ok)
     if (response.ok){
-        navigate("/login");    
+        setIsProfileCompleted(true);
+        navigate("/");    
     } else {
         setFetchError(new Error(`Erreur ${response.status}: ${response.statusText}`));
     }

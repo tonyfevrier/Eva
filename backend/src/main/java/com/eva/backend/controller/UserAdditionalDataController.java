@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
 
 import com.eva.backend.model.User;
 import com.eva.backend.model.UserAdditionalData;
@@ -26,10 +27,18 @@ public class UserAdditionalDataController {
     private UserService userService;
 
     @PostMapping("/addData")
-    public void registerAdditionalData(@RequestBody Map<String, Object> body, HttpServletRequest request){
+    public ResponseEntity<?> registerAdditionalData(@RequestBody Map<String, Object> body, HttpServletRequest request){
         String token = getTokenFromRequest(request, "jwt");
         User user = userService.findByToken(token);
 
+        System.out.println(body);
+        System.out.println(body.get("affiliation"));
+        System.out.println(body.get("acceptMap"));
+        System.out.println(body.get("acceptContact"));
+        System.out.println(body.get("street"));
+        System.out.println(body.get("postcode"));
+        System.out.println(body.get("town"));
+        System.out.println(body.get("phone"));
         UserAdditionalData addData = new UserAdditionalData();
         addData.setUser(user);
         addData.setAffiliation((String) body.get("affiliation"));
@@ -40,6 +49,7 @@ public class UserAdditionalDataController {
         addData.setTown((String) body.get("town"));
         addData.setPhone((String) body.get("phone"));
         addService.save(addData);
+        return ResponseEntity.ok(addData);
     }
 
     private String getTokenFromRequest(HttpServletRequest request, String tokenName){

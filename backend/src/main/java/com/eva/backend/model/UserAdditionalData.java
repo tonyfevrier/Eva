@@ -51,7 +51,7 @@ public class UserAdditionalData {
 
     private String town;
 
-    @Pattern(regexp = "^[+]?[(]?[0-9]{1,4}[)]?[-\\s\\.]?[(]?[0-9]{1,4}[)]?[-\\s\\.]?[0-9]{1,9}$", 
-         message = "Numéro de téléphone invalide")
+    //@Pattern(regexp = "^[+]?[(]?[0-9]{1,4}[)]?[-\\s\\.]?[(]?[0-9]{1,4}[)]?[-\\s\\.]?[0-9]{1,9}$", 
+    //     message = "Numéro de téléphone invalide")
     private String phone;
 }

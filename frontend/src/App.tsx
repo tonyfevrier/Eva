@@ -79,12 +79,12 @@ function App() {
 }
 
 function Layout(){
-  const {isAuthenticated, logout} = useTheme();
+  const {isAuthenticated, logout, isProfileCompleted} = useTheme();
   const handleClick = async () => {logout()}
   return <>
           <NavBar>
-              <a href="/">Accueil</a>
-              {isAuthenticated && <a href="/application/profile">Profil</a> }
+              { (!isAuthenticated || isAuthenticated && isProfileCompleted) && <a href="/">Accueil</a>}
+              {isAuthenticated && isProfileCompleted && <a href="/application/profile">Profil</a> }
               {isAuthenticated && <Button onClick={handleClick}>Se déconnecter</Button>}
           </NavBar>
           <Outlet/>

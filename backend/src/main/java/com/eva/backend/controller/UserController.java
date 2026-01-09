@@ -57,10 +57,7 @@ public class UserController {
         On envoie aussi l'objet UserAdditionalData pour déterminer si le profil est complété. */ 
         TwoCookies<CookieEssentials> twoCookies = userService.verify(user);
         
-        System.err.println("11111111111");
-        System.err.println(user.getMail());
         User userInDatabase= userService.findByMail(user.getMail());
-        System.out.println(userInDatabase);
         UserAdditionalData additionalData = userInDatabase.getAdditionalData();
 
         return ResponseEntity.ok()

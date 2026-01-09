@@ -5,6 +5,7 @@ import { Form } from "../components/Form";
 import { LoginFormHandler } from "../utils/authentication/LoginFormHandler";
 import { Goto } from "../components/Goto";
 import { DescribePage } from "./DescribePage";
+import { HomePage } from "./HomePage";
 
 export function LoginPage({}){
     const loginForm = useRef<HTMLFormElement>(null);
@@ -25,8 +26,14 @@ export function LoginPage({}){
         }
     }
     
-    if (isAuthenticated){
+    if (isAuthenticated && !isProfileCompleted){
         return <DescribePage/>
+    }
+
+    if (isAuthenticated && isProfileCompleted){
+        return <>
+                    <Goto href="/" label="Vous êtes déjà connecté." buttonLabel="Retournez à l'accueil"/>
+                </>
     }
      
     return  <>
