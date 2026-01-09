@@ -32,7 +32,7 @@ export function LoginPage({}){
 
     if (isAuthenticated && isProfileCompleted){
         return <>
-                    <Goto href="/" label="Vous êtes déjà connecté." buttonLabel="Retournez à l'accueil"/>
+                    <Goto href="/" label="Vous êtes connecté." buttonLabel="Retournez à l'accueil"/>
                 </>
     }
      

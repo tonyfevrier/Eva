@@ -25,12 +25,19 @@ export type LoginFormBoolean = {
     isPasswordEmpty: boolean,
 };
 
-export type UpdateFormString = {
+export type UpdateForm = {
     firstname: string,
     lastname: string,
     mail: string,
     password: string,
-    passwordCopy: string
+    passwordCopy: string,
+    affiliation: string,
+    town: string,
+    street: string,
+    postcode: string,
+    phone: string,
+    acceptMap: boolean,
+    acceptContact: boolean
 };
 
 export type SendingStatus<T> = {
