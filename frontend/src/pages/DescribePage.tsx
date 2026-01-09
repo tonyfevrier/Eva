@@ -1,15 +1,16 @@
 import { Input } from "../components/Input";
 import { Button } from "../components/Button";
-import { useState } from "react";
+import { useState, type Dispatch, type SetStateAction } from "react";
+import { useNavigate, type NavigateFunction } from "react-router-dom";
 
-type DescribeForm = {
+type DescribeFormData = {
     affiliation: string,
     street: string,
     postcode: string,
     town: string,
     phone: string,
     acceptMap: boolean,
-    acceptContact: boolean
+    acceptContact: boolean,
 }
 
 export function DescribePage(){
@@ -22,14 +23,25 @@ export function DescribePage(){
 
     const initialformData = {affiliation: "", street: "",  postcode: "", town: "",
                              phone: "", acceptMap: false, acceptContact: false};
-    const [formData, setFormData] = useState<DescribeForm>(initialformData);
+    const [formData, setFormData] = useState<DescribeFormData>(initialformData);
+    const [fetchError, setFetchError] = useState<Error|null>(null);
+    const navigate = useNavigate();
+
+    const handleSubmit = (e:React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault(); 
+        const data = {affiliation: formData.affiliation, street: formData.street,  
+                postcode: formData.postcode, town: formData.town,
+                phone: formData.phone, acceptMap: formData.acceptMap, 
+                acceptContact: formData.acceptContact}
+        sendPostRequest(data, setFetchError, navigate);
+    }
 
     return <>
                 <h1>Te décrire</h1>
                 <p> Votre inscription a bien été réalisée. 
                     Il vous reste quelques informations de profils à compléter.
                 </p>
-                <form onSubmit={()=>{}}>
+                <form onSubmit={handleSubmit}>
                     <Input title="Affiliation" name="affiliation" type="text" value={formData.affiliation} onChange={(e)=>{setFormData({...formData, affiliation: e.target.value})}}/>
                     <Input title="Etes-vous d'accord pour que votre localisation apparaisse sur une carte?" name="card-accept" type="checkbox" onChange={() => setFormData({...formData, acceptMap: !formData.acceptMap})}/>
                     <Input title="Rue" name="rue" type="text" value={formData.street} onChange={(e)=>{setFormData({...formData, street: e.target.value})}} disabled={!formData.acceptMap}/>
@@ -38,6 +50,30 @@ export function DescribePage(){
                     <Input title="Etes-vous d'accord pour que d'autres enseignants puissent vous contacter par email? Si oui vous pourrez rentrer votre numéro de téléphone" name="card-accept" type="checkbox" onChange={() => setFormData({...formData, acceptContact: !formData.acceptContact})}/>
                     <Input title="Téléphone (facultatif)" name="téléphone" type="tel" value={formData.phone} onChange={(e)=>{setFormData({...formData, phone: e.target.value})}} disabled={!formData.acceptContact}/>
                     <Button disabled={formData.affiliation === ""}>Sauvegarder les informations</Button>
+                    {fetchError?.message && <p>{fetchError?.message}</p>}
                 </form>
            </>
+}
+
+
+async function sendPostRequest(data: DescribeFormData, setFetchError:Dispatch<SetStateAction<Error|null>>, navigate: NavigateFunction){
+    const response = await fetch("http://localhost:9000/user/addData", {
+            method: "POST",
+            headers:{
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify(data),
+            credentials: "include"})
+            .catch(error => {
+                setFetchError(new Error(error.getMessage()))
+                throw error;
+        });
+    
+    if (response.ok){
+        navigate("/login");    
+    } else {
+        setFetchError(new Error(`Erreur ${response.status}: ${response.statusText}`));
+    }
+    return response
 }
