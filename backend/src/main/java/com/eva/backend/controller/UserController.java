@@ -1,6 +1,7 @@
 package com.eva.backend.controller;
 
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.eva.backend.model.User;
+import com.eva.backend.model.UserAdditionalData;
+import com.eva.backend.service.UserAdditionalDataService;
 import com.eva.backend.service.UserService;
 import com.eva.backend.records.CookieEssentials;
 import com.eva.backend.records.TwoCookies;
@@ -50,15 +53,23 @@ public class UserController {
     
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody User user) {
-        // Au premier login, user est vérifié et le jwt token est envoyé via un http only cookie pour plus de sécurité        
+        /* Au premier login, user est vérifié et le jwt token est envoyé via un http only cookie pour plus de sécurité.
+        On envoie aussi l'objet UserAdditionalData pour déterminer si le profil est complété. */ 
         TwoCookies<CookieEssentials> twoCookies = userService.verify(user);
- 
+        
+        System.err.println("11111111111");
+        System.err.println(user.getMail());
+        User userInDatabase= userService.findByMail(user.getMail());
+        System.out.println(userInDatabase);
+        UserAdditionalData additionalData = userInDatabase.getAdditionalData();
+
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, twoCookies.accessCookie().cookie())
                 .header(HttpHeaders.SET_COOKIE, twoCookies.refreshCookie().cookie())
                 .body(Map.of("message", "Login réussi",
                              "accessExpiresIn", twoCookies.accessCookie().expiresIn(), 
-                             "refreshExpiresIn", twoCookies.refreshCookie().expiresIn() 
+                             "refreshExpiresIn", twoCookies.refreshCookie().expiresIn(), 
+                             "additionalData", additionalData != null? additionalData: "null"
                 ));
     }
     

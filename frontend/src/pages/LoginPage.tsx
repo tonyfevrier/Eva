@@ -4,6 +4,7 @@ import { useTheme } from "../hooks/useTheme";
 import { Form } from "../components/Form";
 import { LoginFormHandler } from "../utils/authentication/LoginFormHandler";
 import { Goto } from "../components/Goto";
+import { DescribePage } from "./DescribePage";
 
 export function LoginPage({}){
     const loginForm = useRef<HTMLFormElement>(null);
@@ -25,9 +26,7 @@ export function LoginPage({}){
     }
     
     if (isAuthenticated){
-        return <>
-                    <h2> Vous êtes bien connecté.</h2>
-               </>
+        return <DescribePage/>
     }
      
     return  <>

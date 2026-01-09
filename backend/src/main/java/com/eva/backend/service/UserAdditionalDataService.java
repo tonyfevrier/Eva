@@ -1,8 +1,11 @@
 package com.eva.backend.service;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.eva.backend.model.User;
 import com.eva.backend.model.UserAdditionalData;
 import com.eva.backend.repository.UserAdditionalDataRepository;
 
@@ -13,5 +16,9 @@ public class UserAdditionalDataService {
 
     public UserAdditionalData save(UserAdditionalData addData){
         return addRepository.save(addData);
+    }
+
+    public Optional<UserAdditionalData> findByUser(User user){
+        return addRepository.findById(user.getId());
     }
 }

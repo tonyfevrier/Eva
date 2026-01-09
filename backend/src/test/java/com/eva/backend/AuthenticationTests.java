@@ -50,7 +50,8 @@ public class AuthenticationTests {
                         .andExpect(cookie().httpOnly("jwt-refresh", true))
                         .andExpect(jsonPath("$.message").value("Login réussi"))
                         .andExpect(jsonPath("$.accessExpiresIn").exists())
-                        .andExpect(jsonPath("$.refreshExpiresIn").exists());
+                        .andExpect(jsonPath("$.refreshExpiresIn").exists())
+                        .andExpect(jsonPath("$.additionalData").value("null"));
     }
 
     @Test
