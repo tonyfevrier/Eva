@@ -83,12 +83,16 @@ export function ProfilePage(){
 
     // Chargement des données utilisateurs
     const {loading, data, error} = useFetch<any>("http://localhost:9000/auth/profile");
-    
+    const {addDataloading, additionalData, addDataerror} = useFetch<any>("http://localhost:9000/user/profile");
+
     useEffect(() => {
         if (data){
             fillInputsWithUserInfos(data, dispatch);
         }
-    }, [data]);
+        if (additionalData){
+            fillInputsWithUserInfos(additionalData, dispatch);
+        }
+    }, [data, additionalData]);
 
     const handleFormChange = (e:React.ChangeEvent<HTMLInputElement>) => {
         /*Prend en charge les changements de valeur de l'input qu'on modifie*/

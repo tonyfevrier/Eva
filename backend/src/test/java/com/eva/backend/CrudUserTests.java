@@ -6,6 +6,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -139,14 +141,42 @@ public class CrudUserTests {
     @Test
     public void testGetOneUser() throws Exception {
         // Ma config de spring security exige que toute requête post login ait le cookie d'authentification.
-        String accessCookie = registerLogUserAndGetAccessCookie();                        
+        String accessCookie = registerLogUserAndGetAccessCookie();
+        registerAdditionalData(accessCookie);                        
         
         mockMvc.perform(get("/auth/profile")
                         .cookie(new jakarta.servlet.http.Cookie("jwt", accessCookie)))
                         .andExpect(status().isOk())
                         .andExpect(jsonPath("$.firstname", is("tony")))
                         .andExpect(jsonPath("$.lastname", is("fevrier")))
-                        .andExpect(jsonPath("$.mail", is("tony.fevrier@gmail.com")));
+                        .andExpect(jsonPath("$.mail", is("tony.fevrier@gmail.com")))
+                        .andExpect(jsonPath("$.affiliation", is("Université Paris")))
+                        .andExpect(jsonPath("$.acceptContact", is(true)))
+                        .andExpect(jsonPath("$.acceptMap", is(false)))
+                        .andExpect(jsonPath("$.street", is("123 Rue de la Paix")))
+                        .andExpect(jsonPath("$.postcode", is("75001")))
+                        .andExpect(jsonPath("$.town", is("Paris")))
+                        .andExpect(jsonPath("$.phone", is("+33123456789")));
+    }
+
+    @Test
+    public void testGetOneUserWithNoAdditionalData() throws Exception {
+        // Ma config de spring security exige que toute requête post login ait le cookie d'authentification.
+        String accessCookie = registerLogUserAndGetAccessCookie();
+        
+        mockMvc.perform(get("/auth/profile")
+                        .cookie(new jakarta.servlet.http.Cookie("jwt", accessCookie)))
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$.firstname", is("tony")))
+                        .andExpect(jsonPath("$.lastname", is("fevrier")))
+                        .andExpect(jsonPath("$.mail", is("tony.fevrier@gmail.com")))
+                        .andExpect(jsonPath("$.affiliation", is("")))
+                        .andExpect(jsonPath("$.acceptContact", is(false)))
+                        .andExpect(jsonPath("$.acceptMap", is(false)))
+                        .andExpect(jsonPath("$.street", is("")))
+                        .andExpect(jsonPath("$.postcode", is("")))
+                        .andExpect(jsonPath("$.town", is("")))
+                        .andExpect(jsonPath("$.phone", is("")));
     }
 
     private String registerAUser() throws Exception{
@@ -182,6 +212,25 @@ public class CrudUserTests {
                         .andExpect(status().isOk())
                         .andReturn();
         return loginResult.getResponse().getCookie("jwt").getValue(); 
+    }
+
+    private void registerAdditionalData(String jwtCookie) throws Exception{
+        Map<String, Object> additionalData = new HashMap<>();
+        additionalData.put("affiliation", "Université Paris");
+        additionalData.put("acceptContact", true);
+        additionalData.put("acceptMap", false);
+        additionalData.put("street", "123 Rue de la Paix");
+        additionalData.put("postcode", "75001");
+        additionalData.put("town", "Paris");
+        additionalData.put("phone", "+33123456789");
+
+        String additionalDataJson = objectMapper.writeValueAsString(additionalData);
+
+        mockMvc.perform(post("/user/addData")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(additionalDataJson)
+                        .cookie(new jakarta.servlet.http.Cookie("jwt", jwtCookie)))
+                        .andExpect(status().isOk());
     }
 }
 

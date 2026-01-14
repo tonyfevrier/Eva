@@ -1,5 +1,6 @@
 package com.eva.backend;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -23,6 +24,7 @@ import com.eva.backend.repository.UserAdditionalDataRepository;
 import com.eva.backend.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
@@ -131,7 +133,7 @@ public class AdditionalDataTests {
                         .andExpect(status().isBadRequest());
     }
 
-     @Test
+    @Test
     public void testLoginAfterRegisteringAdditionalData() throws Exception {
         String userJson = registerAUser();
         String jwtCookie = login(userJson);        
@@ -143,4 +145,5 @@ public class AdditionalDataTests {
                         .andExpect(status().isOk())
                         .andExpect(jsonPath("$.additionalData").isNotEmpty());
     }
-}
+
+} 

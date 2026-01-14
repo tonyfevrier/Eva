@@ -38,6 +38,9 @@ public class UserController {
     @Autowired 
     private UserService userService;
 
+    @Autowired 
+    private UserAdditionalDataService addService;
+
     private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
 
     // @Valid valide les contraintes de forme des inputs (mail, pwd) avant d'entrer dans la méthode.
@@ -112,9 +115,36 @@ public class UserController {
         // User is found thanks to the access Cookie.
         String token = getTokenFromRequest(request, "jwt");
         User user = userService.findByToken(token);
-        return ResponseEntity.ok(Map.of("firstname", user.getFirstname(),
+
+        /*return ResponseEntity.ok(Map.of("firstname", user.getFirstname(),
                                         "lastname", user.getLastname(),
-                                        "mail", user.getUsername()));
+                                        "mail", user.getUsername()));*/
+
+        Optional<UserAdditionalData> optionalAdditionalData = addService.findByUser(user);
+        if (!optionalAdditionalData.isEmpty()){
+            UserAdditionalData additionalData = optionalAdditionalData.get();
+            return ResponseEntity.ok(Map.of("firstname", user.getFirstname(),
+                                            "lastname", user.getLastname(),
+                                            "mail", user.getUsername(),
+                                            "affiliation", additionalData.getAffiliation(),
+                                            "acceptContact", additionalData.isAcceptContact(),
+                                            "acceptMap", additionalData.isAcceptMap(),
+                                            "street", additionalData.getStreet(),
+                                            "postcode", additionalData.getPostcode(),
+                                            "town", additionalData.getTown(),
+                                            "phone", additionalData.getPhone()));
+        } else {
+            return ResponseEntity.ok(Map.of("firstname", user.getFirstname(),
+                                            "lastname", user.getLastname(),
+                                            "mail", user.getUsername(),
+                                            "affiliation", "",
+                                            "acceptContact", false,
+                                            "acceptMap", false,
+                                            "street", "",
+                                            "postcode", "",
+                                            "town", "",
+                                            "phone", ""));
+        }
         
     }
 
