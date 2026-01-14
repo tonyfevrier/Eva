@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.eva.backend.model.User;
 import com.eva.backend.model.UserAdditionalData;
-import com.eva.backend.service.UserAdditionalDataService;
 import com.eva.backend.service.UserService;
 import com.eva.backend.records.CookieEssentials;
 import com.eva.backend.records.TwoCookies;
@@ -37,9 +36,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class UserController {
     @Autowired 
     private UserService userService;
-
-    @Autowired 
-    private UserAdditionalDataService addService;
 
     private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
 
@@ -115,12 +111,7 @@ public class UserController {
         // User is found thanks to the access Cookie.
         String token = getTokenFromRequest(request, "jwt");
         User user = userService.findByToken(token);
-
-        /*return ResponseEntity.ok(Map.of("firstname", user.getFirstname(),
-                                        "lastname", user.getLastname(),
-                                        "mail", user.getUsername()));*/
-
-        Optional<UserAdditionalData> optionalAdditionalData = addService.findByUser(user);
+        Optional<UserAdditionalData> optionalAdditionalData = userService.getAdditionalDataFrom(user);
         if (!optionalAdditionalData.isEmpty()){
             UserAdditionalData additionalData = optionalAdditionalData.get();
             return ResponseEntity.ok(Map.of("firstname", user.getFirstname(),
@@ -156,31 +147,14 @@ public class UserController {
     }
 
     @PutMapping("/update")
-    public ResponseEntity<?> update(@RequestBody User newUser, HttpServletRequest request) {
+    public ResponseEntity<?> update(@RequestBody Map<String, Object> body, HttpServletRequest request) {
         String token = getTokenFromRequest(request, "jwt");
         User updatedUser = userService.findByToken(token);
-        updateUserInfos(newUser, updatedUser);
+        userService.update(body, updatedUser, encoder);
         return ResponseEntity.ok(updatedUser);
     }
 
-    private void updateUserInfos(User newUser, User userToUpdate){
-        String firstname = newUser.getFirstname();
-        if (firstname != null){
-            userToUpdate.setFirstname(firstname);
-        }
-
-        String lastname = newUser.getLastname();
-        if (lastname != null){
-            userToUpdate.setLastname(lastname);
-        }
-
-        String password = newUser.getPassword();
-        if (password != null && password.length() >= 8){
-            userToUpdate.setPassword(encoder.encode(password));
-        }
-
-        userService.saveUpdatedUser(userToUpdate);
-    }
+    
 
     @PostMapping("/resetMail")
     public ResponseEntity<?> sendPwdRecoveryMail(@RequestBody Map<String, String> body) throws MessagingException {

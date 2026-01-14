@@ -26,6 +26,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.eva.backend.model.User;
+import com.eva.backend.model.UserAdditionalData;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @SpringBootTest
@@ -119,12 +120,18 @@ public class CrudUserTests {
     public void testUpdateUser() throws Exception {
         String accessCookie = registerLogUserAndGetAccessCookie();
 
-        User updatedUser = User.builder()
-                               .firstname("toto")
-                               .password("newpassword")
-                               .build();
+        Map<String, Object> updatedUserData = new HashMap<>();
+        updatedUserData.put("firstname", "toto");
+        updatedUserData.put("password", "newpassword");
+        updatedUserData.put("affiliation", "New Affiliation");
+        updatedUserData.put("acceptMap", true);
+        updatedUserData.put("acceptContact", false);
+        updatedUserData.put("street", "123 Test Street");
+        updatedUserData.put("postcode", "12345");
+        updatedUserData.put("town", "Test City");
+        updatedUserData.put("phone", "+33612345678");
 
-        String userJson = objectMapper.writeValueAsString(updatedUser);
+        String userJson = objectMapper.writeValueAsString(updatedUserData);
 
         mockMvc.perform(put("/auth/update")
                         .cookie(new jakarta.servlet.http.Cookie("jwt", accessCookie))
@@ -135,7 +142,14 @@ public class CrudUserTests {
         mockMvc.perform(get("/auth/users"))
                        .andExpect(jsonPath("$[0].firstname", is("toto")))
                        .andExpect(jsonPath("$[0].lastname", is("fevrier")))
-                       .andExpect(jsonPath("$[0].mail", is("tony.fevrier@gmail.com")));
+                       .andExpect(jsonPath("$[0].mail", is("tony.fevrier@gmail.com")))
+                       .andExpect(jsonPath("$[0].additionalData.affiliation", is("New Affiliation")))
+                       .andExpect(jsonPath("$[0].additionalData.acceptMap", is(true)))
+                       .andExpect(jsonPath("$[0].additionalData.acceptContact", is(false)))
+                       .andExpect(jsonPath("$[0].additionalData.street", is("123 Test Street")))
+                       .andExpect(jsonPath("$[0].additionalData.postcode", is("12345")))
+                       .andExpect(jsonPath("$[0].additionalData.town", is("Test City")))
+                       .andExpect(jsonPath("$[0].additionalData.phone", is("+33612345678")));
         }
 
     @Test

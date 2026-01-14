@@ -1,17 +1,20 @@
 package com.eva.backend.service;
 
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.http.ResponseCookie;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 
 import com.eva.backend.model.User;
+import com.eva.backend.model.UserAdditionalData;
 import com.eva.backend.repository.UserRepository;
 
 import jakarta.mail.MessagingException;
@@ -38,6 +41,9 @@ public class UserService {
 
     @Autowired
     private JavaMailSender mailSender;
+
+    @Autowired
+    private UserAdditionalDataService additionalDataService;
 
     public User saveUser(User user){
         User existingUser = userRepository.findByMail(user.getMail());
@@ -127,5 +133,44 @@ public class UserService {
 
     public boolean isTokenExpired(String token){
          return jwtService.isTokenExpired(token);
+    }
+
+    public Optional<UserAdditionalData> getAdditionalDataFrom(User user){
+        return additionalDataService.findByUser(user);
+    }
+
+    public void update(Map<String, Object> body, User userToUpdate, BCryptPasswordEncoder encoder){
+        String firstname = (String) body.get("firstname");    
+        if (firstname != null){
+            userToUpdate.setFirstname(firstname);
+        }
+
+        String lastname = (String) body.get("lastname");
+        if (lastname != null){
+            userToUpdate.setLastname(lastname);
+        }
+
+        String password = (String) body.get("password");
+        if (password != null && password.length() >= 8){
+            userToUpdate.setPassword(encoder.encode(password));
+        }
+
+        UserAdditionalData additionalData = userToUpdate.getAdditionalData();
+
+        if (additionalData == null) {
+            additionalData = createNewUserAdditionalData(userToUpdate);
+            userToUpdate.setAdditionalData(additionalData);
+        }
+
+        additionalDataService.update(body, additionalData); 
+        
+        saveUpdatedUser(userToUpdate);
+    }
+
+    private UserAdditionalData createNewUserAdditionalData(User user){
+        UserAdditionalData additionalData = new UserAdditionalData();
+        additionalData.setUser(user);
+        additionalData.setAffiliation("");
+        return additionalData;
     }
 }
