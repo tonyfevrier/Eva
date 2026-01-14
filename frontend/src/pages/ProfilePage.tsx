@@ -12,7 +12,6 @@ type State = {
     formDataInMemory: UpdateForm; //Valeur des champs enregistrées actuellement dans la base de données. Utile si l'utilisateur veut annuler ses modifications
     isEditing: boolean;
     isChangingPassword: boolean;
-    isEditingAdditionalData: boolean;
     formData: UpdateForm; //Valeur en temps réel des inputs
     updateError: Error|null;
     printModal: boolean;
@@ -22,7 +21,6 @@ type Action =
     | { type: 'TOGGLE_EDITING' }
     | { type: 'TOGGLE_PASSWORD_CHANGE' }
     | { type: 'TOGGLE_CHECKBOX', field:string, checked:boolean }
-    | { type: "TOGGLE_ADDITIONAL_DATA"}
     | { type: 'SAVE_INFOS' }
     | { type: 'SAVE_PWD' }
     | { type: 'UPDATE_FIELD', field: string, value: string }
@@ -35,26 +33,30 @@ function reducer(state:State, action:Action){
         case 'TOGGLE_EDITING': //si on annule, les inputs sont remis à leurs valeurs initales
             return { ...state, isEditing: !state.isEditing,
                        formData:{...state.formData, firstname: state.formDataInMemory.firstname,
-                                                    lastname: state.formDataInMemory.lastname}};
+                                                    lastname: state.formDataInMemory.lastname,
+                                                    affiliation: state.formDataInMemory.affiliation,
+                                                    street: state.formDataInMemory.street,
+                                                    postcode: state.formDataInMemory.postcode,
+                                                    town: state.formDataInMemory.town,
+                                                    phone: state.formDataInMemory.phone,
+                                                    acceptMap: state.formDataInMemory.acceptMap,
+                                                    acceptContact: state.formDataInMemory.acceptContact}};
         case 'TOGGLE_PASSWORD_CHANGE':
             return { ...state, isChangingPassword: !state.isChangingPassword, updateError: null,
                         formData:{...state.formData, password: "pass", passwordCopy:"pass"}};
-        case 'TOGGLE_ADDITIONAL_DATA':
-            return { ...state, isEditingAdditionalData: !state.isEditingAdditionalData,
-                        formData:{...state.formData, affiliation: state.formDataInMemory.affiliation,
-                                                     street: state.formDataInMemory.street,
-                                                     postcode: state.formDataInMemory.postcode,
-                                                     town: state.formDataInMemory.town,
-                                                     phone: state.formDataInMemory.phone,
-                                                     acceptMap: state.formDataInMemory.acceptMap,
-                                                     acceptContact: state.formDataInMemory.acceptContact,   
-                        }};
         case 'TOGGLE_CHECKBOX':
             return {...state, formData: {...state.formData, [action.field]: action.checked}}
         case 'SAVE_INFOS': 
             return { ...state, isEditing: false, updateError: null, 
                     formDataInMemory:{...state.formDataInMemory, firstname: state.formData.firstname, 
-                                                                 lastname: state.formData.lastname}};
+                                                                 lastname: state.formData.lastname,
+                                                                 affiliation: state.formData.affiliation,
+                                                                 street: state.formData.street,
+                                                                 postcode: state.formData.postcode,
+                                                                 town: state.formData.town,
+                                                                 phone: state.formData.phone,
+                                                                 acceptMap: state.formData.acceptMap,
+                                                                 acceptContact: state.formData.acceptContact}};
         case 'SAVE_PWD':
             return { ...state, isChangingPassword: false, updateError: null,
                     formDataInMemory:{...state.formDataInMemory, password: "pass", passwordCopy:"pass"}};
@@ -76,23 +78,19 @@ export function ProfilePage(){
                              affiliation: "", street: "", postcode: "", town:"", phone:"", acceptMap: false, acceptContact: false
     };
     const initialState = {isEditing: false, isChangingPassword: false, formData: initialformData, formDataInMemory: initialformData,
-                          updateError: null, printModal: false, isEditingAdditionalData:false};
+                          updateError: null, printModal: false};
     const [state, dispatch] = useReducer(reducer, initialState);
     const navigate = useNavigate();
     const {toggleIsAuthenticated} = useTheme();
 
     // Chargement des données utilisateurs
     const {loading, data, error} = useFetch<any>("http://localhost:9000/auth/profile");
-    const {addDataloading, additionalData, addDataerror} = useFetch<any>("http://localhost:9000/user/profile");
 
     useEffect(() => {
         if (data){
             fillInputsWithUserInfos(data, dispatch);
-        }
-        if (additionalData){
-            fillInputsWithUserInfos(additionalData, dispatch);
-        }
-    }, [data, additionalData]);
+        } 
+    }, [data]);
 
     const handleFormChange = (e:React.ChangeEvent<HTMLInputElement>) => {
         /*Prend en charge les changements de valeur de l'input qu'on modifie*/
@@ -103,7 +101,6 @@ export function ProfilePage(){
     const handleToggleEditing = () => {dispatch({type: 'TOGGLE_EDITING'});}
     const handleTogglePassword = () => {dispatch({type: 'TOGGLE_PASSWORD_CHANGE'});}
     const handleToggleModal = () => {dispatch({type: 'TOGGLE_MODAL'});}
-    const handleToggleAdditionalData = () => {dispatch({type: 'TOGGLE_ADDITIONAL_DATA'});}
     const handleToggleCheckbox = (e:React.ChangeEvent<HTMLInputElement>) => {
         const {name, checked} = e.target;
         dispatch({type: "TOGGLE_CHECKBOX", field: name , checked: checked});
@@ -125,9 +122,20 @@ export function ProfilePage(){
             dispatch({type: 'SET_ERROR', error: new Error("Le champ lastname doit être rempli")});
             return;
         } 
+        if (state.formData.affiliation === ""){
+            dispatch({type: 'SET_ERROR', error: new Error("Le champ affiliation doit être rempli")});
+            return;
+        } 
         const updatedData = JSON.stringify({
                     firstname: state.formData.firstname,
                     lastname: state.formData.lastname,
+                    affiliation: state.formData.affiliation,
+                    acceptContact: state.formData.acceptContact,
+                    acceptMap: state.formData.acceptMap,
+                    street: state.formData.street,
+                    postcode: state.formData.postcode,
+                    town: state.formData.town,
+                    phone: state.formData.phone,
                 });
         
         sendPutRequest(updatedData, dispatch, "SAVE_INFOS");
@@ -162,17 +170,14 @@ export function ProfilePage(){
                     <Input title="Mail" name="mail" value={state.formData.mail} onChange={handleFormChange} disabled={true}/>
                     <Input title="Prénom" name="firstname" value={state.formData.firstname} onChange={handleFormChange} disabled={!state.isEditing} variant="withErrorMsg"/>
                     <Input title="Nom" name="lastname" value={state.formData.lastname} onChange={handleFormChange} disabled={!state.isEditing} variant="withErrorMsg"/>
+                    <Input title="Affiliation" name="affiliation" value={state.formData.affiliation} onChange={handleFormChange} disabled={!state.isEditing} variant="withErrorMsg"/>
+                    <Input type="checkbox" title="J'accepte que ma localisation apparaisse sur une carte" name="acceptMap" checked={state.formData.acceptMap} onChange={handleToggleCheckbox} disabled={!state.isEditing}/>
+                    <Input title="Rue" name="street" value={state.formData.street} onChange={handleFormChange} disabled={!state.isEditing || !state.formData.acceptMap}/>
+                    <Input title="Code postal" name="postcode" value={state.formData.postcode} onChange={handleFormChange} disabled={!state.isEditing || !state.formData.acceptMap}/>
+                    <Input title="Ville" name="town" value={state.formData.town} onChange={handleFormChange} disabled={!state.isEditing || !state.formData.acceptMap}/>
+                    <Input type="checkbox" title="J'accepte qu'on puisse me contacter par email ou téléphone" name="acceptContact" checked={state.formData.acceptContact} onChange={handleToggleCheckbox} disabled={!state.isEditing}/>
+                    <Input title="Téléphone" name="phone" value={state.formData.phone} onChange={handleFormChange} disabled={!state.isEditing || !state.formData.acceptContact}/>
                     <UpdateButtons toggleButton={state.isEditing} handleToggleButton={handleToggleEditing}/>
-                </form>
-                <form onSubmit={handleSaveInfos}>
-                    <Input title="Affiliation" name="affiliation" value={state.formData.affiliation} onChange={handleFormChange} disabled={!state.isEditingAdditionalData} variant="withErrorMsg"/>
-                    <Input type="checkbox" title="J'accepte que ma localisation apparaisse sur une carte" name="acceptMap" checked={state.formData.acceptMap} onChange={handleToggleCheckbox} disabled={!state.isEditingAdditionalData}/>
-                    <Input title="Rue" name="street" value={state.formData.street} onChange={handleFormChange} disabled={!state.formData.acceptMap}/>
-                    <Input title="Code postal" name="postcode" value={state.formData.postcode} onChange={handleFormChange} disabled={!state.formData.acceptMap}/>
-                    <Input title="Ville" name="town" value={state.formData.town} onChange={handleFormChange} disabled={!state.formData.acceptMap}/>
-                    <Input type="checkbox" title="J'accepte qu'on puisse me contacter par email ou téléphone" name="acceptContact" checked={state.formData.acceptContact} onChange={handleToggleCheckbox} disabled={!state.isEditingAdditionalData}/>
-                    <Input title="Téléphone" name="phone" value={state.formData.phone} onChange={handleFormChange} disabled={!state.formData.acceptContact}/>
-                    <UpdateButtons toggleButton={state.isEditingAdditionalData} handleToggleButton={handleToggleAdditionalData}/>
                 </form>
                 <form onSubmit={handleSavePassword}>
                     <Input title="Veuillez entrer un nouveau mot de passe" type="password" name="password" value={state.formData.password} onChange={handleFormChange} disabled={!state.isChangingPassword}/>
