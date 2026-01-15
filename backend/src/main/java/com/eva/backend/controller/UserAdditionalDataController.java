@@ -28,9 +28,12 @@ public class UserAdditionalDataController {
     @Autowired 
     private UserService userService;
 
+    @Autowired
+    private RequestUtils requestUtils;
+
     @PostMapping("/addData")
     public ResponseEntity<?> registerAdditionalData(@RequestBody Map<String, Object> body, HttpServletRequest request){
-        String token = getTokenFromRequest(request, "jwt");
+        String token = requestUtils.getTokenFromRequest(request, "jwt");
         User user = userService.findByToken(token);
 
         UserAdditionalData addData = new UserAdditionalData();
@@ -45,15 +48,5 @@ public class UserAdditionalDataController {
         addService.save(addData);
         return ResponseEntity.ok(addData);
     }
-
-    private String getTokenFromRequest(HttpServletRequest request, String tokenName){
-        if (request.getCookies() != null){
-            for (Cookie cookie : request.getCookies()) {
-                if (tokenName.equals(cookie.getName())) {
-                    return cookie.getValue();
-                }
-            }
-        }
-        return "";
-    }
+ 
 }

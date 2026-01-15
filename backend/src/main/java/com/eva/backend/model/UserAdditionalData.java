@@ -18,7 +18,6 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import lombok.EqualsAndHashCode;
 
-@Builder
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
