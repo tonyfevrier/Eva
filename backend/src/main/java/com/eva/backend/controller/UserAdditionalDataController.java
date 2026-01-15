@@ -1,10 +1,8 @@
 package com.eva.backend.controller;
 
 import java.util.Map;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,7 +14,6 @@ import com.eva.backend.model.UserAdditionalData;
 import com.eva.backend.service.UserAdditionalDataService;
 import com.eva.backend.service.UserService;
 
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
@@ -28,9 +25,12 @@ public class UserAdditionalDataController {
     @Autowired 
     private UserService userService;
 
+    @Autowired
+    private RequestUtils requestUtils;
+
     @PostMapping("/addData")
     public ResponseEntity<?> registerAdditionalData(@RequestBody Map<String, Object> body, HttpServletRequest request){
-        String token = getTokenFromRequest(request, "jwt");
+        String token = requestUtils.getTokenFromRequest(request, "jwt");
         User user = userService.findByToken(token);
 
         UserAdditionalData addData = new UserAdditionalData();
@@ -45,15 +45,5 @@ public class UserAdditionalDataController {
         addService.save(addData);
         return ResponseEntity.ok(addData);
     }
-
-    private String getTokenFromRequest(HttpServletRequest request, String tokenName){
-        if (request.getCookies() != null){
-            for (Cookie cookie : request.getCookies()) {
-                if (tokenName.equals(cookie.getName())) {
-                    return cookie.getValue();
-                }
-            }
-        }
-        return "";
-    }
+ 
 }

@@ -14,6 +14,7 @@ import { RecoveryPage } from './pages/RecoveryPage';
 import { Goto } from './components/Goto';
 import { PasswordChangePage } from './pages/PasswordChangePage';
 import { DescribePage } from './pages/DescribePage';
+import { ExperimentationPage } from './pages/ExperimentationPage';
 
 const routes: RouteObject[] = [
   {
@@ -63,9 +64,12 @@ const routes: RouteObject[] = [
             {
               path: "describeYou",
               element : <DescribePage/>, 
+            },
+            {
+              path: "expe",
+              element : <ExperimentationPage/>
             }
         ]
-        
       }
     ]
   }, 
@@ -81,10 +85,14 @@ function App() {
 function Layout(){
   const {isAuthenticated, logout, isProfileCompleted} = useTheme();
   const handleClick = async () => {logout()}
+  const isAnAuthenticatedCompletedProfileUser = isAuthenticated && isProfileCompleted;
   return <>
           <NavBar>
-              { (!isAuthenticated || isAuthenticated && isProfileCompleted) && <a href="/">Accueil</a>}
-              {isAuthenticated && isProfileCompleted && <a href="/application/profile">Profil</a> }
+              { (!isAuthenticated || isAnAuthenticatedCompletedProfileUser) && <a href="/">Accueil</a>}
+              {isAnAuthenticatedCompletedProfileUser && <>
+                                                          <a href="/application/profile">Profil</a>
+                                                          <a href="/application/expe">Mes expérimentations</a>
+                                                        </>}
               {isAuthenticated && <Button onClick={handleClick}>Se déconnecter</Button>}
           </NavBar>
           <Outlet/>

@@ -37,6 +37,9 @@ public class UserController {
     @Autowired 
     private UserService userService;
 
+    @Autowired
+    private RequestUtils requestUtils;
+
     private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
 
     // @Valid valide les contraintes de forme des inputs (mail, pwd) avant d'entrer dans la méthode.
@@ -86,7 +89,7 @@ public class UserController {
     @GetMapping("/refresh")
     public ResponseEntity<?> refresh(HttpServletRequest request) {
         /* Si le refreshToken n'est pas expiré, envoie un nouvel accessToken */
-        String refreshToken = getTokenFromRequest(request, "jwt-refresh");
+        String refreshToken = requestUtils.getTokenFromRequest(request, "jwt-refresh");
         CookieEssentials accessCookie = userService.refresh(refreshToken);
         return ResponseEntity.ok()
                              .header(HttpHeaders.SET_COOKIE, accessCookie.cookie())
@@ -95,21 +98,10 @@ public class UserController {
                              ));
     }
 
-    private String getTokenFromRequest(HttpServletRequest request, String tokenName){
-        if (request.getCookies() != null){
-            for (Cookie cookie : request.getCookies()) {
-                if (tokenName.equals(cookie.getName())) {
-                    return cookie.getValue();
-                }
-            }
-        }
-        return "";
-    }
-
     @GetMapping("/profile")
     public ResponseEntity<?> getUserInfos(HttpServletRequest request) {
         // User is found thanks to the access Cookie.
-        String token = getTokenFromRequest(request, "jwt");
+        String token = requestUtils.getTokenFromRequest(request, "jwt");
         User user = userService.findByToken(token);
         Optional<UserAdditionalData> optionalAdditionalData = userService.getAdditionalDataFrom(user);
         if (!optionalAdditionalData.isEmpty()){
@@ -141,14 +133,14 @@ public class UserController {
 
     @DeleteMapping("/delete")
     public void delete(HttpServletRequest request) {
-        String token = getTokenFromRequest(request, "jwt");
+        String token = requestUtils.getTokenFromRequest(request, "jwt");
         User user = userService.findByToken(token);
         userService.delete(user);
     }
 
     @PutMapping("/update")
     public ResponseEntity<?> update(@RequestBody Map<String, Object> body, HttpServletRequest request) {
-        String token = getTokenFromRequest(request, "jwt");
+        String token = requestUtils.getTokenFromRequest(request, "jwt");
         User updatedUser = userService.findByToken(token);
         userService.update(body, updatedUser, encoder);
         return ResponseEntity.ok(updatedUser);
