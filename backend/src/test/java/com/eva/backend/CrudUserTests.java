@@ -26,7 +26,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.eva.backend.model.User;
-import com.eva.backend.model.UserAdditionalData;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @SpringBootTest
