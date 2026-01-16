@@ -11,8 +11,8 @@
 
 .navbar > button {
     font-weight: 500;
-    color: #646cff;
     text-decoration: inherit;
+    /*color: #646cff;*/
     background-color: transparent;
 }
 
@@ -24,6 +24,22 @@
     border-radius: 8px;
 }
 
-.navbar > a:hover {
+.default > a:hover {
   border-color: #535bf2;
+}
+
+.primary{
+    background-color: #f2f2f1;
+}
+
+.secondary{
+    justify-content: space-evenly;
+}
+
+.primary > a:hover {
+  border-color: black;
+}
+
+.default > button {
+    color: #646cff;
 }

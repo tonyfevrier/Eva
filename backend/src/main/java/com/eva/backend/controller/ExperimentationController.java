@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.eva.backend.model.Experimentation;
 import com.eva.backend.model.User;
 import com.eva.backend.service.ExperimentationService;
-import com.eva.backend.service.PedagogicalContextService;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,9 +25,6 @@ public class ExperimentationController {
     
     @Autowired
     private ExperimentationService experimentationService;
-
-    @Autowired 
-    private PedagogicalContextService contextService;
 
     @PostMapping("/create")    
     public ResponseEntity<?> createExperimentation(@RequestBody Experimentation experimentation, @AuthenticationPrincipal User user){
