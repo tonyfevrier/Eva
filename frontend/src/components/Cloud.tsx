@@ -3,16 +3,17 @@ import styles from "./Cloud.module.css"
 
 type CloudProps = {
     title: string,
-    options: Array<string>,
-    buttonClicked?: Array<string>
+    options: Map<string, Boolean> 
 }
 
-export function Cloud({title, options, buttonClicked=[""]}:CloudProps){
+export function Cloud({title, options}:CloudProps){
+    /*Nuage de boutons qui peut representer un nuage de mots-clés sur lesquels 
+    l'utilisateur peut cliquer. options est un Map associant à chaque clé un booléen */
     return  <div className={styles.container}>
                 <p>{title}</p>
                 <div className={styles.buttons}>
-                    { options.map(option => {
-                        if (buttonClicked.includes(option)){
+                    { Array.from(options.keys()).map(option => {
+                        if (options.get(option)){
                             return <Button style={{backgroundColor: '#ffebee', color: '#c62828'}}>{option}</Button>
                         } else {
                             return <Button>{option}</Button>
