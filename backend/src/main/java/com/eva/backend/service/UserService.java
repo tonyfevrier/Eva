@@ -1,7 +1,6 @@
 package com.eva.backend.service;
 
 import java.util.Map;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -9,6 +8,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.http.ResponseCookie;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -41,9 +41,6 @@ public class UserService {
 
     @Autowired
     private JavaMailSender mailSender;
-
-    @Autowired
-    private UserAdditionalDataService additionalDataService;
 
     public User saveUser(User user){
         User existingUser = userRepository.findByMail(user.getMail());
@@ -135,10 +132,6 @@ public class UserService {
          return jwtService.isTokenExpired(token);
     }
 
-    public Optional<UserAdditionalData> getAdditionalDataFrom(User user){
-        return additionalDataService.findByUser(user);
-    }
-
     public void update(Map<String, Object> body, User userToUpdate, BCryptPasswordEncoder encoder){
         String firstname = (String) body.get("firstname");    
         if (firstname != null){
@@ -155,22 +148,49 @@ public class UserService {
             userToUpdate.setPassword(encoder.encode(password));
         }
 
-        UserAdditionalData additionalData = userToUpdate.getAdditionalData();
+        userToUpdate = updateAdditionalData(body, userToUpdate);
 
-        if (additionalData == null) {
-            additionalData = createNewUserAdditionalData(userToUpdate);
-            userToUpdate.setAdditionalData(additionalData);
-        }
-
-        additionalDataService.update(body, additionalData); 
-        
         saveUpdatedUser(userToUpdate);
     }
 
-    private UserAdditionalData createNewUserAdditionalData(User user){
-        UserAdditionalData additionalData = new UserAdditionalData();
-        additionalData.setUser(user);
-        additionalData.setAffiliation("");
-        return additionalData;
+    private User updateAdditionalData(Map<String, Object> body, User userToUpdate){
+        UserAdditionalData additionalData = userToUpdate.getAdditionalData();
+
+        if (additionalData == null) {
+            additionalData = new UserAdditionalData();
+        }
+
+        Boolean acceptMap = (Boolean) body.get("acceptMap");
+        if (acceptMap != null){
+            additionalData.setAcceptMap(acceptMap);
+        }
+
+        Boolean acceptContact = (Boolean) body.get("acceptContact");
+        if (acceptContact != null){
+            additionalData.setAcceptContact(acceptContact);
+        }
+
+        String street = (String) body.get("street");
+        if (street != null){
+            additionalData.setStreet(street);
+        }
+
+        String postcode = (String) body.get("postcode");
+        if (postcode != null){
+            additionalData.setPostcode(postcode);
+        }
+
+        String town = (String) body.get("town");
+        if (town != null){
+            additionalData.setTown(town);
+        }
+
+        String phone = (String) body.get("phone");
+        if (phone != null){
+            additionalData.setPhone(phone);
+        } 
+        
+        userToUpdate.setAdditionalData(additionalData);
+        return userToUpdate;
     }
 }

@@ -1,48 +1,41 @@
 package com.eva.backend.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
+import jakarta.persistence.AttributeOverride;
+import jakarta.persistence.AttributeOverrides;
 import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.MapsId;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.Embeddable;
+import jakarta.persistence.Embedded;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Data
-@Table(name = "contexts")
-@Entity
+@Embeddable
 public class PedagogicalContext {
 
-    @Id
-    private Long id;
+    @Column(nullable = false)
+    private String learningDifficulty;
 
-    @OneToOne
-    @MapsId 
-    @JoinColumn(name = "expe_id")
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
-    @JsonIgnore 
-    private Experimentation experimentation;
+    private String studyField;
+    private String teachingTitle;
+    private String knowledges;
+    private String prerequisite;
+
+    private String organisationParticularities;
+    private String classesNumber;
+    private String classesDuration;
+    private String classesFrequency;
+    private String classesDates;
 
     @Column(nullable = false)
-    private String problem;
+    private String yearOfStudy;
 
-    @Column(nullable = false)
-    private String affiliation;
-
-    @Column(nullable = false)
-    private String classroom;
+    private String studentsSpecificities;
+    private String studentsNumber;
 
     @Column(nullable = false)
     private String oldPedagogy;
@@ -52,4 +45,22 @@ public class PedagogicalContext {
 
     @Column(nullable = false)
     private String groupsDescription;
+
+    @Embedded
+    @AttributeOverrides({
+        @AttributeOverride(name = "initialEvaluation", column = @Column(name = "old_initialEvaluation")),
+        @AttributeOverride(name = "immediateEvaluation", column = @Column(name = "old_immediateEvaluation")),
+        @AttributeOverride(name = "delayedEvaluation", column = @Column(name = "old_delayedEvaluation")),
+        @AttributeOverride(name = "accountedEvaluation", column = @Column(name = "old_accountedEvaluation"))
+    })
+    private Evaluations oldPedagogyEvaluations;
+
+    @Embedded
+    @AttributeOverrides({
+        @AttributeOverride(name = "initialEvaluation", column = @Column(name = "new_initialEvaluation")),
+        @AttributeOverride(name = "immediateEvaluation", column = @Column(name = "new_immediateEvaluation")),
+        @AttributeOverride(name = "delayedEvaluation", column = @Column(name = "new_delayedEvaluation")),
+        @AttributeOverride(name = "accountedEvaluation", column = @Column(name = "new_accountedEvaluation"))
+    })
+    private Evaluations newPedagogyEvaluations;
 }

@@ -17,13 +17,14 @@ import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+import com.eva.backend.model.Institution;
 import com.eva.backend.model.User;
 import com.eva.backend.model.UserAdditionalData;
-import com.eva.backend.repository.UserAdditionalDataRepository;
 import com.eva.backend.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import static org.hamcrest.Matchers.is;
+import jakarta.validation.constraints.Email;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
@@ -38,9 +39,6 @@ public class AdditionalDataTests {
     private ObjectMapper objectMapper;
 
     @Autowired
-    private UserAdditionalDataRepository additionalDataRepository;
-
-    @Autowired
     private UserRepository userRepository;
 
     @Test
@@ -50,16 +48,14 @@ public class AdditionalDataTests {
         registerAdditionalData(jwtCookie);
         
         User savedUser = userRepository.findByMail("marie.tremblay@mail.com");
-        UserAdditionalData savedData = additionalDataRepository.findById(savedUser.getId()).orElse(null);
+        UserAdditionalData savedData = savedUser.getAdditionalData();
         assertNotNull(savedData, "Les données additionnelles devraient être enregistrées");
-        assertEquals("Université Paris", savedData.getAffiliation());
         assertTrue(savedData.isAcceptContact());
         assertFalse(savedData.isAcceptMap());
         assertEquals("123 Rue de la Paix", savedData.getStreet());
         assertEquals("75001", savedData.getPostcode());
         assertEquals("Paris", savedData.getTown());
         assertEquals("+33123456789", savedData.getPhone());
-        assertEquals(savedUser.getId(), savedData.getId());
     }
 
     private String registerAUser() throws Exception{
@@ -91,7 +87,6 @@ public class AdditionalDataTests {
 
     private void registerAdditionalData(String jwtCookie) throws Exception{
         Map<String, Object> additionalData = new HashMap<>();
-        additionalData.put("affiliation", "Université Paris");
         additionalData.put("acceptContact", true);
         additionalData.put("acceptMap", false);
         additionalData.put("street", "123 Rue de la Paix");
@@ -115,7 +110,7 @@ public class AdditionalDataTests {
         registerAdditionalDataWithNoAffiliation(jwtCookie);
         
         User savedUser = userRepository.findByMail("marie.tremblay@mail.com");
-        UserAdditionalData savedData = additionalDataRepository.findById(savedUser.getId()).orElse(null);
+        UserAdditionalData savedData = savedUser.getAdditionalData();
         assertNull(savedData);
     }
 
@@ -145,4 +140,48 @@ public class AdditionalDataTests {
                         .andExpect(jsonPath("$.additionalData").isNotEmpty());
     }
 
+    @Test
+    @org.springframework.transaction.annotation.Transactional // Permet de garder la connexion à la table Institution : quand on charge User et qu'il contient une entité d'une autre table, la connection à cette table est fermée a priori.
+    public void testAddAnInstitution() throws Exception {
+        String userJson = registerAUser();
+        String jwtCookie = login(userJson);        
+        
+        // Créer et associer une institution au user
+        createInstitution(jwtCookie);
+        
+        // Vérifier que l'institution est bien créée et associée au user
+        User savedUser = userRepository.findByMail("marie.tremblay@mail.com");
+        assertNotNull(savedUser.getInstitutions(), "La liste des institutions ne devrait pas être null");
+        assertEquals(1, savedUser.getInstitutions().size(), "Le user devrait avoir 1 institution");
+        
+        Institution savedInstitution = savedUser.getInstitutions().get(0);
+        assertNotNull(savedInstitution.getId(), "L'ID de l'institution devrait être généré");
+        assertEquals("Université de Paris", savedInstitution.getName());
+        assertEquals("Paris", savedInstitution.getTown());
+        assertEquals("contact@univ-paris.fr", savedInstitution.getContactMail());
+        assertEquals("Université", savedInstitution.getCategory());
+        assertEquals(25000, savedInstitution.getStudentsNumber());
+    }
+
+    private void createInstitution(String jwtCookie) throws Exception {
+        Institution institution = Institution.builder()
+                .name("Université de Paris")
+                .town("Paris")
+                .contactMail("contact@univ-paris.fr")
+                .category("Université")
+                .studentsNumber(25000)
+                .socialStatus("Public")
+                .institutionSpecifities("Formation pluridisciplinaire")
+                .studentsSpecificities("Étudiants internationaux")
+                .teachersSpecificities("Enseignants-chercheurs")
+                .build();
+
+        String institutionJson = objectMapper.writeValueAsString(institution);
+
+        mockMvc.perform(post("/institution/create")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(institutionJson)
+                        .cookie(new jakarta.servlet.http.Cookie("jwt", jwtCookie)))
+                        .andExpect(status().isOk());
+    }
 } 

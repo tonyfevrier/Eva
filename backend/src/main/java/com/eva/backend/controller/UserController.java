@@ -22,7 +22,6 @@ import com.eva.backend.records.CookieEssentials;
 import com.eva.backend.records.TwoCookies;
 
 import jakarta.mail.MessagingException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
@@ -103,13 +102,11 @@ public class UserController {
         // User is found thanks to the access Cookie.
         String token = requestUtils.getTokenFromRequest(request, "jwt");
         User user = userService.findByToken(token);
-        Optional<UserAdditionalData> optionalAdditionalData = userService.getAdditionalDataFrom(user);
-        if (!optionalAdditionalData.isEmpty()){
-            UserAdditionalData additionalData = optionalAdditionalData.get();
+        UserAdditionalData additionalData = user.getAdditionalData();
+        if (additionalData != null){
             return ResponseEntity.ok(Map.of("firstname", user.getFirstname(),
                                             "lastname", user.getLastname(),
                                             "mail", user.getUsername(),
-                                            "affiliation", additionalData.getAffiliation(),
                                             "acceptContact", additionalData.isAcceptContact(),
                                             "acceptMap", additionalData.isAcceptMap(),
                                             "street", additionalData.getStreet(),

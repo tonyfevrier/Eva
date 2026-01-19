@@ -12,10 +12,6 @@ public class ExperimentationService {
     private ExperimentationRepository experimentationRepository;
 
     public void save(Experimentation experimentation){
-        if (experimentation.getPedagogicalContext() != null) {
-            //pour que l'objet PedagogicalContext associé soit associé au bon id de l'expérimentation
-            experimentation.getPedagogicalContext().setExperimentation(experimentation);
-        }
         experimentationRepository.save(experimentation);
     }
 

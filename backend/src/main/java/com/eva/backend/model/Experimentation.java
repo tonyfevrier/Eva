@@ -4,6 +4,7 @@ import java.util.List;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -40,7 +41,10 @@ public class Experimentation {
     @Column(nullable = false)
     private String protocol;
 
-    @OneToOne(mappedBy = "experimentation", cascade = CascadeType.ALL, orphanRemoval = true)
+    //@Column(nullable = false) OneToMany (une innstitution peut faire plusieurs expés mais pas l'inverse)
+    //private Institution institution;
+
+    @Embedded
     private PedagogicalContext pedagogicalContext;
 
     @Column(nullable = false)

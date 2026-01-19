@@ -90,22 +90,17 @@ public class CrudExperimentationTests {
         // Vérifier que le PedagogicalContext a bien été enregistré
         PedagogicalContext savedContext = savedExperimentation.getPedagogicalContext();
         assertThat(savedContext).isNotNull();
-        assertThat(savedContext.getProblem()).isEqualTo("Difficulté d'apprentissage en mathématiques");
-        assertThat(savedContext.getAffiliation()).isEqualTo("Collège Jean Moulin");
-        assertThat(savedContext.getClassroom()).isEqualTo("5ème A");
+        assertThat(savedContext.getLearningDifficulty()).isEqualTo("Difficulté d'apprentissage en mathématiques");
+        assertThat(savedContext.getYearOfStudy()).isEqualTo("5ème A");
         assertThat(savedContext.getOldPedagogy()).isEqualTo("Cours magistral traditionnel");
         assertThat(savedContext.getNewPedagogy()).isEqualTo("Apprentissage par projet");
         assertThat(savedContext.getGroupsDescription()).isEqualTo("4 groupes de 6 élèves");
-        
-        // Vérifier la relation bidirectionnelle
-        assertThat(savedContext.getId()).isEqualTo(savedExperimentation.getId());
     }
 
     private String createAnExperimentation() throws JsonProcessingException{
         PedagogicalContext pedagogicalContext = PedagogicalContext.builder()
-                .problem("Difficulté d'apprentissage en mathématiques")
-                .affiliation("Collège Jean Moulin")
-                .classroom("5ème A")
+                .learningDifficulty("Difficulté d'apprentissage en mathématiques")
+                .yearOfStudy("5ème A")
                 .oldPedagogy("Cours magistral traditionnel")
                 .newPedagogy("Apprentissage par projet")
                 .groupsDescription("4 groupes de 6 élèves")

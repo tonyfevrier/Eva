@@ -11,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 
 import com.eva.backend.model.User;
 import com.eva.backend.model.UserAdditionalData;
-import com.eva.backend.service.UserAdditionalDataService;
 import com.eva.backend.service.UserService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,8 +18,6 @@ import jakarta.servlet.http.HttpServletRequest;
 @RestController
 @RequestMapping("/user")
 public class UserAdditionalDataController {
-    @Autowired
-    private UserAdditionalDataService addService;
 
     @Autowired 
     private UserService userService;
@@ -34,15 +31,15 @@ public class UserAdditionalDataController {
         User user = userService.findByToken(token);
 
         UserAdditionalData addData = new UserAdditionalData();
-        addData.setUser(user);
-        addData.setAffiliation((String) body.get("affiliation"));
         addData.setAcceptContact((boolean) body.get("acceptContact"));
         addData.setAcceptMap((boolean) body.get("acceptMap"));
         addData.setStreet((String) body.get("street"));
         addData.setPostcode((String) body.get("postcode"));
         addData.setTown((String) body.get("town"));
         addData.setPhone((String) body.get("phone"));
-        addService.save(addData);
+
+        user.setAdditionalData(addData);
+        userService.saveUpdatedUser(user);
         return ResponseEntity.ok(addData);
     }
  
