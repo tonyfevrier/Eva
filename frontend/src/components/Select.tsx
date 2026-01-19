@@ -1,5 +1,5 @@
 import type { PropsWithChildren } from "react"
-import styles from "./Input.module.css"
+import styles from "./Select.module.css"
 
 // Type pouvant contenir les attributs usuels de input et 3 aux autres attributs
 type SelectProps = {
