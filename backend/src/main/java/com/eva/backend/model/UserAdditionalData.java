@@ -1,7 +1,9 @@
 package com.eva.backend.model;
+
+import java.time.LocalDate;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -9,7 +11,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -36,10 +38,6 @@ public class UserAdditionalData {
     @JsonIgnore // Evite une sérialisation en boucle (User(AddData(User(AddData ...))))
     private User user;
 
-    @Column(nullable = false)
-    @Size(min = 1)
-    private String affiliation;
-
     private boolean acceptMap;
 
     private boolean acceptContact;
@@ -50,7 +48,19 @@ public class UserAdditionalData {
 
     private String town;
 
-    //@Pattern(regexp = "^[+]?[(]?[0-9]{1,4}[)]?[-\\s\\.]?[(]?[0-9]{1,4}[)]?[-\\s\\.]?[0-9]{1,9}$", 
-    //     message = "Numéro de téléphone invalide")
     private String phone;
+
+    @Past(message="La date de naissance doit être antérieure à la date actuelle")
+    private LocalDate birthday;
+
+    private String gender;
+    private String job;
+    private String specializedTopics;
+    private String otherSpecialization;
+    private String teacherBehaviour;
+    private String freeField;
+
+
+
+
 }
