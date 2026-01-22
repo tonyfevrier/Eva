@@ -1,7 +1,9 @@
 package com.eva.backend.controller;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.eva.backend.model.Institution;
 import com.eva.backend.model.User;
 import com.eva.backend.model.UserAdditionalData;
 import com.eva.backend.service.UserService;
@@ -105,6 +108,7 @@ public class UserController {
         String token = requestUtils.getTokenFromRequest(request, "jwt");
         User user = userService.findByToken(token);
         UserAdditionalData additionalData = user.getAdditionalData();
+        List<Institution> institutions = user.getInstitutions();
         
         Map<String, Object> response = new HashMap<>();
         response.put("firstname", user.getFirstname());
@@ -122,7 +126,6 @@ public class UserController {
             response.put("teacherBehaviour", additionalData.getTeacherBehaviour());
             response.put("freeField", additionalData.getFreeField());
         } else {
-            response.put("affiliation", "");
             response.put("acceptContact", false);
             response.put("acceptMap", false);
             response.put("birthday", "");
@@ -132,6 +135,14 @@ public class UserController {
             response.put("otherSpecialization", "");
             response.put("teacherBehaviour", "");
             response.put("freeField", "");
+        }
+
+        if (institutions != null){
+            ArrayList<String> institutionsNames = new ArrayList<String>();
+            for (Institution institution:institutions){
+                institutionsNames.add(institution.getName());
+            }
+            response.put("institutions", institutionsNames);
         }
         
         return ResponseEntity.ok(response);

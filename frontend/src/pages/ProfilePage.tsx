@@ -7,6 +7,7 @@ import { Input } from "../components/Input";
 import { Modal } from "../components/Modal";
 import { useNavigate, type NavigateFunction } from "react-router-dom";
 import { useTheme } from "../hooks/useTheme";
+import { Goto } from "../components/Goto";
 
 type State = {
     formDataInMemory: UpdateForm; //Valeur des champs enregistrées actuellement dans la base de données. Utile si l'utilisateur veut annuler ses modifications
@@ -169,6 +170,9 @@ export function ProfilePage(){
                     <Input type="checkbox" title="J'accepte qu'on puisse me contacter par email ou téléphone" name="acceptContact" checked={state.formData.acceptContact} onChange={handleToggleCheckbox} disabled={!state.isEditing}/>
                     <UpdateButtons toggleButton={state.isEditing} handleToggleButton={handleToggleEditing}/>
                 </form>
+                <p>Etablissements d'exercice</p>
+                    {data?.institutions.map((name:string) => <Goto key={name} href="" label={name} buttonLabel="Profil de l'établissement"/>)}
+                    
                 <form onSubmit={handleSavePassword}>
                     <Input title="Veuillez entrer un nouveau mot de passe" type="password" name="password" value={state.formData.password} onChange={handleFormChange} disabled={!state.isChangingPassword}/>
                     <Input title="Veuillez entrer une seconde fois le mot de passe" type="password" name="passwordCopy" value={state.formData.passwordCopy} onChange={handleFormChange} disabled={!state.isChangingPassword}/>

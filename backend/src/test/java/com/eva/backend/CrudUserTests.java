@@ -159,7 +159,8 @@ public class CrudUserTests {
     public void testGetOneUser() throws Exception {
         // Ma config de spring security exige que toute requête post login ait le cookie d'authentification.
         String accessCookie = registerLogUserAndGetAccessCookie();
-        registerAdditionalData(accessCookie);                        
+        registerAdditionalData(accessCookie);
+        createInstitution(accessCookie);
         
         mockMvc.perform(get("/auth/profile")
                         .cookie(new jakarta.servlet.http.Cookie("jwt", accessCookie)))
@@ -175,7 +176,9 @@ public class CrudUserTests {
                         .andExpect(jsonPath("$.specializedTopics", is("Informatique")))
                         .andExpect(jsonPath("$.otherSpecialization", is("Intelligence Artificielle")))
                         .andExpect(jsonPath("$.teacherBehaviour", is("Pédagogue")))
-                        .andExpect(jsonPath("$.freeField", is("Passionné de technologie")));
+                        .andExpect(jsonPath("$.freeField", is("Passionné de technologie")))
+                        .andExpect(jsonPath("$.institutions", hasSize(1)))
+                        .andExpect(jsonPath("$.institutions[0]", is("Université de Test")));
     }
 
     @Test
@@ -252,6 +255,25 @@ public class CrudUserTests {
         mockMvc.perform(post("/user/addData")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(additionalDataJson)
+                        .cookie(new jakarta.servlet.http.Cookie("jwt", jwtCookie)))
+                        .andExpect(status().isOk());
+    }
+
+    private void createInstitution(String jwtCookie) throws Exception {
+        Map<String, Object> institutionData = new HashMap<>();
+        institutionData.put("name", "Université de Test");
+        institutionData.put("town", "Paris");
+        institutionData.put("contactMail", "contact@universite-test.fr");
+        institutionData.put("category", "Université");
+        institutionData.put("studentsNumber", 5000);
+        institutionData.put("socialStatus", "Public");
+        institutionData.put("institutionSpecifities", "Spécialisée en sciences");
+
+        String institutionJson = objectMapper.writeValueAsString(institutionData);
+
+        mockMvc.perform(post("/institution/create")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(institutionJson)
                         .cookie(new jakarta.servlet.http.Cookie("jwt", jwtCookie)))
                         .andExpect(status().isOk());
     }

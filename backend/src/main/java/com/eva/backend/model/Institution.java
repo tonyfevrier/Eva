@@ -14,6 +14,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -26,6 +27,7 @@ public class Institution {
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Long id;
 
+    @ToString.Exclude
     @ManyToMany(mappedBy = "institutions")
     private List<User> users;
 

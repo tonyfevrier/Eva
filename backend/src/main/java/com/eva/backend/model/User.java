@@ -17,13 +17,13 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
 
@@ -61,6 +61,7 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Experimentation> experimentations;
 
+    @ToString.Exclude
     @ManyToMany
     @JoinTable(
         name = "user_institution",
