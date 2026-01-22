@@ -15,6 +15,7 @@ import { Goto } from './components/Goto';
 import { PasswordChangePage } from './pages/PasswordChangePage';
 import { DescribePage } from './pages/DescribePage';
 import { ExperimentationPage } from './pages/ExperimentationPage';
+import { InstitutionPage } from './pages/InstitutionPage';
 
 const routes: RouteObject[] = [
   {
@@ -64,6 +65,10 @@ const routes: RouteObject[] = [
             {
               path: "describeYou",
               element : <DescribePage/>, 
+            },
+            {
+              path: "institution",
+              element : <InstitutionPage/>, 
             },
             {
               path: "expe",
