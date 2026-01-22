@@ -28,7 +28,7 @@ export function InstitutionPage(){
     const [fetchError, setFetchError] = useState<Error|null>(null);
     const navigate = useNavigate();
 
-    /*const areRequiredInputsFilled = formData.gender !== "" && formData.birthday !== "jj/mm/aaaa" &&
+    const areRequiredInputsFilled = false; /*formData.gender !== "" && formData.birthday !== "jj/mm/aaaa" &&
                                     formData.job !== "" && formData.specializedTopics &&
                                     formData.teacherBehaviour !== "";*/
 

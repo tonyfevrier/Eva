@@ -1,5 +1,6 @@
 package com.eva.backend.service;
 
+import java.time.LocalDate;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -170,25 +171,40 @@ public class UserService {
             additionalData.setAcceptContact(acceptContact);
         }
 
-        String street = (String) body.get("street");
-        if (street != null){
-            additionalData.setStreet(street);
+        String birthday = (String) body.get("birthday");
+        if (birthday != null){
+            additionalData.setBirthday(LocalDate.parse(birthday));
         }
 
-        String postcode = (String) body.get("postcode");
-        if (postcode != null){
-            additionalData.setPostcode(postcode);
+        String gender = (String) body.get("gender");
+        if (gender != null){
+            additionalData.setGender(gender);
         }
 
-        String town = (String) body.get("town");
-        if (town != null){
-            additionalData.setTown(town);
+        String job = (String) body.get("job");
+        if (job != null){
+            additionalData.setJob(job);
         }
 
-        String phone = (String) body.get("phone");
-        if (phone != null){
-            additionalData.setPhone(phone);
-        } 
+        String specializedTopics = (String) body.get("specializedTopics");
+        if (specializedTopics != null){
+            additionalData.setSpecializedTopics(specializedTopics);
+        }
+
+        String otherSpecialization = (String) body.get("otherSpecialization");
+        if (otherSpecialization != null){
+            additionalData.setOtherSpecialization(otherSpecialization);
+        }
+
+        String teacherBehaviour = (String) body.get("teacherBehaviour");
+        if (teacherBehaviour != null){
+            additionalData.setTeacherBehaviour(teacherBehaviour);
+        }
+
+        String freeField = (String) body.get("freeField");
+        if (freeField != null){
+            additionalData.setFreeField(freeField);
+        }
         
         userToUpdate.setAdditionalData(additionalData);
         return userToUpdate;

@@ -20,21 +20,40 @@ public class PedagogicalContext {
     @Column(nullable = false)
     private String learningDifficulty;
 
+    @Column(nullable = false)
     private String studyField;
+
+    @Column(nullable = false)
     private String teachingTitle;
+
+    @Column(nullable = false)
     private String knowledges;
+
+    @Column(nullable = false)
     private String prerequisite;
 
+    @Column(nullable = false)
     private String organisationParticularities;
+
+    @Column(nullable = false)
     private String classesNumber;
+    
+    @Column(nullable = false)
     private String classesDuration;
+    
+    @Column(nullable = false)
     private String classesFrequency;
+    
+    @Column(nullable = false)
     private String classesDates;
 
     @Column(nullable = false)
     private String yearOfStudy;
 
+    @Column(nullable = false)
     private String studentsSpecificities;
+
+    @Column(nullable = false)
     private String studentsNumber;
 
     @Column(nullable = false)

@@ -42,6 +42,8 @@ public class User implements UserDetails {
 
     private String lastname;
 
+    private String pseudo;
+
     @Email(message = "Email invalide.")
     @Column(unique = true, nullable = false)
     private String mail;   

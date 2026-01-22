@@ -18,21 +18,18 @@ public class UserAdditionalData {
 
     private boolean acceptContact;
 
-    private String street;
-
-    private String postcode;
-
-    private String town;
-
-    private String phone;
-
     @Past(message="La date de naissance doit être antérieure à la date actuelle")
     private LocalDate birthday;
 
     private String gender;
+
     private String job;
+
     private String specializedTopics;
+
     private String otherSpecialization;
+
     private String teacherBehaviour;
+
     private String freeField;
 }

@@ -1,5 +1,7 @@
 package com.eva.backend.controller;
 
+import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -103,30 +105,38 @@ public class UserController {
         String token = requestUtils.getTokenFromRequest(request, "jwt");
         User user = userService.findByToken(token);
         UserAdditionalData additionalData = user.getAdditionalData();
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("firstname", user.getFirstname());
+        response.put("lastname", user.getLastname());
+        response.put("mail", user.getUsername());
+        
         if (additionalData != null){
-            return ResponseEntity.ok(Map.of("firstname", user.getFirstname(),
-                                            "lastname", user.getLastname(),
-                                            "mail", user.getUsername(),
-                                            "acceptContact", additionalData.isAcceptContact(),
-                                            "acceptMap", additionalData.isAcceptMap(),
-                                            "street", additionalData.getStreet(),
-                                            "postcode", additionalData.getPostcode(),
-                                            "town", additionalData.getTown(),
-                                            "phone", additionalData.getPhone()));
+            response.put("acceptContact", additionalData.isAcceptContact());
+            response.put("acceptMap", additionalData.isAcceptMap());
+            response.put("birthday", additionalData.getBirthday());
+            response.put("gender", additionalData.getGender());
+            response.put("job", additionalData.getJob());
+            response.put("specializedTopics", additionalData.getSpecializedTopics());
+            response.put("otherSpecialization", additionalData.getOtherSpecialization());
+            response.put("teacherBehaviour", additionalData.getTeacherBehaviour());
+            response.put("freeField", additionalData.getFreeField());
         } else {
-            return ResponseEntity.ok(Map.of("firstname", user.getFirstname(),
-                                            "lastname", user.getLastname(),
-                                            "mail", user.getUsername(),
-                                            "affiliation", "",
-                                            "acceptContact", false,
-                                            "acceptMap", false,
-                                            "street", "",
-                                            "postcode", "",
-                                            "town", "",
-                                            "phone", ""));
+            response.put("affiliation", "");
+            response.put("acceptContact", false);
+            response.put("acceptMap", false);
+            response.put("birthday", "");
+            response.put("gender", "");
+            response.put("job", "");
+            response.put("specializedTopics", "");
+            response.put("otherSpecialization", "");
+            response.put("teacherBehaviour", "");
+            response.put("freeField", "");
         }
         
+        return ResponseEntity.ok(response);
     }
+
 
     @DeleteMapping("/delete")
     public void delete(HttpServletRequest request) {
@@ -142,8 +152,6 @@ public class UserController {
         userService.update(body, updatedUser, encoder);
         return ResponseEntity.ok(updatedUser);
     }
-
-    
 
     @PostMapping("/resetMail")
     public ResponseEntity<?> sendPwdRecoveryMail(@RequestBody Map<String, String> body) throws MessagingException {

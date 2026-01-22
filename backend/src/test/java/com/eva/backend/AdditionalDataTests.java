@@ -52,10 +52,13 @@ public class AdditionalDataTests {
         assertNotNull(savedData, "Les données additionnelles devraient être enregistrées");
         assertTrue(savedData.isAcceptContact());
         assertFalse(savedData.isAcceptMap());
-        assertEquals("123 Rue de la Paix", savedData.getStreet());
-        assertEquals("75001", savedData.getPostcode());
-        assertEquals("Paris", savedData.getTown());
-        assertEquals("+33123456789", savedData.getPhone());
+        assertEquals("1990-05-15", savedData.getBirthday().toString());
+        assertEquals("Femme", savedData.getGender());
+        assertEquals("Enseignante", savedData.getJob());
+        assertEquals("Mathématiques", savedData.getSpecializedTopics());
+        assertEquals("Géométrie", savedData.getOtherSpecialization());
+        assertEquals("Bienveillant", savedData.getTeacherBehaviour());
+        assertEquals("Passionnée par l'enseignement", savedData.getFreeField());
     }
 
     private String registerAUser() throws Exception{
@@ -89,10 +92,13 @@ public class AdditionalDataTests {
         Map<String, Object> additionalData = new HashMap<>();
         additionalData.put("acceptContact", true);
         additionalData.put("acceptMap", false);
-        additionalData.put("street", "123 Rue de la Paix");
-        additionalData.put("postcode", "75001");
-        additionalData.put("town", "Paris");
-        additionalData.put("phone", "+33123456789");
+        additionalData.put("birthday", "1990-05-15");
+        additionalData.put("gender", "Femme");
+        additionalData.put("job", "Enseignante");
+        additionalData.put("specializedTopics", "Mathématiques");
+        additionalData.put("otherSpecialization", "Géométrie");
+        additionalData.put("teacherBehaviour", "Bienveillant");
+        additionalData.put("freeField", "Passionnée par l'enseignement");
 
         String additionalDataJson = objectMapper.writeValueAsString(additionalData);
 

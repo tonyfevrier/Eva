@@ -1,5 +1,6 @@
 package com.eva.backend.controller;
 
+import java.time.LocalDate;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,10 +34,13 @@ public class UserAdditionalDataController {
         UserAdditionalData addData = new UserAdditionalData();
         addData.setAcceptContact((boolean) body.get("acceptContact"));
         addData.setAcceptMap((boolean) body.get("acceptMap"));
-        addData.setStreet((String) body.get("street"));
-        addData.setPostcode((String) body.get("postcode"));
-        addData.setTown((String) body.get("town"));
-        addData.setPhone((String) body.get("phone"));
+        addData.setBirthday(LocalDate.parse((String) body.get("birthday")));
+        addData.setGender((String) body.get("gender"));
+        addData.setJob((String) body.get("job"));
+        addData.setSpecializedTopics((String) body.get("specializedTopics"));
+        addData.setOtherSpecialization((String) body.get("otherSpecialization"));
+        addData.setTeacherBehaviour((String) body.get("teacherBehaviour"));
+        addData.setFreeField((String) body.get("freeField"));
 
         user.setAdditionalData(addData);
         userService.saveUpdatedUser(user);

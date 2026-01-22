@@ -2,6 +2,7 @@ package com.eva.backend.model;
 
 import java.util.List;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -28,15 +29,23 @@ public class Institution {
     @ManyToMany(mappedBy = "institutions")
     private List<User> users;
 
+    @Column(nullable = false)
     private String name;
+
     private String town;
 
     @Email(message = "Email invalide.")
     private String contactMail;
 
+    @Column(nullable = false)
     private String category;
+
+    @Column(nullable = false)
     private Number studentsNumber;
+
+    @Column(nullable = false)
     private String socialStatus;
+    
     private String institutionSpecifities;    
     private String studentsSpecificities;
     private String teachersSpecificities;

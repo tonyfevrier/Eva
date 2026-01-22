@@ -34,6 +34,7 @@ public class Experimentation {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @Column(nullable = false)
     private List<String> keywords;
 
     private String personalKeywords;
@@ -50,5 +51,6 @@ public class Experimentation {
     @Column(nullable = false)
     private Boolean isSharingData;
 
+    @Column(nullable = false)
     private String dataPath;
 }
