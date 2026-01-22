@@ -5,6 +5,7 @@ import { useNavigate, type NavigateFunction } from "react-router-dom";
 import { useTheme } from "../hooks/useTheme";
 import { Textarea } from "../components/Textarea";
 import { Select } from "../components/Select";
+import { Goto } from "../components/Goto";
 
 type DescribeFormData = {
     acceptMap: boolean,
@@ -19,7 +20,8 @@ type DescribeFormData = {
 }
 
 export function DescribePage(){
-    const {setIsProfileCompleted} = useTheme();
+    const {isProfileCompleted} = useTheme();
+
     const initialformData = {acceptMap: false, acceptContact: false,
                              gender:"", birthday:"", job:"", specializedTopics:"",
                              otherSpecialization: "",teacherBehaviour: "", freeField: ""};
@@ -35,9 +37,12 @@ export function DescribePage(){
                       job: formData.job, specializedTopics: formData.specializedTopics,
                       otherSpecialization: formData.otherSpecialization,
                       teacherBehaviour: formData.teacherBehaviour, freeField: formData.freeField}
-        sendPostRequest(data, setFetchError, navigate, setIsProfileCompleted);
+        sendPostRequest(data, setFetchError, navigate);
     }
 
+    if (isProfileCompleted){
+        return <Goto href="/application/profile" label="Cette page n'est plus accessible." buttonLabel="Cliquez ici pour modifier votre profil"/>
+    }
 
     return <>
                 <h1>Te décrire</h1>
@@ -69,7 +74,7 @@ export function DescribePage(){
 }
 
 
-async function sendPostRequest(data: DescribeFormData, setFetchError:Dispatch<SetStateAction<Error|null>>, navigate: NavigateFunction, setIsProfileCompleted:Dispatch<SetStateAction<boolean>>){
+async function sendPostRequest(data: DescribeFormData, setFetchError:Dispatch<SetStateAction<Error|null>>, navigate: NavigateFunction){
     const response = await fetch("http://localhost:9000/user/addData", {
             method: "POST",
             headers:{
@@ -84,7 +89,6 @@ async function sendPostRequest(data: DescribeFormData, setFetchError:Dispatch<Se
         });
      
     if (response.ok){
-        setIsProfileCompleted(true);
         navigate("/application/institution");    
     } else {
         setFetchError(new Error(`Erreur ${response.status}: ${response.statusText}`));

@@ -20,7 +20,7 @@ type InstitutionFormData = {
 
 
 export function InstitutionPage(){
-    const {setIsProfileCompleted} = useTheme();
+    const {isProfileCompleted, setIsProfileCompleted} = useTheme();
     const initialformData = {name: "", town: "", category: "", contactMail: "", socialStatus: "",
                              institutionSpecifities: "", studentsSpecificities: "",
                              studentsNumber: "", teachersSpecificities: ""};
@@ -28,12 +28,12 @@ export function InstitutionPage(){
     const [fetchError, setFetchError] = useState<Error|null>(null);
     const navigate = useNavigate();
 
-    const areRequiredInputsFilled = false; /*formData.gender !== "" && formData.birthday !== "jj/mm/aaaa" &&
-                                    formData.job !== "" && formData.specializedTopics &&
-                                    formData.teacherBehaviour !== "";*/
+    const areRequiredInputsFilled = formData.name !== "" && formData.contactMail !== "jj/mm/aaaa" &&
+                                    formData.category !== "" && formData.socialStatus &&
+                                    formData.studentsNumber !== "";
 
-    const handleSubmit = (e:React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault(); 
+    const handleSubmit = (e:React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault();
         const data = {name: formData.name, town: formData.town, category: formData.category,
                       contactMail: formData.contactMail,
                       socialStatus: formData.socialStatus,
@@ -41,27 +41,31 @@ export function InstitutionPage(){
                       institutionSpecifities: formData.institutionSpecifities,
                       studentsSpecificities: formData.studentsSpecificities,
                       teachersSpecificities: formData.teachersSpecificities}
+    console.log(isProfileCompleted)
         sendPostRequest(data, setFetchError, navigate, setIsProfileCompleted);
+        if (e.currentTarget.name === "saveQuit"){
+            navigate("/");
+        } 
     }
 
 
     return <>
                 <h1>Tes établissements</h1>
-                <p>
-                    Pour terminer l'enregistrement, vous allez maintenant rentrer les détails sur votre ou vos établissements d'exercice.
-                </p>
-                <form onSubmit={handleSubmit}>
-                    <Input title="Nom de l'établissement" name="name" type="text" value={formData.name} onChange={(e)=>{setFormData({...formData, name: e.target.value})}}/>
+                {isProfileCompleted? <p> Vous avez enregistré un établissement avec succès, vous pouvez en entrer un autre</p>:
+                                     <p>Pour terminer l'enregistrement, vous allez maintenant rentrer les détails sur votre ou vos établissements d'exercice.</p> }
+
+                <form>
+                    <Input title="Nom de l'établissement" name="name" type="text" value={formData.name} onChange={(e)=>{setFormData({...formData, name: e.target.value})}} required/>
                     <Input title="Ville" name="ville" type="text" value={formData.town} onChange={(e)=>{setFormData({...formData, town: e.target.value})}}/>
-                    <Input title="Mail de contact" name="contactMail" type="mail" value={formData.contactMail} onChange={(e)=>{setFormData({...formData, contactMail: e.target.value})}}/>
-                    <Select title="Type" value={formData.category} onChange={(e)=>{setFormData({...formData, category: e.target.value})}}>
+                    <Input title="Mail de contact" name="contactMail" type="mail" value={formData.contactMail} onChange={(e)=>{setFormData({...formData, contactMail: e.target.value})}} required/>
+                    <Select title="Type" value={formData.category} onChange={(e)=>{setFormData({...formData, category: e.target.value})}} required>
                         <option value="">Choisissez une des options suivantes</option>
                         <option value="Public">Public</option>
                         <option value="Privé">Privé</option>
                         <option value="Privé hors contrat">Privé hors contrat</option>
                         <option value="Autre">Autre</option>
                     </Select>
-                    <Select title="Niveau socio-économique moyen des apprenants" value={formData.socialStatus} onChange={(e)=>{setFormData({...formData, socialStatus: e.target.value})}}>
+                    <Select title="Niveau socio-économique moyen des apprenants" value={formData.socialStatus} onChange={(e)=>{setFormData({...formData, socialStatus: e.target.value})}} required>
                         <option value="">Choisissez une des options suivantes</option>
                         <option value="Très faible">Très faible</option>
                         <option value="Faible">Faible</option>
@@ -69,13 +73,14 @@ export function InstitutionPage(){
                         <option value="Elevé">Elevé</option>
                         <option value="Très élevé">Très élevé</option>
                     </Select>
-                    <Input title="Nombre approximatif d'étudiants" type="text" name="studentsNumber" value={formData.studentsNumber} onChange={(e)=>{setFormData({...formData, studentsNumber: e.target.value})}}/>
+                    <Input title="Nombre approximatif d'étudiants" type="text" name="studentsNumber" value={formData.studentsNumber} onChange={(e)=>{setFormData({...formData, studentsNumber: e.target.value})}} required/>
                     <Textarea title="Particularités de l'établissement" name="institutionSpecifities" value={formData.institutionSpecifities} onChange={(e)=>{setFormData({...formData, institutionSpecifities: e.target.value})}}/>
                     <Textarea title="Particularités des apprenants" name="studentsSpecificities" value={formData.studentsSpecificities} onChange={(e)=>{setFormData({...formData, studentsSpecificities: e.target.value})}}/>
                     <Textarea title="Particularités des enseignants" name="teachersSpecificities" value={formData.teachersSpecificities} onChange={(e)=>{setFormData({...formData, teachersSpecificities: e.target.value})}}/>
 
-                    <Button disabled={!areRequiredInputsFilled}>Sauvegarder un établissement</Button>
-                    <h1>IL Faudra mettre ICI un second bouton Sauvegarder et quitter la page qui n'apparait une fois qu'un établissement au moins a été complété</h1>
+                    {isProfileCompleted && <Button onClick={()=>{navigate("/")}}>Quitter la page</Button> }
+                    <Button disabled={!areRequiredInputsFilled} name="saveStay" onClick={handleSubmit}>Sauver et entrer un autre établissement</Button>
+                    <Button disabled={!areRequiredInputsFilled} name="saveQuit" onClick={handleSubmit}>Sauver et quitter la page</Button>
                     {fetchError?.message && <p>{fetchError?.message}</p>}
                 </form>
            </>
@@ -92,14 +97,14 @@ async function sendPostRequest(data: InstitutionFormData, setFetchError:Dispatch
             body: JSON.stringify(data),
             credentials: "include"})
             .catch(error => {
-                setFetchError(new Error(error.getMessage()))
+                setFetchError(new Error(error?.message || String(error)))
                 throw error;
         });
      
     if (response.ok){
         setIsProfileCompleted(true);
-        navigate("/");    
     } else {
+        console.log(12)
         setFetchError(new Error(`Erreur ${response.status}: ${response.statusText}`));
     }
     return response

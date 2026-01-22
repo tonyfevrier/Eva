@@ -6,6 +6,7 @@ type ButtonDisabler = {
     text?: string
 }
 
+/*Composant à deux boutons : Modifier/annuler et sauver. Quand on clique sur modifier, annuler apparaît et inversement */
 export function UpdateButtons({toggleButton, handleToggleButton, text="Modifier"}:ButtonDisabler){
     return <div className={styles.container}>
                 {!toggleButton && <button type="button" onClick={handleToggleButton}> {text}</button>}

@@ -35,13 +35,14 @@ public class Institution {
     private String town;
 
     @Email(message = "Email invalide.")
+    @Column(nullable = false, unique = true)
     private String contactMail;
 
     @Column(nullable = false)
     private String category;
 
     @Column(nullable = false)
-    private Number studentsNumber;
+    private Integer studentsNumber;
 
     @Column(nullable = false)
     private String socialStatus;
