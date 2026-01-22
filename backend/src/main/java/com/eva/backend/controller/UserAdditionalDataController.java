@@ -30,11 +30,15 @@ public class UserAdditionalDataController {
     public ResponseEntity<?> registerAdditionalData(@RequestBody Map<String, Object> body, HttpServletRequest request){
         String token = requestUtils.getTokenFromRequest(request, "jwt");
         User user = userService.findByToken(token);
-
         UserAdditionalData addData = new UserAdditionalData();
         addData.setAcceptContact((boolean) body.get("acceptContact"));
         addData.setAcceptMap((boolean) body.get("acceptMap"));
-        addData.setBirthday(LocalDate.parse((String) body.get("birthday")));
+        
+        String birthdayStr = (String) body.get("birthday");
+        if (birthdayStr != null && !birthdayStr.isEmpty()) {
+            addData.setBirthday(LocalDate.parse(birthdayStr));
+        }
+        
         addData.setGender((String) body.get("gender"));
         addData.setJob((String) body.get("job"));
         addData.setSpecializedTopics((String) body.get("specializedTopics"));

@@ -34,11 +34,9 @@ function reducer(state:State, action:Action){
             return { ...state, isEditing: !state.isEditing,
                        formData:{...state.formData, firstname: state.formDataInMemory.firstname,
                                                     lastname: state.formDataInMemory.lastname,
-                                                    affiliation: state.formDataInMemory.affiliation,
-                                                    street: state.formDataInMemory.street,
-                                                    postcode: state.formDataInMemory.postcode,
-                                                    town: state.formDataInMemory.town,
-                                                    phone: state.formDataInMemory.phone,
+                                                    job: state.formDataInMemory.job,
+                                                    specializedTopics: state.formDataInMemory.specializedTopics,
+                                                    otherSpecialization: state.formDataInMemory.otherSpecialization,
                                                     acceptMap: state.formDataInMemory.acceptMap,
                                                     acceptContact: state.formDataInMemory.acceptContact}};
         case 'TOGGLE_PASSWORD_CHANGE':
@@ -50,11 +48,9 @@ function reducer(state:State, action:Action){
             return { ...state, isEditing: false, updateError: null, 
                     formDataInMemory:{...state.formDataInMemory, firstname: state.formData.firstname, 
                                                                  lastname: state.formData.lastname,
-                                                                 affiliation: state.formData.affiliation,
-                                                                 street: state.formData.street,
-                                                                 postcode: state.formData.postcode,
-                                                                 town: state.formData.town,
-                                                                 phone: state.formData.phone,
+                                                                 job: state.formData.job,
+                                                                 specializedTopics: state.formData.specializedTopics,
+                                                                 otherSpecialization: state.formData.otherSpecialization,
                                                                  acceptMap: state.formData.acceptMap,
                                                                  acceptContact: state.formData.acceptContact}};
         case 'SAVE_PWD':
@@ -75,7 +71,8 @@ function reducer(state:State, action:Action){
 
 export function ProfilePage(){    
     const initialformData = {firstname: "", lastname: "",mail: "", password:"pass", passwordCopy:"pass",
-                             affiliation: "", street: "", postcode: "", town:"", phone:"", acceptMap: false, acceptContact: false
+                             job: "", specializedTopics:"", otherSpecialization:"", 
+                             teacherBehaviour: "", freeField: "", acceptMap: false, acceptContact: false
     };
     const initialState = {isEditing: false, isChangingPassword: false, formData: initialformData, formDataInMemory: initialformData,
                           updateError: null, printModal: false};
@@ -122,20 +119,15 @@ export function ProfilePage(){
             dispatch({type: 'SET_ERROR', error: new Error("Le champ lastname doit être rempli")});
             return;
         } 
-        if (state.formData.affiliation === ""){
-            dispatch({type: 'SET_ERROR', error: new Error("Le champ affiliation doit être rempli")});
-            return;
-        } 
+        
         const updatedData = JSON.stringify({
                     firstname: state.formData.firstname,
                     lastname: state.formData.lastname,
-                    affiliation: state.formData.affiliation,
+                    job: state.formData.job,
+                    specializedTopics: state.formData.specializedTopics,
+                    otherSpecialization: state.formData.otherSpecialization,
                     acceptContact: state.formData.acceptContact,
                     acceptMap: state.formData.acceptMap,
-                    street: state.formData.street,
-                    postcode: state.formData.postcode,
-                    town: state.formData.town,
-                    phone: state.formData.phone,
                 });
         
         sendPutRequest(updatedData, dispatch, "SAVE_INFOS");
@@ -170,13 +162,11 @@ export function ProfilePage(){
                     <Input title="Mail" name="mail" value={state.formData.mail} onChange={handleFormChange} disabled={true}/>
                     <Input title="Prénom" name="firstname" value={state.formData.firstname} onChange={handleFormChange} disabled={!state.isEditing} variant="withErrorMsg"/>
                     <Input title="Nom" name="lastname" value={state.formData.lastname} onChange={handleFormChange} disabled={!state.isEditing} variant="withErrorMsg"/>
-                    <Input title="Affiliation" name="affiliation" value={state.formData.affiliation} onChange={handleFormChange} disabled={!state.isEditing} variant="withErrorMsg"/>
+                    <Input title="Profession/Type de poste actuel" name="job" value={state.formData.job} onChange={handleFormChange} disabled={!state.isEditing}/>
+                    <Input title="Discipline(s)/Spécialité(s)" name="specializedTopics" value={state.formData.specializedTopics} onChange={handleFormChange} disabled={!state.isEditing}/>
+                    <Input title="Autre spécialisation/Formation à mentionner" name="otherSpecialization" value={state.formData.otherSpecialization} onChange={handleFormChange} disabled={!state.isEditing}/>
                     <Input type="checkbox" title="J'accepte que ma localisation apparaisse sur une carte" name="acceptMap" checked={state.formData.acceptMap} onChange={handleToggleCheckbox} disabled={!state.isEditing}/>
-                    <Input title="Rue" name="street" value={state.formData.street} onChange={handleFormChange} disabled={!state.isEditing || !state.formData.acceptMap}/>
-                    <Input title="Code postal" name="postcode" value={state.formData.postcode} onChange={handleFormChange} disabled={!state.isEditing || !state.formData.acceptMap}/>
-                    <Input title="Ville" name="town" value={state.formData.town} onChange={handleFormChange} disabled={!state.isEditing || !state.formData.acceptMap}/>
                     <Input type="checkbox" title="J'accepte qu'on puisse me contacter par email ou téléphone" name="acceptContact" checked={state.formData.acceptContact} onChange={handleToggleCheckbox} disabled={!state.isEditing}/>
-                    <Input title="Téléphone" name="phone" value={state.formData.phone} onChange={handleFormChange} disabled={!state.isEditing || !state.formData.acceptContact}/>
                     <UpdateButtons toggleButton={state.isEditing} handleToggleButton={handleToggleEditing}/>
                 </form>
                 <form onSubmit={handleSavePassword}>

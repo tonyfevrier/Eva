@@ -30,12 +30,10 @@ export type UpdateForm = {
     lastname: string,
     mail: string,
     password: string,
-    passwordCopy: string,
-    affiliation: string,
-    town: string,
-    street: string,
-    postcode: string,
-    phone: string,
+    passwordCopy: string, 
+    job: string,
+    specializedTopics: string,
+    otherSpecialization: string,
     acceptMap: boolean,
     acceptContact: boolean
 };
