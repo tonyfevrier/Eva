@@ -178,7 +178,8 @@ public class CrudUserTests {
                         .andExpect(jsonPath("$.teacherBehaviour", is("Pédagogue")))
                         .andExpect(jsonPath("$.freeField", is("Passionné de technologie")))
                         .andExpect(jsonPath("$.institutions", hasSize(1)))
-                        .andExpect(jsonPath("$.institutions[0]", is("Université de Test")));
+                        .andExpect(jsonPath("$.institutions[0]['id']", is(1)))
+                        .andExpect(jsonPath("$.institutions[0]['name']", is("Université de Test")));
     }
 
     @Test
