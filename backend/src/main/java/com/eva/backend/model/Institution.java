@@ -34,6 +34,7 @@ public class Institution {
     @Column(nullable = false)
     private String name;
 
+    @Column(nullable = false)
     private String town;
 
     @Email(message = "Email invalide.")
