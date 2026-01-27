@@ -8,6 +8,8 @@ import { Modal } from "../components/Modal";
 import { useNavigate, type NavigateFunction } from "react-router-dom";
 import { useTheme } from "../hooks/useTheme";
 import { Goto } from "../components/Goto";
+import styles from "./ProfilePage.module.css"
+
 
 type State = {
     formDataInMemory: UpdateForm; //Valeur des champs enregistrées actuellement dans la base de données. Utile si l'utilisateur veut annuler ses modifications
@@ -159,6 +161,7 @@ export function ProfilePage(){
 
     return <>
                 <h1> Infos utilisateurs</h1>
+                <h4  className={styles.blockTitle}>Coordonnées</h4>
                 <form onSubmit={handleSaveInfos}>
                     <Input title="Mail" name="mail" value={state.formData.mail} onChange={handleFormChange} disabled={true}/>
                     <Input title="Prénom" name="firstname" value={state.formData.firstname} onChange={handleFormChange} disabled={!state.isEditing} variant="withErrorMsg"/>
@@ -171,9 +174,10 @@ export function ProfilePage(){
                     <UpdateButtons toggleButton={state.isEditing} handleToggleButton={handleToggleEditing}/>
                 </form>
                 
-                <p>Etablissements d'exercice</p>
-                    {data?.institutions.map((institution: {id: string, name: string}) => <Goto key={institution.name} href={`/application/institutionProfile/${institution.id}`} label={institution.name} buttonLabel="Profil de l'établissement"/>)}
-                    
+                <h4 className={styles.blockTitle}>Etablissements d'exercice</h4>
+                    {data?.institutions.map((institution: {id: string, name: string}) => <Goto className={styles.goto} href={`/application/institutionProfile/${institution.id}`} label={institution.name} buttonLabel="Profil de l'établissement"/>)}
+                
+                <h4 className={styles.blockTitle}>Mots de passe</h4>
                 <form onSubmit={handleSavePassword}>
                     <Input title="Veuillez entrer un nouveau mot de passe" type="password" name="password" value={state.formData.password} onChange={handleFormChange} disabled={!state.isChangingPassword}/>
                     <Input title="Veuillez entrer une seconde fois le mot de passe" type="password" name="passwordCopy" value={state.formData.passwordCopy} onChange={handleFormChange} disabled={!state.isChangingPassword}/>
