@@ -25,7 +25,7 @@ export function InstitutionPage(){
                              institutionSpecifities: "", studentsSpecificities: "",
                              studentsNumber: "", teachersSpecificities: ""};
     const [formData, setFormData] = useState<InstitutionFormData>(initialformData);
-    const [fetchError, setFetchError] = useState<Error|null>(null);
+    const [error, setError] = useState<Error|null>(null);
     const navigate = useNavigate();
 
     const areRequiredInputsFilled = formData.name !== "" && formData.contactMail !== "jj/mm/aaaa" &&
@@ -41,8 +41,7 @@ export function InstitutionPage(){
                       institutionSpecifities: formData.institutionSpecifities,
                       studentsSpecificities: formData.studentsSpecificities,
                       teachersSpecificities: formData.teachersSpecificities}
-    console.log(isProfileCompleted)
-        sendPostRequest(data, setFetchError, navigate, setIsProfileCompleted);
+        sendPostRequest(data, setError, navigate, setIsProfileCompleted);
         if (e.currentTarget.name === "saveQuit"){
             navigate("/");
         } 
@@ -81,7 +80,7 @@ export function InstitutionPage(){
                     {isProfileCompleted && <Button onClick={()=>{navigate("/")}}>Quitter la page</Button> }
                     <Button disabled={!areRequiredInputsFilled} name="saveStay" onClick={handleSubmit}>Sauver et entrer un autre établissement</Button>
                     <Button disabled={!areRequiredInputsFilled} name="saveQuit" onClick={handleSubmit}>Sauver et quitter la page</Button>
-                    {fetchError?.message && <p>{fetchError?.message}</p>}
+                    {error?.message && <p>{error?.message}</p>}
                 </form>
            </>
 }
