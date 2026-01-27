@@ -23,8 +23,6 @@ import com.eva.backend.model.UserAdditionalData;
 import com.eva.backend.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import jakarta.validation.constraints.Email;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest

@@ -13,16 +13,12 @@ import org.springframework.http.ResponseEntity;
 
 import com.eva.backend.model.Institution;
 import com.eva.backend.model.User;
-import com.eva.backend.repository.InstitutionRepository;
 import com.eva.backend.service.InstitutionService;
 import com.eva.backend.service.UserService;
 
-import jakarta.persistence.Column;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.constraints.Email;
 
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
@@ -61,7 +57,7 @@ public class InstitutionController {
         user.getInstitutions().add(savedInstitution);        
         userService.saveUpdatedUser(user);
         
-        return ResponseEntity.ok(savedInstitution);
+        return ResponseEntity.ok(Map.of("message", "Institution créée"));
     }
 
     @GetMapping("/get/{id}")
