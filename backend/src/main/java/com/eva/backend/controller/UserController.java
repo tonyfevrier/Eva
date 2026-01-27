@@ -138,11 +138,14 @@ public class UserController {
         }
 
         if (institutions != null){
-            ArrayList<String> institutionsNames = new ArrayList<String>();
-            for (Institution institution:institutions){
-                institutionsNames.add(institution.getName());
+            List<Map<String, Object>> institutionsList = new ArrayList<>();
+            for (Institution institution : institutions) {
+                institutionsList.add(Map.of(
+                    "id", institution.getId(),
+                    "name", institution.getName()
+                ));
             }
-            response.put("institutions", institutionsNames);
+            response.put("institutions", institutionsList);
         }
         
         return ResponseEntity.ok(response);

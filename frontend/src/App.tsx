@@ -16,6 +16,7 @@ import { PasswordChangePage } from './pages/PasswordChangePage';
 import { DescribePage } from './pages/DescribePage';
 import { ExperimentationPage } from './pages/ExperimentationPage';
 import { InstitutionPage } from './pages/InstitutionPage';
+import { InstitutionProfilePage } from './pages/InstitutionProfilePage';
 
 const routes: RouteObject[] = [
   {
@@ -73,7 +74,11 @@ const routes: RouteObject[] = [
             {
               path: "expe",
               element : <ExperimentationPage/>
-            }
+            },
+            {
+              path: "institutionProfile/:id",
+              element : <InstitutionProfilePage/>, 
+            },
         ]
       }
     ]

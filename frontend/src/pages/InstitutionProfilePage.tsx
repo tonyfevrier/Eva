@@ -19,7 +19,7 @@ type InstitutionFormData = {
 }
 
 
-export function InstitutionPage(){
+export function InstitutionProfilePage(){
     const {isProfileCompleted, setIsProfileCompleted} = useTheme();
     const initialformData = {name: "", town: "", category: "", contactMail: "", socialStatus: "",
                              institutionSpecifities: "", studentsSpecificities: "",

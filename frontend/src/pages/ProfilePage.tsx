@@ -170,8 +170,9 @@ export function ProfilePage(){
                     <Input type="checkbox" title="J'accepte qu'on puisse me contacter par email ou téléphone" name="acceptContact" checked={state.formData.acceptContact} onChange={handleToggleCheckbox} disabled={!state.isEditing}/>
                     <UpdateButtons toggleButton={state.isEditing} handleToggleButton={handleToggleEditing}/>
                 </form>
+                
                 <p>Etablissements d'exercice</p>
-                    {data?.institutions.map((name:string) => <Goto key={name} href="" label={name} buttonLabel="Profil de l'établissement"/>)}
+                    {data?.institutions.map((institution: {id: string, name: string}) => <Goto key={institution.name} href={`/application/institutionProfile/${institution.id}`} label={institution.name} buttonLabel="Profil de l'établissement"/>)}
                     
                 <form onSubmit={handleSavePassword}>
                     <Input title="Veuillez entrer un nouveau mot de passe" type="password" name="password" value={state.formData.password} onChange={handleFormChange} disabled={!state.isChangingPassword}/>

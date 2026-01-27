@@ -16,6 +16,12 @@ import com.eva.backend.repository.InstitutionRepository;
 import com.eva.backend.service.UserService;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+
+
 
 @RestController
 @RequestMapping("/institution")
@@ -49,5 +55,17 @@ public class InstitutionController {
         
         return ResponseEntity.ok(savedInstitution);
     }
+
+    @GetMapping("/get/{id}")
+    public String getInstitution(@RequestParam String param) {
+        return new String();
+    }
+
+    @PutMapping("/update/{id}")
+    public String updateInstitution(@PathVariable String id, @RequestBody String entity) {
+        
+        return entity;
+    }
+    
  
 }
