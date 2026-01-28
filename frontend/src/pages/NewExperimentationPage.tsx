@@ -3,31 +3,76 @@ import { MultiStep } from "../components/MultiStep";
 import { FirstStep } from "./newExperimentationSubPages/FirstStep";
 import { SecondStep } from "./newExperimentationSubPages/SecondStep";
 import { ThirdStep } from "./newExperimentationSubPages/ThirdStep";
+import { FourthStep } from "./newExperimentationSubPages/FourthStep";
 
 export type ExperimentationData = {
     keywords: Map<string, Boolean>; //Array<string>;
     personalKeywords: string;
-    problem: string;
-    affiliation: string;
-    classroom: string;
+    learningDifficulty: string;
+    learningDifficultyOrigin: string;
+    affiliationId: string;
+    studyField: string;
+    teachingTitle: string;
+    knowledges: string;
+    prerequisite: string;
+    organisationParticularities: string;
+    yearOfStudy: string;
+    classesFrequencies: string;
+    classesDates: string;
+    studentsSpecificities: string;
+    studentsNumber: string;
     oldPedagogy: string;
     newPedagogy: string;
-    groupsDescription: string
     protocol: string;
     isSharingData: boolean;
+    initialEvaluationOld: string;
+    immediateEvaluationOld: string;
+    delayedEvaluationOld: string;
+    accountedEvaluationOld: string;
+    initialEvaluationNew: string;
+    immediateEvaluationNew: string;
+    delayedEvaluationNew: string;
+    accountedEvaluationNew: string;
 }
 
+
 export function NewExperimentationPage(){
-    const initialExpeData = {keywords: new Map([["1", false], ["2", false]]), personalKeywords: "", problem: "",
-                                 affiliation: "", classroom: "", oldPedagogy: "",
-                                 newPedagogy: "", groupsDescription: "",
-                                 protocol: "", isSharingData: false};
+    const initialExpeData: ExperimentationData = {
+        keywords: new Map([["1", false], ["2", false]]), 
+        personalKeywords: "", 
+        learningDifficulty: "",
+        learningDifficultyOrigin: "",
+        affiliationId: "", 
+        studyField: "",
+        teachingTitle: "",
+        knowledges: "",
+        prerequisite: "",
+        organisationParticularities: "",
+        yearOfStudy: "",
+        classesFrequencies: "",
+        classesDates: "",
+        studentsSpecificities: "",
+        studentsNumber: "",
+        oldPedagogy: "",
+        newPedagogy: "", 
+        protocol: "", 
+        isSharingData: false,
+        initialEvaluationOld: "",
+        immediateEvaluationOld: "",
+        delayedEvaluationOld: "",
+        accountedEvaluationOld: "",
+        initialEvaluationNew: "",
+        immediateEvaluationNew: "",
+        delayedEvaluationNew: "",
+        accountedEvaluationNew: ""
+    };
     
     const [expeData, setExpeData] = useState<ExperimentationData>(initialExpeData);
     
-    const firstPageIsFilled = expeData.problem !== "" && expeData.oldPedagogy !== "" && expeData.newPedagogy !== "";
+    const firstPageIsFilled = expeData.affiliationId !== "" && expeData.learningDifficulty !== "" && expeData.learningDifficultyOrigin !== "" && expeData.oldPedagogy !== "" && expeData.newPedagogy !== "";
     const secondPageIsFilled = expeData.protocol !== "";
-    const thirdPageIsFilled = expeData.affiliation !== "" && expeData.classroom !== "" && expeData.groupsDescription !== "";
+    const thirdPageIsFilled = expeData.studyField !== "" && expeData.teachingTitle !== "" && expeData.knowledges !== "" && expeData.prerequisite !== "" && expeData.organisationParticularities !== "" && expeData.classesFrequencies !== "" && expeData.classesDates !== "" && expeData.yearOfStudy !== "" && expeData.studentsNumber !== "" && expeData.studentsSpecificities !== "" ;
+    const fourthPageIsFilled = expeData.initialEvaluationOld !== "" && expeData.immediateEvaluationOld !== "" && expeData.delayedEvaluationOld !== "" && expeData.accountedEvaluationOld !== "" && expeData.initialEvaluationNew !== "" && expeData.immediateEvaluationNew !== "" && expeData.delayedEvaluationNew !== "" && expeData.accountedEvaluationNew !== "";
 
     const clickableSteps = new Map([["1: Pédagogies impliquées", true],
                                ["2: Choix du protocole", firstPageIsFilled],
@@ -47,6 +92,7 @@ export function NewExperimentationPage(){
                     <FirstStep state={expeData} setState={setExpeData} handleClickOnCloud={handleClickOnCloud}/>
                     <SecondStep state={expeData} setState={setExpeData}/>
                     <ThirdStep state={expeData} setState={setExpeData}/>
+                    <FourthStep state={expeData} setState={setExpeData}/>
                 </MultiStep>
             </>
 }

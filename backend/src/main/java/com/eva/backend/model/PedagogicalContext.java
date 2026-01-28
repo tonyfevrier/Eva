@@ -21,6 +21,9 @@ public class PedagogicalContext {
     private String learningDifficulty;
 
     @Column(nullable = false)
+    private String learningDifficultyOrigin;
+
+    @Column(nullable = false)
     private String studyField;
 
     @Column(nullable = false)
@@ -34,15 +37,9 @@ public class PedagogicalContext {
 
     @Column(nullable = false)
     private String organisationParticularities;
-
-    @Column(nullable = false)
-    private String classesNumber;
     
     @Column(nullable = false)
-    private String classesDuration;
-    
-    @Column(nullable = false)
-    private String classesFrequency;
+    private String classesFrequencies;
     
     @Column(nullable = false)
     private String classesDates;
@@ -61,9 +58,6 @@ public class PedagogicalContext {
 
     @Column(nullable = false)
     private String newPedagogy;
-
-    @Column(nullable = false)
-    private String groupsDescription;
 
     @Embedded
     @AttributeOverrides({
