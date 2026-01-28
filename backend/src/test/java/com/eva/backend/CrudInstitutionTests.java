@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -162,6 +163,58 @@ public class CrudInstitutionTests {
                 .content(updatedJson))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message", is("Institution non trouvée")));
+    }
+
+    @Test
+    public void testGetAllInstitutions() throws Exception {
+        // Création de plusieurs institutions
+        Institution institution1 = Institution.builder()
+                .name("Institution 1")
+                .town("Paris")
+                .contactMail("contact1@test.fr")
+                .category("Collège")
+                .studentsNumber(300)
+                .socialStatus("Public")
+                .institutionSpecifities("Spécialité 1")
+                .studentsSpecificities("Étudiants 1")
+                .teachersSpecificities("Enseignants 1")
+                .build();
+        Institution saved1 = institutionService.save(institution1);
+        
+        Institution institution2 = Institution.builder()
+                .name("Institution 2")
+                .town("Lyon")
+                .contactMail("contact2@test.fr")
+                .category("Lycée")
+                .studentsNumber(600)
+                .socialStatus("Privé")
+                .institutionSpecifities("Spécialité 2")
+                .studentsSpecificities("Étudiants 2")
+                .teachersSpecificities("Enseignants 2")
+                .build();
+        Institution saved2 = institutionService.save(institution2);
+        
+        Institution institution3 = Institution.builder()
+                .name("Institution 3")
+                .town("Bordeaux")
+                .contactMail("contact3@test.fr")
+                .category("Université")
+                .studentsNumber(1000)
+                .socialStatus("Public")
+                .institutionSpecifities("Spécialité 3")
+                .studentsSpecificities("Étudiants 3")
+                .teachersSpecificities("Enseignants 3")
+                .build();
+        Institution saved3 = institutionService.save(institution3);
+        
+        // Vérification de la récupération de toutes les institutions
+        mockMvc.perform(get("/institution/getAll")
+                .cookie(new jakarta.servlet.http.Cookie("jwt", jwtCookie)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.institutions", hasSize(3)))
+                .andExpect(jsonPath("$.institutions[0]." + saved1.getId(), is("Institution 1")))
+                .andExpect(jsonPath("$.institutions[1]." + saved2.getId(), is("Institution 2")))
+                .andExpect(jsonPath("$.institutions[2]." + saved3.getId(), is("Institution 3")));
     }
 
     private Institution createInstitution(){

@@ -1,6 +1,7 @@
 package com.eva.backend.controller;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -76,6 +77,16 @@ public class InstitutionController {
                                             "teachersSpecificities", institution.getTeachersSpecificities()));
         }
         return ResponseEntity.notFound().build();
+    }
+
+    @GetMapping("/getAll")
+    public ResponseEntity<?> getAllInstitutions() {
+        List<Institution> institutionList = institutionService.findAll();
+        List<Map<Long, String>> institutionMapping = new ArrayList<>();
+        for (Institution institution:institutionList){
+            institutionMapping.add(Map.of(institution.getId(), institution.getName()));
+        }
+        return ResponseEntity.ok(Map.of("institutions", institutionMapping));
     }
 
     @PutMapping("/update/{id}")

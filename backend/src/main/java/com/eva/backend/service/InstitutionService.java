@@ -1,5 +1,6 @@
 package com.eva.backend.service;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,10 @@ public class InstitutionService {
 
     public Optional<Institution> findById(Long id){
         return institutionRepository.findById(id);
+    }
+
+    public List<Institution> findAll(){
+        return institutionRepository.findAll();
     }
 
     public void update(Institution institutionToUpdate, Institution newInstitution){
