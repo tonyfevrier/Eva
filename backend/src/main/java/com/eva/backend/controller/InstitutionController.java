@@ -82,9 +82,10 @@ public class InstitutionController {
     @GetMapping("/getAll")
     public ResponseEntity<?> getAllInstitutions() {
         List<Institution> institutionList = institutionService.findAll();
-        List<Map<Long, String>> institutionMapping = new ArrayList<>();
+        List<Map<String, Object>> institutionMapping = new ArrayList<>();
         for (Institution institution:institutionList){
-            institutionMapping.add(Map.of(institution.getId(), institution.getName()));
+            institutionMapping.add(Map.of("id", institution.getId(),
+                                          "name", institution.getName()));
         }
         return ResponseEntity.ok(Map.of("institutions", institutionMapping));
     }

@@ -10,7 +10,7 @@ export type ExperimentationData = {
     personalKeywords: string;
     learningDifficulty: string;
     learningDifficultyOrigin: string;
-    affiliationId: string;
+    affiliation: string;
     studyField: string;
     teachingTitle: string;
     knowledges: string;
@@ -42,7 +42,7 @@ export function NewExperimentationPage(){
         personalKeywords: "", 
         learningDifficulty: "",
         learningDifficultyOrigin: "",
-        affiliationId: "", 
+        affiliation: "", 
         studyField: "",
         teachingTitle: "",
         knowledges: "",
@@ -69,7 +69,7 @@ export function NewExperimentationPage(){
     
     const [expeData, setExpeData] = useState<ExperimentationData>(initialExpeData);
     
-    const firstPageIsFilled = expeData.affiliationId !== "" && expeData.learningDifficulty !== "" && expeData.learningDifficultyOrigin !== "" && expeData.oldPedagogy !== "" && expeData.newPedagogy !== "";
+    const firstPageIsFilled = expeData.affiliation !== "" && expeData.learningDifficulty !== "" && expeData.learningDifficultyOrigin !== "" && expeData.oldPedagogy !== "" && expeData.newPedagogy !== "";
     const secondPageIsFilled = expeData.protocol !== "";
     const thirdPageIsFilled = expeData.studyField !== "" && expeData.teachingTitle !== "" && expeData.knowledges !== "" && expeData.prerequisite !== "" && expeData.organisationParticularities !== "" && expeData.classesFrequencies !== "" && expeData.classesDates !== "" && expeData.yearOfStudy !== "" && expeData.studentsNumber !== "" && expeData.studentsSpecificities !== "" ;
     const fourthPageIsFilled = expeData.initialEvaluationOld !== "" && expeData.immediateEvaluationOld !== "" && expeData.delayedEvaluationOld !== "" && expeData.accountedEvaluationOld !== "" && expeData.initialEvaluationNew !== "" && expeData.immediateEvaluationNew !== "" && expeData.delayedEvaluationNew !== "" && expeData.accountedEvaluationNew !== "";

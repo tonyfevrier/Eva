@@ -212,9 +212,12 @@ public class CrudInstitutionTests {
                 .cookie(new jakarta.servlet.http.Cookie("jwt", jwtCookie)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.institutions", hasSize(3)))
-                .andExpect(jsonPath("$.institutions[0]." + saved1.getId(), is("Institution 1")))
-                .andExpect(jsonPath("$.institutions[1]." + saved2.getId(), is("Institution 2")))
-                .andExpect(jsonPath("$.institutions[2]." + saved3.getId(), is("Institution 3")));
+                .andExpect(jsonPath("$.institutions[0].id", is(saved1.getId().intValue())))
+                .andExpect(jsonPath("$.institutions[0].name", is("Institution 1")))
+                .andExpect(jsonPath("$.institutions[1].id", is(saved2.getId().intValue())))
+                .andExpect(jsonPath("$.institutions[1].name", is("Institution 2")))
+                .andExpect(jsonPath("$.institutions[2].id", is(saved3.getId().intValue())))
+                .andExpect(jsonPath("$.institutions[2].name", is("Institution 3")));
     }
 
     private Institution createInstitution(){

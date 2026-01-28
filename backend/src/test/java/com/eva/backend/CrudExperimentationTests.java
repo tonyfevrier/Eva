@@ -94,7 +94,6 @@ public class CrudExperimentationTests {
         assertThat(savedContext.getYearOfStudy()).isEqualTo("5ème A");
         assertThat(savedContext.getOldPedagogy()).isEqualTo("Cours magistral traditionnel");
         assertThat(savedContext.getNewPedagogy()).isEqualTo("Apprentissage par projet");
-        assertThat(savedContext.getGroupsDescription()).isEqualTo("4 groupes de 6 élèves");
     }
 
     private String createAnExperimentation() throws JsonProcessingException{
@@ -103,7 +102,6 @@ public class CrudExperimentationTests {
                 .yearOfStudy("5ème A")
                 .oldPedagogy("Cours magistral traditionnel")
                 .newPedagogy("Apprentissage par projet")
-                .groupsDescription("4 groupes de 6 élèves")
                 .build();
 
         Experimentation experimentation = Experimentation.builder()
