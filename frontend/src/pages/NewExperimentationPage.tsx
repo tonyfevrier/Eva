@@ -76,12 +76,12 @@ export function NewExperimentationPage(){
     const firstPageIsFilled = oneKeyWordIsChosen && expeData.affiliation !== "" && expeData.learningDifficulty !== "" && expeData.learningDifficultyOrigin !== "" && expeData.oldPedagogy !== "" && expeData.newPedagogy !== "";
     const secondPageIsFilled = expeData.protocol !== "";
     const thirdPageIsFilled = expeData.studyField !== "" && expeData.teachingTitle !== "" && expeData.knowledges !== "" && expeData.prerequisite !== "" && expeData.organisationParticularities !== "" && expeData.classesFrequencies !== "" && expeData.classesDates !== "" && expeData.yearOfStudy !== "" && expeData.studentsNumber !== "" && expeData.studentsSpecificities !== "" ;
-    const fourthPageIsFilled = expeData.initialEvaluationOld !== "" && expeData.immediateEvaluationOld !== "" && expeData.delayedEvaluationOld !== "" && expeData.accountedEvaluationOld !== "" && expeData.initialEvaluationNew !== "" && expeData.immediateEvaluationNew !== "" && expeData.delayedEvaluationNew !== "" && expeData.accountedEvaluationNew !== "";
+    const fourthPageIsFilled = expeData.initialEvaluationOld !== "" && expeData.immediateEvaluationOld !== "" && expeData.delayedEvaluationOld !== "" && expeData.initialEvaluationNew !== "" && expeData.immediateEvaluationNew !== "" && expeData.delayedEvaluationNew !== "";
 
-    const clickableSteps = new Map([["1: Pédagogies impliquées", true],
-                               ["2: Choix du protocole", firstPageIsFilled],
-                               ["3: Contexte", secondPageIsFilled],
-                               ["4: Comment évaluer?", thirdPageIsFilled]]);
+    const clickableSteps = new Map([["1: Pédagogies impliquées", firstPageIsFilled],
+                               ["2: Choix du protocole", secondPageIsFilled],
+                               ["3: Contexte", thirdPageIsFilled],
+                               ["4: Comment évaluer?", fourthPageIsFilled]]);
 
     const handleClickOnCloud = (e:React.MouseEvent<HTMLButtonElement>) => {
         /*Met le mot clé cliqué à true afin qu'il soit coloré */
