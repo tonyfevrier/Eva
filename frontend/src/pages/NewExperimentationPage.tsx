@@ -38,7 +38,10 @@ export type ExperimentationData = {
 
 export function NewExperimentationPage(){
     const initialExpeData: ExperimentationData = {
-        keywords: new Map([["1", false], ["2", false]]), 
+        keywords: new Map([["Attention", false], ["Motivation", false],
+                           ["Compréhension", false], ["Raisonnement", false],
+                           ["Gestion de classe", false], ["Evaluation", false],
+                           ["Mémorisation", false]]), 
         personalKeywords: "", 
         learningDifficulty: "",
         learningDifficultyOrigin: "",
@@ -69,7 +72,8 @@ export function NewExperimentationPage(){
     
     const [expeData, setExpeData] = useState<ExperimentationData>(initialExpeData);
     
-    const firstPageIsFilled = expeData.affiliation !== "" && expeData.learningDifficulty !== "" && expeData.learningDifficultyOrigin !== "" && expeData.oldPedagogy !== "" && expeData.newPedagogy !== "";
+    const oneKeyWordIsChosen = Array.from(expeData.keywords.values()).some(value => value === true) || expeData.personalKeywords !== "";
+    const firstPageIsFilled = oneKeyWordIsChosen && expeData.affiliation !== "" && expeData.learningDifficulty !== "" && expeData.learningDifficultyOrigin !== "" && expeData.oldPedagogy !== "" && expeData.newPedagogy !== "";
     const secondPageIsFilled = expeData.protocol !== "";
     const thirdPageIsFilled = expeData.studyField !== "" && expeData.teachingTitle !== "" && expeData.knowledges !== "" && expeData.prerequisite !== "" && expeData.organisationParticularities !== "" && expeData.classesFrequencies !== "" && expeData.classesDates !== "" && expeData.yearOfStudy !== "" && expeData.studentsNumber !== "" && expeData.studentsSpecificities !== "" ;
     const fourthPageIsFilled = expeData.initialEvaluationOld !== "" && expeData.immediateEvaluationOld !== "" && expeData.delayedEvaluationOld !== "" && expeData.accountedEvaluationOld !== "" && expeData.initialEvaluationNew !== "" && expeData.immediateEvaluationNew !== "" && expeData.delayedEvaluationNew !== "" && expeData.accountedEvaluationNew !== "";

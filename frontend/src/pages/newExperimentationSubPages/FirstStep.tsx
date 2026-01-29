@@ -5,7 +5,6 @@ import { Textarea } from "../../components/Textarea"
 import type { ExperimentationData } from "../NewExperimentationPage"
 import { useFetch } from "../../hooks/useFetch"
 import { Spinner } from "../../components/Spinner"
-import { Select } from "../../components/Select"
 import { Datalist } from "../../components/Datalist"
 
 type FirstStepState = {

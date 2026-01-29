@@ -15,6 +15,7 @@ export function MultiStep({clickableSteps, children}:MultiProps){
 
     const clickableStepsKeys =  Array.from(clickableSteps.keys());
     const isOnTheLastStep = step === clickableStepsKeys.length;
+    const nextStep = Math.min(clickableStepsKeys.length, step + 1);
     //const lastClickableKeys = clickableSteps.get(clickableStepsKeys[clickableStepsKeys.length - 1]);
     return  <>
                 <NavBar variant="primary">
@@ -30,7 +31,7 @@ export function MultiStep({clickableSteps, children}:MultiProps){
                 })}
                 <div>
                     <Button onClick={()=>setStep(c=>c-1)} disabled={step===1}>Précédent</Button>
-                    <Button onClick={()=>setStep(Math.min(clickableStepsKeys.length, step + 1))} disabled={!clickableSteps.get(clickableStepsKeys[step])}>{isOnTheLastStep?"Sauver l'expérimentation":"Suivant"}</Button>
+                    <Button onClick={()=>setStep(nextStep)} disabled={!clickableSteps.get(clickableStepsKeys[step])}>{isOnTheLastStep?"Sauver l'expérimentation":"Suivant"}</Button>
                 </div>
             </>
 }
