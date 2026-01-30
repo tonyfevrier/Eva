@@ -42,8 +42,9 @@ public class Experimentation {
     @Column(nullable = false)
     private String protocol;
 
-    //@Column(nullable = false) OneToMany (une innstitution peut faire plusieurs expés mais pas l'inverse)
-    //private Institution institution;
+    @ManyToOne
+    @JoinColumn(name = "institution_id", nullable = false)
+    private Institution institution;
 
     @Embedded
     private PedagogicalContext pedagogicalContext;

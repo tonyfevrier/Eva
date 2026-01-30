@@ -27,9 +27,9 @@ export function FirstStep({state, setState, handleClickOnCloud}:FirstStepState){
     if (data){
 
         return <div>
-                <Datalist title="Etablissement de l'expérimentation" value={state.affiliation} onChange={e => setState({...state, affiliation: e.target.value})}>
+                <Datalist title="Etablissement de l'expérimentation" value={state.affiliation.name} onChange={e => setState({...state, affiliation:{id:e.target.id, name:e.target.value}})}>
                     {data["institutions"].map(institution => (
-                        <option key={institution.id} value={institution.name} />
+                        <option id={institution.id} key={institution.id} value={institution.name} />
                     ))}
                 </Datalist>
                 <Cloud title="Choisissez éventuellement des mots clés" options={state.keywords} onClick={handleClickOnCloud}/>

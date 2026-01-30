@@ -5,12 +5,17 @@ import { SecondStep } from "./newExperimentationSubPages/SecondStep";
 import { ThirdStep } from "./newExperimentationSubPages/ThirdStep";
 import { FourthStep } from "./newExperimentationSubPages/FourthStep";
 
+export type Affiliation = {
+    id: string,
+    name: string
+}
+
 export type ExperimentationData = {
     keywords: Map<string, Boolean>; //Array<string>;
     personalKeywords: string;
     learningDifficulty: string;
     learningDifficultyOrigin: string;
-    affiliation: string;
+    affiliation: Affiliation;
     studyField: string;
     teachingTitle: string;
     knowledges: string;
@@ -42,38 +47,21 @@ export function NewExperimentationPage(){
                            ["Compréhension", false], ["Raisonnement", false],
                            ["Gestion de classe", false], ["Evaluation", false],
                            ["Mémorisation", false]]), 
-        personalKeywords: "", 
-        learningDifficulty: "",
-        learningDifficultyOrigin: "",
-        affiliation: "", 
-        studyField: "",
-        teachingTitle: "",
-        knowledges: "",
-        prerequisite: "",
-        organisationParticularities: "",
-        yearOfStudy: "",
-        classesFrequencies: "",
-        classesDates: "",
-        studentsSpecificities: "",
-        studentsNumber: "",
-        oldPedagogy: "",
-        newPedagogy: "", 
-        protocol: "", 
-        isSharingData: false,
-        initialEvaluationOld: "",
-        immediateEvaluationOld: "",
-        delayedEvaluationOld: "",
-        accountedEvaluationOld: "",
-        initialEvaluationNew: "",
-        immediateEvaluationNew: "",
-        delayedEvaluationNew: "",
-        accountedEvaluationNew: ""
+        personalKeywords: "", learningDifficulty: "",learningDifficultyOrigin: "",
+        affiliation: {id:"", name:""}, studyField: "",teachingTitle: "",
+        knowledges: "",prerequisite: "",organisationParticularities: "",
+        yearOfStudy: "",classesFrequencies: "",classesDates: "",
+        studentsSpecificities: "",studentsNumber: "",oldPedagogy: "",
+        newPedagogy: "", protocol: "", isSharingData: false,
+        initialEvaluationOld: "",immediateEvaluationOld: "",delayedEvaluationOld: "",
+        accountedEvaluationOld: "",initialEvaluationNew: "",immediateEvaluationNew: "",
+        delayedEvaluationNew: "",accountedEvaluationNew: ""
     };
     
     const [expeData, setExpeData] = useState<ExperimentationData>(initialExpeData);
-    
+
     const oneKeyWordIsChosen = Array.from(expeData.keywords.values()).some(value => value === true) || expeData.personalKeywords !== "";
-    const firstPageIsFilled = oneKeyWordIsChosen && expeData.affiliation !== "" && expeData.learningDifficulty !== "" && expeData.learningDifficultyOrigin !== "" && expeData.oldPedagogy !== "" && expeData.newPedagogy !== "";
+    const firstPageIsFilled = oneKeyWordIsChosen && expeData.affiliation.name !== "" && expeData.learningDifficulty !== "" && expeData.learningDifficultyOrigin !== "" && expeData.oldPedagogy !== "" && expeData.newPedagogy !== "";
     const secondPageIsFilled = expeData.protocol !== "";
     const thirdPageIsFilled = expeData.studyField !== "" && expeData.teachingTitle !== "" && expeData.knowledges !== "" && expeData.prerequisite !== "" && expeData.organisationParticularities !== "" && expeData.classesFrequencies !== "" && expeData.classesDates !== "" && expeData.yearOfStudy !== "" && expeData.studentsNumber !== "" && expeData.studentsSpecificities !== "" ;
     const fourthPageIsFilled = expeData.initialEvaluationOld !== "" && expeData.immediateEvaluationOld !== "" && expeData.delayedEvaluationOld !== "" && expeData.initialEvaluationNew !== "" && expeData.immediateEvaluationNew !== "" && expeData.delayedEvaluationNew !== "";
@@ -91,8 +79,51 @@ export function NewExperimentationPage(){
         setExpeData({...expeData, keywords: newKeyWords});
     }
 
+    const saveExperimentation = () => { 
+ 
+
+        /*keyword doit être une liste je pense */
+        const data = {keywords: expeData.keywords, 
+                      personalKeywords: expeData.personalKeywords,
+                      protocol: expeData.protocol, 
+                      isSharingData: expeData.isSharingData, 
+                      affiliationID: expeData.affiliation.id,
+                      pedagogicalContext: {
+                        learningDifficulty: expeData.learningDifficulty,
+                        learningDifficultyOrigin: expeData.learningDifficultyOrigin,
+                        studyField: expeData.studyField,
+                        teachingTitle: expeData.teachingTitle,
+                        knowledges: expeData.knowledges,
+                        prerequisite: expeData.prerequisite,
+                        organisationParticularities: expeData.organisationParticularities,
+                        classesFrequencies: expeData.classesFrequencies,
+                        classesDates: expeData.classesDates,
+                        yearOfStudy: expeData.yearOfStudy,
+                        studentsSpecificities: expeData.studentsSpecificities,
+                        studentsNumber: expeData.studentsNumber,
+                        oldPedagogy: expeData.oldPedagogy,
+                        newPedagogy: expeData.newPedagogy,
+                        oldPedagogyEvaluations: {
+                            initialEvaluation: expeData.initialEvaluationOld,
+                            immediateEvaluation: expeData.immediateEvaluationOld,
+                            delayedEvaluation: expeData.delayedEvaluationOld,
+                            accountedEvaluation: expeData.accountedEvaluationOld
+                        },
+                        newPedagogyEvaluations: {
+                            initialEvaluation: expeData.initialEvaluationNew,
+                            immediateEvaluation: expeData.immediateEvaluationNew,
+                            delayedEvaluation: expeData.delayedEvaluationNew,
+                            accountedEvaluation: expeData.accountedEvaluationNew
+                        }
+                    }};
+        /*sendPostRequest(data, setError, navigate, setIsProfileCompleted);
+        if (e.currentTarget.name === "saveQuit"){
+            navigate("/");
+        } */
+    }
+
     return <>
-                <MultiStep clickableSteps={clickableSteps} >
+                <MultiStep clickableSteps={clickableSteps} onLastClick={saveExperimentation} >
                     <FirstStep state={expeData} setState={setExpeData} handleClickOnCloud={handleClickOnCloud}/>
                     <SecondStep state={expeData} setState={setExpeData}/>
                     <ThirdStep state={expeData} setState={setExpeData}/>
@@ -100,3 +131,25 @@ export function NewExperimentationPage(){
                 </MultiStep>
             </>
 }
+
+/* async function sendPostRequest(data: InstitutionFormData, setFetchError:Dispatch<SetStateAction<Error|null>>, navigate: NavigateFunction, setIsProfileCompleted:Dispatch<SetStateAction<boolean>>){
+    const response = await fetch("http://localhost:9000/institution/create", {
+            method: "POST",
+            headers:{
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify(data),
+            credentials: "include"})
+            .catch(error => {
+                setFetchError(new Error(error?.message || String(error)))
+                throw error;
+        });
+     
+    if (response.ok){
+        setIsProfileCompleted(true);
+    } else {
+        setFetchError(new Error(`Erreur ${response.status}: ${response.statusText}`));
+    }
+    return response
+} */

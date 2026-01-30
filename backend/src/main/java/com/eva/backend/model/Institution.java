@@ -8,6 +8,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import lombok.AllArgsConstructor;
@@ -30,6 +31,10 @@ public class Institution {
     @ToString.Exclude
     @ManyToMany(mappedBy = "institutions")
     private List<User> users;
+
+    @ToString.Exclude
+    @OneToMany(mappedBy = "institution")
+    private List<Experimentation> experimentations;
 
     @Column(nullable = false)
     private String name;
