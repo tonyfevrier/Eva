@@ -4,6 +4,7 @@ import type { ExperimentationData } from "../NewExperimentationPage";
 import { PostButton } from "../../components/PostButton";
 import variantData from "../../data/variants.json";
 import styles from "./SecondStep.module.css";
+import type React from "react";
 
 type StepState = {
     state: ExperimentationData;
@@ -11,19 +12,23 @@ type StepState = {
 }
 
 export function SecondStep({state, setState}:StepState){
-    
+
+    const chooseVariant = (e:React.MouseEvent<HTMLInputElement>) => {
+        /*On récupère le nom de la variante
+        on le met dans protocol
+        on change le style du bouton correspondant et on remet celui des autres au style normal */
+        e.stopPropagation();
+        if (e.currentTarget.dataset.key){
+            setState({...state, protocol: e.currentTarget.dataset.key});
+        }
+    };
+
     return <div>
                 <h2>Pour évaluer votre pratique, nous vous donnons le choix entre les protocoles suivants</h2>
                 
                 <div className={styles.container}>
-                    {variantData.map((variant, index) => <PostButton key={index} title={variant.title} text={variant.text} notices={variant.notices} />)}
+                    {variantData.map((variant, index) => <PostButton key={index} title={variant.title} text={variant.text} notices={variant.notices} onClick={chooseVariant} protocol={state.protocol}/>)}
                 </div>
-                <Select title="Quel protocole choisissez-vous pour votre évaluation" value={state.protocol} onChange={(e) => {setState({...state, protocol:e.target.value})}}>
-                    <option value="">--Please choose an option--</option>
-                    <option value="Variante années">Variante années</option>
-                    <option value="Variante groupes">Variante groupes</option>
-                    <option value="Variante enseignements">Variante enseignements</option>
-                </Select>
             </div>
 }
 

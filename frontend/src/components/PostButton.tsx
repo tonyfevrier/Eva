@@ -6,16 +6,21 @@ type PostButtonType = {
     title: string,
     text: string,
     notices: Array<string>,
+    onClick: (e:React.MouseEvent<HTMLInputElement>) => void,
+    protocol:string
 }
 
-export function PostButton({title, text, notices}:PostButtonType){
+export function PostButton({title, text, notices, onClick, protocol=""}:PostButtonType){
     const [isModalOpen, setIsModalOpen] = useState(false);
-    
+    const isVariantChoosen = title === protocol;
     return  <>
-                <Button className={styles.container} onClick={() => setIsModalOpen(true)}>
-                    <p>{title}</p>
-                    <p>{text}</p>
-                </Button>
+                <div className={styles.container}>
+                    <Button className={isVariantChoosen? styles.btnContainerChosen : styles.btnContainer} onClick={() => setIsModalOpen(true)}>
+                        <p>{title}</p>
+                        <p>{text}</p>
+                    </Button>
+                    <Button className={styles.chooseButton} data-key={title} onClick={onClick}>Je choisis cette variante</Button> 
+                </div>
                 
                 {isModalOpen && (
                     <div className={styles.modalOverlay} onClick={() => setIsModalOpen(false)}>
