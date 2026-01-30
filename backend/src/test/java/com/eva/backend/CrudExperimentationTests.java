@@ -5,6 +5,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 
@@ -20,6 +21,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.eva.backend.model.Experimentation;
+import com.eva.backend.model.Evaluations;
 import com.eva.backend.model.PedagogicalContext;
 import com.eva.backend.model.User;
 import com.eva.backend.repository.ExperimentationRepository;
@@ -91,17 +93,69 @@ public class CrudExperimentationTests {
         PedagogicalContext savedContext = savedExperimentation.getPedagogicalContext();
         assertThat(savedContext).isNotNull();
         assertThat(savedContext.getLearningDifficulty()).isEqualTo("Difficulté d'apprentissage en mathématiques");
+        assertThat(savedContext.getLearningDifficultyOrigin()).isEqualTo("Manque de pratique des concepts de base");
+        assertThat(savedContext.getStudyField()).isEqualTo("Mathématiques");
+        assertThat(savedContext.getTeachingTitle()).isEqualTo("Algèbre et géométrie");
+        assertThat(savedContext.getKnowledges()).isEqualTo("Équations du premier degré, théorème de Pythagore");
+        assertThat(savedContext.getPrerequisite()).isEqualTo("Opérations de base, fractions");
+        assertThat(savedContext.getOrganisationParticularities()).isEqualTo("Classe en demi-groupe");
+        assertThat(savedContext.getClassesFrequencies()).isEqualTo("2 fois par semaine");
+        assertThat(savedContext.getClassesDates()).isEqualTo("Lundi et jeudi de 10h à 11h");
         assertThat(savedContext.getYearOfStudy()).isEqualTo("5ème A");
+        assertThat(savedContext.getStudentsSpecificities()).isEqualTo("Élèves à besoins particuliers");
+        assertThat(savedContext.getStudentsNumber()).isEqualTo("24");
         assertThat(savedContext.getOldPedagogy()).isEqualTo("Cours magistral traditionnel");
         assertThat(savedContext.getNewPedagogy()).isEqualTo("Apprentissage par projet");
+        
+        // Vérifier les évaluations de l'ancienne pédagogie
+        Evaluations oldEvaluations = savedContext.getOldPedagogyEvaluations();
+        assertThat(oldEvaluations).isNotNull();
+        assertThat(oldEvaluations.getInitialEvaluation()).isEqualTo(LocalDate.of(2026, 1, 15));
+        assertThat(oldEvaluations.getImmediateEvaluation()).isEqualTo(LocalDate.of(2026, 2, 15));
+        assertThat(oldEvaluations.getDelayedEvaluation()).isEqualTo(LocalDate.of(2026, 3, 15));
+        assertThat(oldEvaluations.getAccountedEvaluation()).isEqualTo(LocalDate.of(2026, 4, 15));
+        
+        // Vérifier les évaluations de la nouvelle pédagogie
+        Evaluations newEvaluations = savedContext.getNewPedagogyEvaluations();
+        assertThat(newEvaluations).isNotNull();
+        assertThat(newEvaluations.getInitialEvaluation()).isEqualTo(LocalDate.of(2026, 1, 20));
+        assertThat(newEvaluations.getImmediateEvaluation()).isEqualTo(LocalDate.of(2026, 2, 20));
+        assertThat(newEvaluations.getDelayedEvaluation()).isEqualTo(LocalDate.of(2026, 3, 20));
+        assertThat(newEvaluations.getAccountedEvaluation()).isNull();
     }
 
     private String createAnExperimentation() throws JsonProcessingException{
+        Evaluations oldPedagogyEvaluations = Evaluations.builder()
+                .initialEvaluation(LocalDate.of(2026, 1, 15))
+                .immediateEvaluation(LocalDate.of(2026, 2, 15))
+                .delayedEvaluation(LocalDate.of(2026, 3, 15))
+                .accountedEvaluation(LocalDate.of(2026, 4, 15))
+                .build();
+
+        Evaluations newPedagogyEvaluations = Evaluations.builder()
+                .initialEvaluation(LocalDate.of(2026, 1, 20))
+                .immediateEvaluation(LocalDate.of(2026, 2, 20))
+                .delayedEvaluation(LocalDate.of(2026, 3, 20))
+                .accountedEvaluation(null)
+                .build();
+
         PedagogicalContext pedagogicalContext = PedagogicalContext.builder()
                 .learningDifficulty("Difficulté d'apprentissage en mathématiques")
+                .learningDifficultyOrigin("Manque de pratique des concepts de base")
+                .studyField("Mathématiques")
+                .teachingTitle("Algèbre et géométrie")
+                .knowledges("Équations du premier degré, théorème de Pythagore")
+                .prerequisite("Opérations de base, fractions")
+                .organisationParticularities("Classe en demi-groupe")
+                .classesFrequencies("2 fois par semaine")
+                .classesDates("Lundi et jeudi de 10h à 11h")
                 .yearOfStudy("5ème A")
+                .studentsSpecificities("Élèves à besoins particuliers")
+                .studentsNumber("24")
                 .oldPedagogy("Cours magistral traditionnel")
                 .newPedagogy("Apprentissage par projet")
+                .oldPedagogyEvaluations(oldPedagogyEvaluations)
+                .newPedagogyEvaluations(newPedagogyEvaluations)
                 .build();
 
         Experimentation experimentation = Experimentation.builder()
