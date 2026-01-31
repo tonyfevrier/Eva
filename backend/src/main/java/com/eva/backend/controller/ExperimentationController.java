@@ -9,9 +9,9 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.eva.backend.model.Experimentation;
-import com.eva.backend.model.ExperimentationRequest;
 import com.eva.backend.model.Institution;
 import com.eva.backend.model.User;
+import com.eva.backend.records.ExperimentationRequest;
 import com.eva.backend.service.ExperimentationService;
 import com.eva.backend.service.InstitutionService;
 
@@ -35,10 +35,10 @@ public class ExperimentationController {
 
     @PostMapping("/create")    
     public ResponseEntity<?> createExperimentation(@RequestBody ExperimentationRequest experimentationRequest, @AuthenticationPrincipal User user){
-        Experimentation experimentation = experimentationRequest.getExperimentation();
+        Experimentation experimentation = experimentationRequest.experimentation();
         experimentation.setUser(user); // le jwt filter extrait du cookie le User actuel. Il ne reste qu'à l'associer
         
-        Optional<Institution> optionalInstitution = institutionService.findById(experimentationRequest.getAffiliationID());
+        Optional<Institution> optionalInstitution = institutionService.findById(experimentationRequest.affiliationID());
         if (!optionalInstitution.isEmpty()){
             experimentation.setInstitution(optionalInstitution.get());            
         } 

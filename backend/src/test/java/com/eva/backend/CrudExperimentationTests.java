@@ -21,11 +21,14 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.eva.backend.model.Experimentation;
+import com.eva.backend.model.Institution;
 import com.eva.backend.model.Evaluations;
 import com.eva.backend.model.PedagogicalContext;
 import com.eva.backend.model.User;
+import com.eva.backend.records.ExperimentationRequest;
 import com.eva.backend.repository.ExperimentationRepository;
 import com.eva.backend.repository.UserRepository;
+import com.eva.backend.service.InstitutionService;
 import com.eva.backend.utils.UserCreation;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -50,17 +53,26 @@ public class CrudExperimentationTests {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private InstitutionService institutionService;
+
     private String jwtCookie;
+    private Institution institution;
 
     @BeforeEach
     public void setup() throws Exception {
         String userJson = userCreation.registerAUser();        
-        jwtCookie = userCreation.login(userJson); 
+        jwtCookie = userCreation.login(userJson);
+        institution = createInstitution(); 
     }
 
     @Test
     public void testCreateExperimentation() throws Exception {
-        String experimentationJson = createAnExperimentation();
+        Experimentation experimentation = createAnExperimentation();
+
+        ExperimentationRequest experimentationRequest = new ExperimentationRequest(experimentation, institution.getId());
+
+        String experimentationJson = objectMapper.writeValueAsString(experimentationRequest);
 
         // Envoi de la requête et vérification de la réussite de son succès
         mockMvc.perform(post("/expe/create")
@@ -88,6 +100,12 @@ public class CrudExperimentationTests {
         assertThat(savedExperimentation.getUser()).isNotNull();
         assertThat(savedExperimentation.getUser().getId()).isEqualTo(savedUser.getId());
         assertThat(savedExperimentation.getUser().getMail()).isEqualTo("marie.tremblay@mail.com");
+        
+        // Vérifier que l'expérimentation est bien associée à l'institution
+        assertThat(savedExperimentation.getInstitution()).isNotNull();
+        assertThat(savedExperimentation.getInstitution().getId()).isEqualTo(institution.getId());
+        assertThat(savedExperimentation.getInstitution().getName()).isEqualTo("Institution Initiale");
+        assertThat(savedExperimentation.getInstitution().getTown()).isEqualTo("Marseille");
         
         // Vérifier que le PedagogicalContext a bien été enregistré
         PedagogicalContext savedContext = savedExperimentation.getPedagogicalContext();
@@ -124,7 +142,7 @@ public class CrudExperimentationTests {
         assertThat(newEvaluations.getAccountedEvaluation()).isNull();
     }
 
-    private String createAnExperimentation() throws JsonProcessingException{
+    private Experimentation createAnExperimentation() throws JsonProcessingException{
         Evaluations oldPedagogyEvaluations = Evaluations.builder()
                 .initialEvaluation(LocalDate.of(2026, 1, 15))
                 .immediateEvaluation(LocalDate.of(2026, 2, 15))
@@ -167,6 +185,22 @@ public class CrudExperimentationTests {
                 .pedagogicalContext(pedagogicalContext)
                 .build();
 
-        return objectMapper.writeValueAsString(experimentation);
+        return experimentation;
+    }
+
+    private Institution createInstitution(){
+        Institution institution = Institution.builder()
+                .name("Institution Initiale")
+                .town("Marseille")
+                .contactMail("contact@initial.fr")
+                .category("Collège")
+                .studentsNumber(500)
+                .socialStatus("Public")
+                .institutionSpecifities("Spécialité initiale")
+                .studentsSpecificities("Étudiants initiaux")
+                .teachersSpecificities("Enseignants initiaux")
+                .build();
+        
+        return institutionService.save(institution);
     }
 }
