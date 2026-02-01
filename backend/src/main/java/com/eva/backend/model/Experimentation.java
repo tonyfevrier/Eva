@@ -17,6 +17,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -30,6 +31,7 @@ public class Experimentation {
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Long id;
 
+    @ToString.Exclude
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
@@ -42,6 +44,7 @@ public class Experimentation {
     @Column(nullable = false)
     private String protocol;
 
+    @ToString.Exclude
     @ManyToOne
     @JoinColumn(name = "institution_id", nullable = false)
     private Institution institution;
@@ -52,6 +55,5 @@ public class Experimentation {
     @Column(nullable = false)
     private Boolean isSharingData;
 
-    @Column(nullable = false)
     private String dataPath;
 }

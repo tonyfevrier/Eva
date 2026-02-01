@@ -6,15 +6,6 @@ import { NewExperimentationPage } from "./NewExperimentationPage";
 
 
 export function ExperimentationPage(){
-      /*
-    Etats nécessaires : 
-    - un état traduisant le fait qu'on soit dans la liste ou nouvelle expé
-    - Pour la partie Nouvelle expérimentation :
-        - Un état formulaire contenant l'ensemble des données à entrer.
-    - des états liés au useFetch qui récupère la liste des expés
-    - A compléter après
-    */
-
     const [page, setPage] = useState<string>("list"); 
     
     return <>

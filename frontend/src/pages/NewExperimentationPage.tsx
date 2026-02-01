@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type Dispatch, type SetStateAction } from "react";
 import { MultiStep } from "../components/MultiStep";
 import { FirstStep } from "./newExperimentationSubPages/FirstStep";
 import { SecondStep } from "./newExperimentationSubPages/SecondStep";
@@ -59,6 +59,7 @@ export function NewExperimentationPage(){
     };
     
     const [expeData, setExpeData] = useState<ExperimentationData>(initialExpeData);
+    const [error, setError] = useState<Error|null>(null);
 
     const oneKeyWordIsChosen = Array.from(expeData.keywords.values()).some(value => value === true) || expeData.personalKeywords !== "";
     const firstPageIsFilled = oneKeyWordIsChosen && expeData.affiliation.name !== "" && expeData.learningDifficulty !== "" && expeData.learningDifficultyOrigin !== "" && expeData.oldPedagogy !== "" && expeData.newPedagogy !== "";
@@ -80,46 +81,8 @@ export function NewExperimentationPage(){
     }
 
     const saveExperimentation = () => { 
- 
-
-        /*keyword doit être une liste je pense */
-        const data = {keywords: expeData.keywords, 
-                      personalKeywords: expeData.personalKeywords,
-                      protocol: expeData.protocol, 
-                      isSharingData: expeData.isSharingData, 
-                      affiliationID: expeData.affiliation.id,
-                      pedagogicalContext: {
-                        learningDifficulty: expeData.learningDifficulty,
-                        learningDifficultyOrigin: expeData.learningDifficultyOrigin,
-                        studyField: expeData.studyField,
-                        teachingTitle: expeData.teachingTitle,
-                        knowledges: expeData.knowledges,
-                        prerequisite: expeData.prerequisite,
-                        organisationParticularities: expeData.organisationParticularities,
-                        classesFrequencies: expeData.classesFrequencies,
-                        classesDates: expeData.classesDates,
-                        yearOfStudy: expeData.yearOfStudy,
-                        studentsSpecificities: expeData.studentsSpecificities,
-                        studentsNumber: expeData.studentsNumber,
-                        oldPedagogy: expeData.oldPedagogy,
-                        newPedagogy: expeData.newPedagogy,
-                        oldPedagogyEvaluations: {
-                            initialEvaluation: expeData.initialEvaluationOld,
-                            immediateEvaluation: expeData.immediateEvaluationOld,
-                            delayedEvaluation: expeData.delayedEvaluationOld,
-                            accountedEvaluation: expeData.accountedEvaluationOld
-                        },
-                        newPedagogyEvaluations: {
-                            initialEvaluation: expeData.initialEvaluationNew,
-                            immediateEvaluation: expeData.immediateEvaluationNew,
-                            delayedEvaluation: expeData.delayedEvaluationNew,
-                            accountedEvaluation: expeData.accountedEvaluationNew
-                        }
-                    }};
-        /*sendPostRequest(data, setError, navigate, setIsProfileCompleted);
-        if (e.currentTarget.name === "saveQuit"){
-            navigate("/");
-        } */
+        const data = buildExperimentationData(expeData);
+        sendPostRequest(data, setError); 
     }
 
     return <>
@@ -129,11 +92,66 @@ export function NewExperimentationPage(){
                     <ThirdStep state={expeData} setState={setExpeData}/>
                     <FourthStep state={expeData} setState={setExpeData}/>
                 </MultiStep>
+                {error?.message && <p>{error?.message}</p>}
             </>
 }
 
-/* async function sendPostRequest(data: InstitutionFormData, setFetchError:Dispatch<SetStateAction<Error|null>>, navigate: NavigateFunction, setIsProfileCompleted:Dispatch<SetStateAction<boolean>>){
-    const response = await fetch("http://localhost:9000/institution/create", {
+function buildExperimentationData(expeData:ExperimentationData) {
+    const keywords = [];
+        for (let keyword of expeData.keywords.keys()){
+            const isKeywordChosen = expeData.keywords.get(keyword);
+            if (isKeywordChosen){
+                keywords.push(keyword)
+            }
+        }
+    
+    const oldPedagogyEvaluations =  {
+                                        initialEvaluation: expeData.initialEvaluationOld,
+                                        immediateEvaluation: expeData.immediateEvaluationOld,
+                                        delayedEvaluation: expeData.delayedEvaluationOld,
+                                        accountedEvaluation: expeData.accountedEvaluationOld
+                                    }
+    
+    const newPedagogyEvaluations =  {
+                                        initialEvaluation: expeData.initialEvaluationNew,
+                                        immediateEvaluation: expeData.immediateEvaluationNew,
+                                        delayedEvaluation: expeData.delayedEvaluationNew,
+                                        accountedEvaluation: expeData.accountedEvaluationNew
+                                    }
+    
+    const pedagogicalContext =  {
+                                    learningDifficulty: expeData.learningDifficulty,
+                                    learningDifficultyOrigin: expeData.learningDifficultyOrigin,
+                                    studyField: expeData.studyField,
+                                    teachingTitle: expeData.teachingTitle,
+                                    knowledges: expeData.knowledges,
+                                    prerequisite: expeData.prerequisite,
+                                    organisationParticularities: expeData.organisationParticularities,
+                                    classesFrequencies: expeData.classesFrequencies,
+                                    classesDates: expeData.classesDates,
+                                    yearOfStudy: expeData.yearOfStudy,
+                                    studentsSpecificities: expeData.studentsSpecificities,
+                                    studentsNumber: expeData.studentsNumber,
+                                    oldPedagogy: expeData.oldPedagogy,
+                                    newPedagogy: expeData.newPedagogy,
+                                    oldPedagogyEvaluations: oldPedagogyEvaluations,
+                                    newPedagogyEvaluations: newPedagogyEvaluations
+                                };
+
+    const data = {experimentation: 
+                     {keywords: keywords, 
+                      personalKeywords: expeData.personalKeywords,
+                      protocol: expeData.protocol, 
+                      isSharingData: expeData.isSharingData, 
+                      affiliationID: expeData.affiliation.id,
+                      pedagogicalContext: pedagogicalContext
+                     },
+                 affiliationID: expeData.affiliation.id};
+    return data;
+}
+
+async function sendPostRequest(data: any, setError:Dispatch<SetStateAction<Error|null>>){
+    const response = await fetch("http://localhost:9000/expe/create", {
             method: "POST",
             headers:{
                 'Content-Type': 'application/json',
@@ -142,14 +160,14 @@ export function NewExperimentationPage(){
             body: JSON.stringify(data),
             credentials: "include"})
             .catch(error => {
-                setFetchError(new Error(error?.message || String(error)))
+                setError(new Error(error?.message || String(error)))
                 throw error;
         });
      
     if (response.ok){
-        setIsProfileCompleted(true);
+        window.location.reload()
     } else {
-        setFetchError(new Error(`Erreur ${response.status}: ${response.statusText}`));
+        setError(new Error(`Erreur ${response.status}: ${response.statusText}`));
     }
     return response
-} */
+}

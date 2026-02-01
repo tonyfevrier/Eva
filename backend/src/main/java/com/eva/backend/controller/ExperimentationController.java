@@ -14,6 +14,9 @@ import com.eva.backend.model.User;
 import com.eva.backend.records.ExperimentationRequest;
 import com.eva.backend.service.ExperimentationService;
 import com.eva.backend.service.InstitutionService;
+import com.eva.backend.service.UserService;
+
+import jakarta.transaction.Transactional;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,11 +36,19 @@ public class ExperimentationController {
     @Autowired
     private InstitutionService institutionService;
 
-    @PostMapping("/create")    
-    public ResponseEntity<?> createExperimentation(@RequestBody ExperimentationRequest experimentationRequest, @AuthenticationPrincipal User user){
+    @Autowired
+    private UserService userService;
+
+    @PostMapping("/create") 
+    //@Transactional //Important pour que ma ligne 42 permette aussi d'enregistrer l'expérimentation dans user pour maintenir la relation birectionnelle   
+    public ResponseEntity<?> createExperimentation(@RequestBody ExperimentationRequest experimentationRequest, @AuthenticationPrincipal User authenticatedUser){
         Experimentation experimentation = experimentationRequest.experimentation();
+        User user = userService.findByMail(authenticatedUser.getMail());
         experimentation.setUser(user); // le jwt filter extrait du cookie le User actuel. Il ne reste qu'à l'associer
-        
+       
+        System.out.println(experimentationRequest);
+        System.err.println(experimentationRequest.experimentation());
+        System.err.println(experimentationRequest.affiliationID());
         Optional<Institution> optionalInstitution = institutionService.findById(experimentationRequest.affiliationID());
         if (!optionalInstitution.isEmpty()){
             experimentation.setInstitution(optionalInstitution.get());            
