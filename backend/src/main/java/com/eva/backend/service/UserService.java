@@ -99,6 +99,10 @@ public class UserService {
         return userRepository.findByMail(mail);
     }
 
+    public User findByMailWithExperimentations(String mail){
+        return userRepository.findByMailWithExperimentations(mail);
+    }
+
     public User sendRecoveryMail(String username) throws MessagingException {
         /* si le mail username existe, envoie un mail avec un lien comprenant un token */
         User user = userRepository.findByMail(username);

@@ -32,7 +32,6 @@ import com.eva.backend.repository.InstitutionRepository;
 import com.eva.backend.repository.UserRepository;
 import com.eva.backend.service.InstitutionService;
 import com.eva.backend.utils.UserCreation;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @SpringBootTest
@@ -73,20 +72,7 @@ public class CrudExperimentationTests {
 
     @Test
     public void testCreateExperimentation() throws Exception {
-        Experimentation experimentation = createAnExperimentation();
-
-        ExperimentationRequest experimentationRequest = new ExperimentationRequest(experimentation, institution.getId());
-
-        String experimentationJson = objectMapper.writeValueAsString(experimentationRequest);
-
-        // Envoi de la requête et vérification de la réussite de son succès
-        mockMvc.perform(post("/expe/create")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(experimentationJson)
-                        .cookie(new jakarta.servlet.http.Cookie("jwt", jwtCookie)))
-                        .andExpect(status().isOk())
-                        .andExpect(jsonPath("$.message").value("L'expérimentation a bien été enregistrée"))
-                        .andExpect(jsonPath("$.id").value(1));
+        createAnExperimentation();
 
         // Vérification de l'enregistrement en base de données des objets
         List<Experimentation> experimentations = experimentationRepository.findAll();
@@ -159,15 +145,8 @@ public class CrudExperimentationTests {
 
     @Test
     public void testGetExperimentation() throws Exception {
-        Experimentation experimentation = createAnExperimentation();
-        ExperimentationRequest experimentationRequest = new ExperimentationRequest(experimentation, institution.getId());
-        String experimentationJson = objectMapper.writeValueAsString(experimentationRequest);
-
-        mockMvc.perform(post("/expe/create")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(experimentationJson)
-                        .cookie(new jakarta.servlet.http.Cookie("jwt", jwtCookie)));
-
+        createAnExperimentation();
+        
         mockMvc.perform(get("/expe/get/1")
                         .cookie(new jakarta.servlet.http.Cookie("jwt", jwtCookie)))
                         .andExpect(status().isOk())
@@ -198,13 +177,82 @@ public class CrudExperimentationTests {
 
     @Test
     public void testGetExperimentationNotFound() throws Exception {
-        // Tenter de récupérer une expérimentation qui n'existe pas
         mockMvc.perform(get("/expe/get/999")
                         .cookie(new jakarta.servlet.http.Cookie("jwt", jwtCookie)))
                         .andExpect(status().isNotFound());
     }
 
-    private Experimentation createAnExperimentation() throws JsonProcessingException{
+    @Test
+    public void testGetExperimentationListOfOneUser() throws Exception {
+        createAnExperimentation();
+        
+        // Deuxième expérimentation avec des données différentes
+        PedagogicalContext pedagogicalContext2 = PedagogicalContext.builder()
+                .learningDifficulty("Difficultés en sciences")
+                .learningDifficultyOrigin("Manque de méthode")
+                .studyField("Physique")
+                .teachingTitle("Mécanique et énergie")
+                .knowledges("Forces, vitesse, accélération")
+                .prerequisite("Mathématiques de base")
+                .organisationParticularities("Travaux pratiques")
+                .classesFrequencies("3 fois par semaine")
+                .classesDates("Mardi, jeudi et vendredi")
+                .yearOfStudy("4ème B")
+                .studentsSpecificities("Classe standard")
+                .studentsNumber("28")
+                .oldPedagogy("Cours théorique")
+                .newPedagogy("Apprentissage par l'expérimentation")
+                .oldPedagogyEvaluations(Evaluations.builder().build())
+                .newPedagogyEvaluations(Evaluations.builder().build())
+                .build();
+
+        Experimentation experimentation2 = Experimentation.builder()
+                .keywords(Arrays.asList("physique", "sciences", "collège"))
+                .personalKeywords("expérimentation, pratique")
+                .protocol("Protocole 2")
+                .isSharingData(false)
+                .dataPath("")
+                .pedagogicalContext(pedagogicalContext2)
+                .build();
+
+        ExperimentationRequest experimentationRequest2 = new ExperimentationRequest(experimentation2, institution.getId());
+        String experimentationJson2 = objectMapper.writeValueAsString(experimentationRequest2);
+
+        mockMvc.perform(post("/expe/create")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(experimentationJson2)
+                        .cookie(new jakarta.servlet.http.Cookie("jwt", jwtCookie)))
+                        .andExpect(status().isOk());
+
+        // Récupérer la liste des expérimentations de l'utilisateur
+        mockMvc.perform(get("/expe/getAll")
+                        .cookie(new jakarta.servlet.http.Cookie("jwt", jwtCookie)))
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$.length()").value(2))
+                        .andExpect(jsonPath("$[0].id").value(1))
+                        .andExpect(jsonPath("$[0].keywords[0]").value("mathématiques"))
+                        .andExpect(jsonPath("$[0].keywords[1]").value("apprentissage actif"))
+                        .andExpect(jsonPath("$[0].keywords[2]").value("collège"))
+                        .andExpect(jsonPath("$[0].personalKeywords").value("motivation, collaboration"))
+                        .andExpect(jsonPath("$[0].institutionName").value("Institution Initiale"))
+                        .andExpect(jsonPath("$[0].teachingTitle").value("Algèbre et géométrie"))
+                        .andExpect(jsonPath("$[0].studyField").value("Mathématiques"))
+                        .andExpect(jsonPath("$[0].yearOfStudy").value("5ème A"))
+                        .andExpect(jsonPath("$[1].id").value(2))
+                        .andExpect(jsonPath("$[1].keywords[0]").value("physique"))
+                        .andExpect(jsonPath("$[1].keywords[1]").value("sciences"))
+                        .andExpect(jsonPath("$[1].keywords[2]").value("collège"))
+                        .andExpect(jsonPath("$[1].personalKeywords").value("expérimentation, pratique"))
+                        .andExpect(jsonPath("$[1].institutionName").value("Institution Initiale"))
+                        .andExpect(jsonPath("$[1].teachingTitle").value("Mécanique et énergie"))
+                        .andExpect(jsonPath("$[1].studyField").value("Physique"))
+                        .andExpect(jsonPath("$[1].yearOfStudy").value("4ème B"))
+                        .andExpect(jsonPath("$[0].protocol").doesNotExist())
+                        .andExpect(jsonPath("$[0].isSharingData").doesNotExist())
+                        .andExpect(jsonPath("$[0].pedagogicalContext.learningDifficulty").doesNotExist());
+    }
+
+    private void createAnExperimentation() throws Exception{
         Evaluations oldPedagogyEvaluations = Evaluations.builder()
                 .initialEvaluation(LocalDate.of(2026, 1, 15))
                 .immediateEvaluation(LocalDate.of(2026, 2, 15))
@@ -247,7 +295,17 @@ public class CrudExperimentationTests {
                 .pedagogicalContext(pedagogicalContext)
                 .build();
 
-        return experimentation;
+        ExperimentationRequest experimentationRequest = new ExperimentationRequest(experimentation, institution.getId());
+
+        String experimentationJson = objectMapper.writeValueAsString(experimentationRequest);
+
+        mockMvc.perform(post("/expe/create")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(experimentationJson)
+                        .cookie(new jakarta.servlet.http.Cookie("jwt", jwtCookie)))
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$.message").value("L'expérimentation a bien été enregistrée"))
+                        .andExpect(jsonPath("$.id").value(1));
     }
 
     private Institution createInstitution(){

@@ -1,7 +1,9 @@
 package com.eva.backend.controller;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -79,7 +81,22 @@ public class ExperimentationController {
     }
 
     @GetMapping("/getAll")
-    public void getExperimentationList() {
+    public ResponseEntity<?> getExperimentationListOfOneUser(@AuthenticationPrincipal User authenticatedUser) {
+        User user = userService.findByMailWithExperimentations(authenticatedUser.getMail());
+        
+        List<Map<String, Object>> experimentationsList = user.getExperimentations().stream()
+            .map(expe -> Map.of(
+                "id", (Object) expe.getId(),
+                "keywords", expe.getKeywords(),
+                "personalKeywords", expe.getPersonalKeywords() != null ? expe.getPersonalKeywords() : "",
+                "institutionName", expe.getInstitution().getName(),
+                "teachingTitle", expe.getPedagogicalContext().getTeachingTitle(),
+                "studyField", expe.getPedagogicalContext().getStudyField(),
+                "yearOfStudy", expe.getPedagogicalContext().getYearOfStudy()
+            ))
+            .collect(Collectors.toList());
+        
+        return ResponseEntity.ok(experimentationsList);
     }
 
       @DeleteMapping("/delete/{id}") 
