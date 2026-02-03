@@ -27,6 +27,7 @@ import com.eva.backend.model.PedagogicalContext;
 import com.eva.backend.model.User;
 import com.eva.backend.records.ExperimentationRequest;
 import com.eva.backend.repository.ExperimentationRepository;
+import com.eva.backend.repository.InstitutionRepository;
 import com.eva.backend.repository.UserRepository;
 import com.eva.backend.service.InstitutionService;
 import com.eva.backend.utils.UserCreation;
@@ -55,6 +56,9 @@ public class CrudExperimentationTests {
 
     @Autowired
     private InstitutionService institutionService;
+
+    @Autowired
+    private InstitutionRepository institutionRepository;
 
     private String jwtCookie;
     private Institution institution;
@@ -95,18 +99,27 @@ public class CrudExperimentationTests {
         assertThat(savedExperimentation.getIsSharingData()).isTrue();
         assertThat(savedExperimentation.getDataPath()).isEmpty();
         
-        // Vérifier que l'expérimentation contient le bon user
-        User savedUser = userRepository.findByMail("marie.tremblay@mail.com");
+        // Vérifier que l'expérimentation contient le bon user et que le user contient bien l'expérimentation
+        User savedUser = userRepository.findByMailWithExperimentations("marie.tremblay@mail.com");
         assertThat(savedExperimentation.getUser()).isNotNull();
         assertThat(savedExperimentation.getUser().getId()).isEqualTo(savedUser.getId());
         assertThat(savedExperimentation.getUser().getMail()).isEqualTo("marie.tremblay@mail.com");
         
-        // Vérifier que l'expérimentation est bien associée à l'institution
+        List<Experimentation> userExperimentations = savedUser.getExperimentations();
+        assertThat(userExperimentations).hasSize(1);
+        assertThat(userExperimentations.get(0).getId()).isEqualTo(1);
+        
+        // Vérifier que l'expérimentation est bien associée à l'institution et que l'institution contient bien l'expérimentation
         assertThat(savedExperimentation.getInstitution()).isNotNull();
         assertThat(savedExperimentation.getInstitution().getId()).isEqualTo(institution.getId());
         assertThat(savedExperimentation.getInstitution().getName()).isEqualTo("Institution Initiale");
         assertThat(savedExperimentation.getInstitution().getTown()).isEqualTo("Marseille");
-        
+
+        Institution institution = institutionRepository.findByContactMailWithExperimentations("contact@initial.fr");
+        List<Experimentation> institutionExperimentations = institution.getExperimentations();
+        assertThat(institutionExperimentations).hasSize(1);
+        assertThat(institutionExperimentations.get(0).getId()).isEqualTo(1);
+
         // Vérifier que le PedagogicalContext a bien été enregistré
         PedagogicalContext savedContext = savedExperimentation.getPedagogicalContext();
         assertThat(savedContext).isNotNull();

@@ -5,6 +5,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
@@ -20,9 +21,11 @@ import org.springframework.test.web.servlet.MockMvc;
 import com.eva.backend.model.Institution;
 import com.eva.backend.model.User;
 import com.eva.backend.model.UserAdditionalData;
+import com.eva.backend.repository.InstitutionRepository;
 import com.eva.backend.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
@@ -38,6 +41,9 @@ public class AdditionalDataTests {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private InstitutionRepository institutionRepository;
 
     @Test
     public void testRegisterAdditionalData() throws Exception {
@@ -165,6 +171,13 @@ public class AdditionalDataTests {
         assertEquals("contact@univ-paris.fr", savedInstitution.getContactMail());
         assertEquals("Université", savedInstitution.getCategory());
         assertEquals(25000, savedInstitution.getStudentsNumber());
+
+        // Vérifier que l'institution contient bien le user
+        Institution institution = institutionRepository.findById(1L).orElseThrow();
+        List<User> users = institution.getUsers();
+        assertEquals(users.size(),1);
+        assertEquals(users.get(0).getMail(), "marie.tremblay@mail.com");
+
     }
 
     private void createInstitution(String jwtCookie) throws Exception {

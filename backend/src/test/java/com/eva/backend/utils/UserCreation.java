@@ -51,13 +51,15 @@ public class UserCreation {
 
     public void registerAdditionalData(String jwtCookie) throws Exception{
         Map<String, Object> additionalData = new HashMap<>();
-        additionalData.put("affiliation", "Université Paris");
         additionalData.put("acceptContact", true);
         additionalData.put("acceptMap", false);
-        additionalData.put("street", "123 Rue de la Paix");
-        additionalData.put("postcode", "75001");
-        additionalData.put("town", "Paris");
-        additionalData.put("phone", "+33123456789");
+        additionalData.put("birthday", "1990-05-15");
+        additionalData.put("gender", "Homme");
+        additionalData.put("job", "Enseignant");
+        additionalData.put("specializedTopics", "Informatique");
+        additionalData.put("otherSpecialization", "Intelligence Artificielle");
+        additionalData.put("teacherBehaviour", "Pédagogue");
+        additionalData.put("freeField", "Passionné de technologie");
 
         String additionalDataJson = objectMapper.writeValueAsString(additionalData);
 
