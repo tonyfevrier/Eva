@@ -20,6 +20,7 @@ import jakarta.transaction.Transactional;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -56,23 +57,38 @@ public class ExperimentationController {
                                          "id", lastExperimentation.getId()));
     }
 
-    
-    @DeleteMapping("/delete/{id}") 
-    public void deleteExperimentation(){
-
-    }
-
-    
-    @PutMapping("/update/{id}")
-    public void updateExperimentation() {        
-    }
-
     @GetMapping("/get/{id}")
-    public void getExperimentation() {
+    public ResponseEntity<?> getExperimentation(@PathVariable Long id) {
+        Optional<Experimentation> optionalExperimentation = experimentationService.findById(id);
+        if (optionalExperimentation.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        Experimentation experimentation = optionalExperimentation.get();
+        Map<String, Object> response = Map.of(
+            "id", experimentation.getId(),
+            "keywords", experimentation.getKeywords(),
+            "personalKeywords", experimentation.getPersonalKeywords() != null ? experimentation.getPersonalKeywords() : "",
+            "protocol", experimentation.getProtocol(),
+            "institutionName", experimentation.getInstitution().getName(),
+            "pedagogicalContext", experimentation.getPedagogicalContext(),
+            "isSharingData", experimentation.getIsSharingData()
+        );
+        
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/getAll")
     public void getExperimentationList() {
+    }
+
+      @DeleteMapping("/delete/{id}") 
+    public void deleteExperimentation(){
+
+    }
+
+    @PutMapping("/update/{id}")
+    public void updateExperimentation() {        
     }
     
 }

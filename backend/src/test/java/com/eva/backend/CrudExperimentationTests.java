@@ -1,5 +1,6 @@
 package com.eva.backend;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -154,6 +155,53 @@ public class CrudExperimentationTests {
         assertThat(newEvaluations.getImmediateEvaluation()).isEqualTo(LocalDate.of(2026, 2, 20));
         assertThat(newEvaluations.getDelayedEvaluation()).isEqualTo(LocalDate.of(2026, 3, 20));
         assertThat(newEvaluations.getAccountedEvaluation()).isNull();
+    }
+
+    @Test
+    public void testGetExperimentation() throws Exception {
+        Experimentation experimentation = createAnExperimentation();
+        ExperimentationRequest experimentationRequest = new ExperimentationRequest(experimentation, institution.getId());
+        String experimentationJson = objectMapper.writeValueAsString(experimentationRequest);
+
+        mockMvc.perform(post("/expe/create")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(experimentationJson)
+                        .cookie(new jakarta.servlet.http.Cookie("jwt", jwtCookie)));
+
+        mockMvc.perform(get("/expe/get/1")
+                        .cookie(new jakarta.servlet.http.Cookie("jwt", jwtCookie)))
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$.id").value(1))
+                        .andExpect(jsonPath("$.keywords[0]").value("mathématiques"))
+                        .andExpect(jsonPath("$.keywords[1]").value("apprentissage actif"))
+                        .andExpect(jsonPath("$.keywords[2]").value("collège"))
+                        .andExpect(jsonPath("$.personalKeywords").value("motivation, collaboration"))
+                        .andExpect(jsonPath("$.protocol").value("Protocole 1"))
+                        .andExpect(jsonPath("$.institutionName").value("Institution Initiale"))
+                        .andExpect(jsonPath("$.isSharingData").value(true))
+                        .andExpect(jsonPath("$.pedagogicalContext.learningDifficulty").value("Difficulté d'apprentissage en mathématiques"))
+                        .andExpect(jsonPath("$.pedagogicalContext.studyField").value("Mathématiques"))
+                        .andExpect(jsonPath("$.pedagogicalContext.teachingTitle").value("Algèbre et géométrie"))
+                        .andExpect(jsonPath("$.pedagogicalContext.yearOfStudy").value("5ème A"))
+                        .andExpect(jsonPath("$.pedagogicalContext.studentsNumber").value("24"))
+                        .andExpect(jsonPath("$.pedagogicalContext.oldPedagogy").value("Cours magistral traditionnel"))
+                        .andExpect(jsonPath("$.pedagogicalContext.newPedagogy").value("Apprentissage par projet"))
+                        .andExpect(jsonPath("$.pedagogicalContext.oldPedagogyEvaluations.initialEvaluation").value("2026-01-15"))
+                        .andExpect(jsonPath("$.pedagogicalContext.oldPedagogyEvaluations.immediateEvaluation").value("2026-02-15"))
+                        .andExpect(jsonPath("$.pedagogicalContext.oldPedagogyEvaluations.delayedEvaluation").value("2026-03-15"))
+                        .andExpect(jsonPath("$.pedagogicalContext.oldPedagogyEvaluations.accountedEvaluation").value("2026-04-15"))
+                        .andExpect(jsonPath("$.pedagogicalContext.newPedagogyEvaluations.initialEvaluation").value("2026-01-20"))
+                        .andExpect(jsonPath("$.pedagogicalContext.newPedagogyEvaluations.immediateEvaluation").value("2026-02-20"))
+                        .andExpect(jsonPath("$.pedagogicalContext.newPedagogyEvaluations.delayedEvaluation").value("2026-03-20"))
+                        .andExpect(jsonPath("$.pedagogicalContext.newPedagogyEvaluations.accountedEvaluation").doesNotExist());
+    }
+
+    @Test
+    public void testGetExperimentationNotFound() throws Exception {
+        // Tenter de récupérer une expérimentation qui n'existe pas
+        mockMvc.perform(get("/expe/get/999")
+                        .cookie(new jakarta.servlet.http.Cookie("jwt", jwtCookie)))
+                        .andExpect(status().isNotFound());
     }
 
     private Experimentation createAnExperimentation() throws JsonProcessingException{

@@ -21,4 +21,8 @@ public class ExperimentationService {
         return experimentationRepository.findTopByOrderByIdDesc();
     }
 
+    public Optional<Experimentation> findById(Long id){
+        return experimentationRepository.findById(id);
+    }
+
 }
