@@ -46,15 +46,14 @@ public class ExperimentationController {
         User user = userService.findByMail(authenticatedUser.getMail());
         experimentation.setUser(user); // le jwt filter extrait du cookie le User actuel. Il ne reste qu'à l'associer
        
-        System.out.println(experimentationRequest);
-        System.err.println(experimentationRequest.experimentation());
-        System.err.println(experimentationRequest.affiliationID());
         Optional<Institution> optionalInstitution = institutionService.findById(experimentationRequest.affiliationID());
         if (!optionalInstitution.isEmpty()){
             experimentation.setInstitution(optionalInstitution.get());            
         } 
         experimentationService.save(experimentation);
-        return  ResponseEntity.ok(Map.of("message", "L'expérimentation a bien été enregistrée"));
+        Experimentation lastExperimentation = experimentationService.findLast().orElseThrow();
+        return  ResponseEntity.ok(Map.of("message", "L'expérimentation a bien été enregistrée",
+                                         "id", lastExperimentation.getId()));
     }
 
     

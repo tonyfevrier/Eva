@@ -4,6 +4,7 @@ import { FirstStep } from "./newExperimentationSubPages/FirstStep";
 import { SecondStep } from "./newExperimentationSubPages/SecondStep";
 import { ThirdStep } from "./newExperimentationSubPages/ThirdStep";
 import { FourthStep } from "./newExperimentationSubPages/FourthStep";
+import { useNavigate, type NavigateFunction } from "react-router-dom";
 
 export type Affiliation = {
     id: string,
@@ -60,6 +61,7 @@ export function NewExperimentationPage(){
     
     const [expeData, setExpeData] = useState<ExperimentationData>(initialExpeData);
     const [error, setError] = useState<Error|null>(null);
+    const navigate = useNavigate();
 
     const oneKeyWordIsChosen = Array.from(expeData.keywords.values()).some(value => value === true) || expeData.personalKeywords !== "";
     const firstPageIsFilled = oneKeyWordIsChosen && expeData.affiliation.name !== "" && expeData.learningDifficulty !== "" && expeData.learningDifficultyOrigin !== "" && expeData.oldPedagogy !== "" && expeData.newPedagogy !== "";
@@ -82,7 +84,7 @@ export function NewExperimentationPage(){
 
     const saveExperimentation = () => { 
         const data = buildExperimentationData(expeData);
-        sendPostRequest(data, setError); 
+        sendPostRequest(data, setError, navigate); 
     }
 
     return <>
@@ -150,7 +152,7 @@ function buildExperimentationData(expeData:ExperimentationData) {
     return data;
 }
 
-async function sendPostRequest(data: any, setError:Dispatch<SetStateAction<Error|null>>){
+async function sendPostRequest(data: any, setError:Dispatch<SetStateAction<Error|null>>, navigate: NavigateFunction){
     const response = await fetch("http://localhost:9000/expe/create", {
             method: "POST",
             headers:{
@@ -165,7 +167,8 @@ async function sendPostRequest(data: any, setError:Dispatch<SetStateAction<Error
         });
      
     if (response.ok){
-        window.location.reload()
+        const result = await response.json();
+        navigate(`/application/experimentationProfile/${result.id}`);
     } else {
         setError(new Error(`Erreur ${response.status}: ${response.statusText}`));
     }

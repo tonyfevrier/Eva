@@ -17,6 +17,7 @@ import { DescribePage } from './pages/DescribePage';
 import { ExperimentationPage } from './pages/ExperimentationPage';
 import { InstitutionPage } from './pages/InstitutionPage';
 import { InstitutionProfilePage } from './pages/InstitutionProfilePage';
+import { ExperimentationProfilePage } from './pages/ExperimentationProfilePage';
 
 const routes: RouteObject[] = [
   {
@@ -72,12 +73,20 @@ const routes: RouteObject[] = [
               element : <InstitutionPage/>, 
             },
             {
+              path: "institutionProfile/:id",
+              element : <InstitutionProfilePage/>, 
+            },
+            {
               path: "expe",
               element : <ExperimentationPage/>
             },
             {
-              path: "institutionProfile/:id",
-              element : <InstitutionProfilePage/>, 
+              path: "experimentationProfile/:id",
+              element : <ExperimentationProfilePage/>, 
+            },
+            {
+              path: "modifyExpe/:id",
+              element : <ExperimentationProfilePage/>, 
             },
         ]
       }

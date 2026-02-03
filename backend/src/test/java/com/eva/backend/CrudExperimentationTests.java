@@ -84,7 +84,8 @@ public class CrudExperimentationTests {
                         .content(experimentationJson)
                         .cookie(new jakarta.servlet.http.Cookie("jwt", jwtCookie)))
                         .andExpect(status().isOk())
-                        .andExpect(jsonPath("$.message").value("L'expérimentation a bien été enregistrée"));
+                        .andExpect(jsonPath("$.message").value("L'expérimentation a bien été enregistrée"))
+                        .andExpect(jsonPath("$.id").value(1));
 
         // Vérification de l'enregistrement en base de données des objets
         List<Experimentation> experimentations = experimentationRepository.findAll();

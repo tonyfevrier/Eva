@@ -1,5 +1,7 @@
 package com.eva.backend.service;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +15,10 @@ public class ExperimentationService {
 
     public void save(Experimentation experimentation){
         experimentationRepository.save(experimentation);
+    }
+
+    public Optional<Experimentation> findLast(){
+        return experimentationRepository.findTopByOrderByIdDesc();
     }
 
 }
