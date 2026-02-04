@@ -66,7 +66,7 @@ export function ExperimentationSummaryPage(){
                     </div>
                      
                     <div className={styles.btnContainer} >
-                        <Button href="/modifyExpe/:id">Modifier l'expérimentation</Button>
+                        <Button href={`/application/modifyExpe/${id}`}>Modifier l'expérimentation</Button>
                         <Button href="/application/expe">Confirmer l'expérimentation</Button>
                     </div>
                </>

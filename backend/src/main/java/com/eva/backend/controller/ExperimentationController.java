@@ -65,12 +65,14 @@ public class ExperimentationController {
         }
         
         Experimentation experimentation = optionalExperimentation.get();
+        Institution institution = experimentation.getInstitution();
         Map<String, Object> response = Map.of(
             "id", experimentation.getId(),
             "keywords", experimentation.getKeywords(),
             "personalKeywords", experimentation.getPersonalKeywords() != null ? experimentation.getPersonalKeywords() : "",
             "protocol", experimentation.getProtocol(),
-            "institutionName", experimentation.getInstitution().getName(),
+            "affiliation", Map.of("id", institution.getId(),
+                                      "name", institution.getName()),
             "pedagogicalContext", experimentation.getPedagogicalContext(),
             "isSharingData", experimentation.getIsSharingData()
         );

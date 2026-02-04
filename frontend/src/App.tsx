@@ -18,6 +18,7 @@ import { ExperimentationPage } from './pages/ExperimentationPage';
 import { InstitutionPage } from './pages/InstitutionPage';
 import { InstitutionProfilePage } from './pages/InstitutionProfilePage';
 import { ExperimentationSummaryPage } from './pages/ExperimentationSummaryPage';
+import { ExperimentationProfilePage } from './pages/ExperimentationProfilePage';
 
 const routes: RouteObject[] = [
   {
@@ -86,7 +87,7 @@ const routes: RouteObject[] = [
             },
             {
               path: "modifyExpe/:id",
-              element : <p>Compléter</p>, 
+              element : <ExperimentationProfilePage/>, 
             },
         ]
       }
