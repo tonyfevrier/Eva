@@ -18,8 +18,6 @@ import com.eva.backend.service.ExperimentationService;
 import com.eva.backend.service.InstitutionService;
 import com.eva.backend.service.UserService;
 
-import jakarta.transaction.Transactional;
-
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -99,13 +97,41 @@ public class ExperimentationController {
         return ResponseEntity.ok(experimentationsList);
     }
 
-      @DeleteMapping("/delete/{id}") 
+    @DeleteMapping("/delete/{id}") 
     public void deleteExperimentation(){
 
     }
 
     @PutMapping("/update/{id}")
-    public void updateExperimentation() {        
+    public ResponseEntity<?> updateExperimentation(@PathVariable Long id, @RequestBody ExperimentationRequest experimentationRequest, @AuthenticationPrincipal User authenticatedUser) {
+        // Vérifier que l'expérimentation existe
+        Optional<Experimentation> optionalExperimentation = experimentationService.findById(id);
+        if (optionalExperimentation.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        Experimentation existingExperimentation = optionalExperimentation.get();
+        
+        // Vérifier que l'utilisateur est bien le propriétaire de l'expérimentation
+        if (!existingExperimentation.getUser().getMail().equals(authenticatedUser.getMail())) {
+            return ResponseEntity.status(403).body(Map.of("message", "Vous n'êtes pas autorisé à modifier cette expérimentation"));
+        }
+        
+        Experimentation updatedExperimentation = experimentationRequest.experimentation();
+        existingExperimentation.setKeywords(updatedExperimentation.getKeywords());
+        existingExperimentation.setPersonalKeywords(updatedExperimentation.getPersonalKeywords());
+        existingExperimentation.setProtocol(updatedExperimentation.getProtocol());
+        existingExperimentation.setPedagogicalContext(updatedExperimentation.getPedagogicalContext());
+        existingExperimentation.setIsSharingData(updatedExperimentation.getIsSharingData());
+        
+        // Mettre à jour l'institution si nécessaire
+        Optional<Institution> optionalInstitution = institutionService.findById(experimentationRequest.affiliationID());
+        if (!optionalInstitution.isEmpty()) {
+            existingExperimentation.setInstitution(optionalInstitution.get());
+        }
+        
+        experimentationService.save(existingExperimentation);
+        
+        return ResponseEntity.ok(Map.of("message", "L'expérimentation a bien été mise à jour"));
     }
-    
 }

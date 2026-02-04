@@ -2,6 +2,7 @@ package com.eva.backend;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -250,6 +251,171 @@ public class CrudExperimentationTests {
                         .andExpect(jsonPath("$[0].protocol").doesNotExist())
                         .andExpect(jsonPath("$[0].isSharingData").doesNotExist())
                         .andExpect(jsonPath("$[0].pedagogicalContext.learningDifficulty").doesNotExist());
+    }
+
+    @Test
+    public void testUpdateExperimentation() throws Exception {
+        createAnExperimentation();
+        
+        Evaluations updatedOldPedagogyEvaluations = Evaluations.builder()
+                .initialEvaluation(LocalDate.of(2026, 2, 1))
+                .immediateEvaluation(LocalDate.of(2026, 3, 1))
+                .delayedEvaluation(LocalDate.of(2026, 4, 1))
+                .accountedEvaluation(LocalDate.of(2026, 5, 1))
+                .build();
+
+        Evaluations updatedNewPedagogyEvaluations = Evaluations.builder()
+                .initialEvaluation(LocalDate.of(2026, 2, 5))
+                .immediateEvaluation(LocalDate.of(2026, 3, 5))
+                .delayedEvaluation(LocalDate.of(2026, 4, 5))
+                .accountedEvaluation(LocalDate.of(2026, 5, 5))
+                .build();
+
+        PedagogicalContext updatedPedagogicalContext = PedagogicalContext.builder()
+                .learningDifficulty("Difficulté en géométrie avancée")
+                .learningDifficultyOrigin("Problème de visualisation spatiale")
+                .studyField("Géométrie")
+                .teachingTitle("Géométrie dans l'espace")
+                .knowledges("Volumes, surfaces, théorème de Thalès")
+                .prerequisite("Géométrie plane")
+                .organisationParticularities("Classe complète")
+                .classesFrequencies("3 fois par semaine")
+                .classesDates("Lundi, mercredi et vendredi")
+                .yearOfStudy("3ème A")
+                .studentsSpecificities("Élèves motivés")
+                .studentsNumber("30")
+                .oldPedagogy("Exercices traditionnels")
+                .newPedagogy("Apprentissage par manipulation d'objets 3D")
+                .oldPedagogyEvaluations(updatedOldPedagogyEvaluations)
+                .newPedagogyEvaluations(updatedNewPedagogyEvaluations)
+                .build();
+
+        Experimentation updatedExperimentation = Experimentation.builder()
+                .keywords(Arrays.asList("géométrie", "3D", "lycée"))
+                .personalKeywords("visualisation, manipulation")
+                .protocol("Protocole modifié")
+                .isSharingData(false)
+                .pedagogicalContext(updatedPedagogicalContext)
+                .build();
+
+        ExperimentationRequest updateRequest = new ExperimentationRequest(updatedExperimentation, institution.getId());
+        String updateJson = objectMapper.writeValueAsString(updateRequest);
+
+        mockMvc.perform(put("/expe/update/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(updateJson)
+                        .cookie(new jakarta.servlet.http.Cookie("jwt", jwtCookie)))
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$.message").value("L'expérimentation a bien été mise à jour"));
+
+        Experimentation savedExperimentation = experimentationRepository.findById(1L).orElseThrow();
+        
+        assertThat(savedExperimentation.getKeywords()).containsExactly("géométrie", "3D", "lycée");
+        assertThat(savedExperimentation.getPersonalKeywords()).isEqualTo("visualisation, manipulation");
+        assertThat(savedExperimentation.getProtocol()).isEqualTo("Protocole modifié");
+        assertThat(savedExperimentation.getIsSharingData()).isFalse();
+        
+        PedagogicalContext savedContext = savedExperimentation.getPedagogicalContext();
+        assertThat(savedContext.getLearningDifficulty()).isEqualTo("Difficulté en géométrie avancée");
+        assertThat(savedContext.getStudyField()).isEqualTo("Géométrie");
+        assertThat(savedContext.getTeachingTitle()).isEqualTo("Géométrie dans l'espace");
+        assertThat(savedContext.getYearOfStudy()).isEqualTo("3ème A");
+        assertThat(savedContext.getStudentsNumber()).isEqualTo("30");
+        assertThat(savedContext.getOldPedagogy()).isEqualTo("Exercices traditionnels");
+        assertThat(savedContext.getNewPedagogy()).isEqualTo("Apprentissage par manipulation d'objets 3D");
+        
+        // Vérifier que l'utilisateur n'a pas changé
+        assertThat(savedExperimentation.getUser().getMail()).isEqualTo("marie.tremblay@mail.com");
+        
+        // Vérifier que l'institution n'a pas changé
+        assertThat(savedExperimentation.getInstitution().getName()).isEqualTo("Institution Initiale");
+    }
+
+    @Test
+    public void testUpdateExperimentationNotFound() throws Exception {
+        PedagogicalContext pedagogicalContext = PedagogicalContext.builder()
+                .learningDifficulty("Test")
+                .studyField("Test")
+                .teachingTitle("Test")
+                .yearOfStudy("Test")
+                .studentsNumber("10")
+                .oldPedagogy("Test")
+                .newPedagogy("Test")
+                .oldPedagogyEvaluations(Evaluations.builder().build())
+                .newPedagogyEvaluations(Evaluations.builder().build())
+                .build();
+
+        Experimentation experimentation = Experimentation.builder()
+                .keywords(Arrays.asList("test"))
+                .protocol("Test")
+                .isSharingData(false)
+                .pedagogicalContext(pedagogicalContext)
+                .build();
+
+        ExperimentationRequest request = new ExperimentationRequest(experimentation, institution.getId());
+        String json = objectMapper.writeValueAsString(request);
+
+        mockMvc.perform(put("/expe/update/999")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json)
+                        .cookie(new jakarta.servlet.http.Cookie("jwt", jwtCookie)))
+                        .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void testUpdateExperimentationUnauthorized() throws Exception {
+        // Créer une expérimentation avec le premier utilisateur
+        createAnExperimentation();
+        
+        // Créer et se connecter avec un deuxième utilisateur
+        String secondUserJson = """
+                {
+                    "lastName": "Dupont",
+                    "firstName": "Jean",
+                    "birthday": "1985-03-20",
+                    "mail": "jean.dupont@mail.com",
+                    "password": "password123",
+                    "confirmPassword": "password123"
+                }
+                """;
+        
+        mockMvc.perform(post("/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(secondUserJson))
+                        .andExpect(status().isOk());
+        
+        String secondUserCookie = userCreation.login(secondUserJson);
+        
+        // Préparer des données de mise à jour
+        PedagogicalContext pedagogicalContext = PedagogicalContext.builder()
+                .learningDifficulty("Test")
+                .studyField("Test")
+                .teachingTitle("Test")
+                .yearOfStudy("Test")
+                .studentsNumber("10")
+                .oldPedagogy("Test")
+                .newPedagogy("Test")
+                .oldPedagogyEvaluations(Evaluations.builder().build())
+                .newPedagogyEvaluations(Evaluations.builder().build())
+                .build();
+
+        Experimentation experimentation = Experimentation.builder()
+                .keywords(Arrays.asList("test"))
+                .protocol("Test")
+                .isSharingData(false)
+                .pedagogicalContext(pedagogicalContext)
+                .build();
+
+        ExperimentationRequest request = new ExperimentationRequest(experimentation, institution.getId());
+        String json = objectMapper.writeValueAsString(request);
+        
+        // Tenter de mettre à jour l'expérimentation du premier utilisateur avec le cookie du second
+        mockMvc.perform(put("/expe/update/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json)
+                        .cookie(new jakarta.servlet.http.Cookie("jwt", secondUserCookie)))
+                        .andExpect(status().isForbidden())
+                        .andExpect(jsonPath("$.message").value("Vous n'êtes pas autorisé à modifier cette expérimentation"));
     }
 
     private void createAnExperimentation() throws Exception{
