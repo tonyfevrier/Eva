@@ -3,6 +3,7 @@ import { Button } from "../components/Button"
 import { useState } from "react"
 
 import { NewExperimentationPage } from "./NewExperimentationPage";
+import { ExperimentationListPage } from "./ExperimentationListPage";
 
 
 export function ExperimentationPage(){
@@ -14,7 +15,7 @@ export function ExperimentationPage(){
                     <Button onClick={()=>{setPage("newExpe")}}>Nouvelle expérimentation</Button>
                 </NavBar>
 
-                {page === "list" && <>Liste des expés</>}
+                {page === "list" && <ExperimentationListPage/>}
                 {page === "newExpe" && <NewExperimentationPage/>}
            </>
 }

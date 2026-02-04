@@ -1,0 +1,41 @@
+.container  {
+    text-align: left;
+    width: 20%;
+}
+
+.container > h5 {
+    border-bottom: solid 1px;
+    background-color: #f9f9f9;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+.container > * {
+    padding: 1em;
+}
+
+.header{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1em;
+}
+
+.footer{
+    display: flex;
+    border-top: solid 1px;
+    flex-wrap: wrap;
+}
+
+.footer > * {
+    border: solid 1px;
+    border-radius: 5px;
+    padding: 0.5em;
+    margin: 0.5em;
+    color: rgb(41, 180, 41);
+}
+
+.personalKeywords{
+    color: rgb(47, 213, 255)
+}
+

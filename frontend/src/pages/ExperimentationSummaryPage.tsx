@@ -3,9 +3,9 @@ import { useParams } from "react-router-dom";
 import { Spinner } from "../components/Spinner";
 import { Button } from "../components/Button";
 import { Infos } from "../components/Infos";
-import styles from "./ExperimentationProfilePage.module.css"
+import styles from "./ExperimentationSummaryPage.module.css"
  
-export function ExperimentationProfilePage(){
+export function ExperimentationSummaryPage(){
     const {id} = useParams();
     const {loading, data, error} = useFetch<Record<string, any>>(`http://localhost:9000/expe/get/${id}`);
 
