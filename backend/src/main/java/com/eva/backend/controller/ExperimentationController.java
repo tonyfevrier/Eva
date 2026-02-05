@@ -80,7 +80,7 @@ public class ExperimentationController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/getAll")
+    @GetMapping("/getAllOfOneUser")
     public ResponseEntity<?> getExperimentationListOfOneUser(@AuthenticationPrincipal User authenticatedUser) {
         User user = userService.findByMailWithExperimentations(authenticatedUser.getMail());
         
@@ -100,8 +100,23 @@ public class ExperimentationController {
     }
 
     @DeleteMapping("/delete/{id}") 
-    public void deleteExperimentation(){
-
+    public ResponseEntity<?> deleteExperimentation(@PathVariable Long id, @AuthenticationPrincipal User authenticatedUser){
+        // Vérifier que l'expérimentation existe
+        Optional<Experimentation> optionalExperimentation = experimentationService.findById(id);
+        if (optionalExperimentation.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        Experimentation experimentation = optionalExperimentation.get();
+        
+        // Vérifier que l'utilisateur est bien le propriétaire de l'expérimentation
+        if (!experimentation.getUser().getMail().equals(authenticatedUser.getMail())) {
+            return ResponseEntity.status(403).body(Map.of("message", "Vous n'êtes pas autorisé à supprimer cette expérimentation"));
+        }
+        
+        experimentationService.deleteById(id);
+        
+        return ResponseEntity.ok(Map.of("message", "L'expérimentation a bien été supprimée"));
     }
 
     @PutMapping("/update/{id}")

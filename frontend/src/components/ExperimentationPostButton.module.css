@@ -1,6 +1,7 @@
 .container  {
     text-align: left;
     width: 20%;
+    min-width: 250px;
 }
 
 .container > h5 {

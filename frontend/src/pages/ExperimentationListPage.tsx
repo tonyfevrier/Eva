@@ -7,7 +7,7 @@ export function ExperimentationListPage({}){
     /*fetch des expés du user
     affichage des données sous forme de Post expe cliquables qui dirigent ves le summary 
     */
-    const {loading, data, error} = useFetch<Array<Data>>("http://localhost:9000/expe/getAll");
+    const {loading, data, error} = useFetch<Array<Data>>("http://localhost:9000/expe/getAllOfOneUser");
 
     if (loading){
         return <Spinner/>

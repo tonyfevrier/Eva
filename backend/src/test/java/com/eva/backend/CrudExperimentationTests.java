@@ -1,5 +1,6 @@
 package com.eva.backend;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -157,7 +158,8 @@ public class CrudExperimentationTests {
                         .andExpect(jsonPath("$.keywords[2]").value("collège"))
                         .andExpect(jsonPath("$.personalKeywords").value("motivation, collaboration"))
                         .andExpect(jsonPath("$.protocol").value("Protocole 1"))
-                        .andExpect(jsonPath("$.institutionName").value("Institution Initiale"))
+                        .andExpect(jsonPath("$.affiliation.id").value(institution.getId()))
+                        .andExpect(jsonPath("$.affiliation.name").value("Institution Initiale"))
                         .andExpect(jsonPath("$.isSharingData").value(true))
                         .andExpect(jsonPath("$.pedagogicalContext.learningDifficulty").value("Difficulté d'apprentissage en mathématiques"))
                         .andExpect(jsonPath("$.pedagogicalContext.studyField").value("Mathématiques"))
@@ -472,6 +474,59 @@ public class CrudExperimentationTests {
                         .andExpect(status().isOk())
                         .andExpect(jsonPath("$.message").value("L'expérimentation a bien été enregistrée"))
                         .andExpect(jsonPath("$.id").value(1));
+    }
+
+    @Test
+    public void testDeleteExperimentation() throws Exception {
+        createAnExperimentation();
+        
+        assertThat(experimentationRepository.findById(1L)).isPresent();
+        
+        mockMvc.perform(delete("/expe/delete/1")
+                        .cookie(new jakarta.servlet.http.Cookie("jwt", jwtCookie)))
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$.message").value("L'expérimentation a bien été supprimée"));
+        
+        assertThat(experimentationRepository.findById(1L)).isEmpty();
+    }
+
+    @Test
+    public void testDeleteExperimentationNotFound() throws Exception {
+        mockMvc.perform(delete("/expe/delete/999")
+                        .cookie(new jakarta.servlet.http.Cookie("jwt", jwtCookie)))
+                        .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void testDeleteExperimentationUnauthorized() throws Exception {
+        createAnExperimentation();
+        
+        // Créer et se connecter avec un deuxième utilisateur
+        String secondUserJson = """
+                {
+                    "lastName": "Martin",
+                    "firstName": "Pierre",
+                    "birthday": "1990-05-15",
+                    "mail": "pierre.martin@mail.com",
+                    "password": "password456",
+                    "confirmPassword": "password456"
+                }
+                """;
+        
+        mockMvc.perform(post("/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(secondUserJson))
+                        .andExpect(status().isOk());
+        
+        String secondUserCookie = userCreation.login(secondUserJson);
+        
+        // Tenter de supprimer l'expérimentation du premier utilisateur avec le cookie du second
+        mockMvc.perform(delete("/expe/delete/1")
+                        .cookie(new jakarta.servlet.http.Cookie("jwt", secondUserCookie)))
+                        .andExpect(status().isForbidden())
+                        .andExpect(jsonPath("$.message").value("Vous n'êtes pas autorisé à supprimer cette expérimentation"));
+        
+        assertThat(experimentationRepository.findById(1L)).isPresent();
     }
 
     private Institution createInstitution(){

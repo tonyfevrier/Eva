@@ -24,4 +24,8 @@ public class ExperimentationService {
     public Optional<Experimentation> findById(Long id){
         return experimentationRepository.findById(id);
     }
+
+    public void deleteById(Long id){
+        experimentationRepository.deleteById(id);
+    }
 }
