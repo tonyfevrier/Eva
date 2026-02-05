@@ -1,5 +1,6 @@
 package com.eva.backend.controller;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -84,19 +85,49 @@ public class ExperimentationController {
     public ResponseEntity<?> getExperimentationListOfOneUser(@AuthenticationPrincipal User authenticatedUser) {
         User user = userService.findByMailWithExperimentations(authenticatedUser.getMail());
         
+        LocalDate today = LocalDate.now();
+        
         List<Map<String, Object>> experimentationsList = user.getExperimentations().stream()
-            .map(expe -> Map.of(
-                "id", (Object) expe.getId(),
-                "keywords", expe.getKeywords(),
-                "personalKeywords", expe.getPersonalKeywords() != null ? expe.getPersonalKeywords() : "",
-                "institutionName", expe.getInstitution().getName(),
-                "teachingTitle", expe.getPedagogicalContext().getTeachingTitle(),
-                "studyField", expe.getPedagogicalContext().getStudyField(),
-                "yearOfStudy", expe.getPedagogicalContext().getYearOfStudy()
-            ))
+            .sorted((e1, e2) -> e2.getId().compareTo(e1.getId()))
+            .map(expe -> {
+                LocalDate accountedEvalOld = expe.getPedagogicalContext().getOldPedagogyEvaluations().getAccountedEvaluation();
+                LocalDate delayedEvalOld = expe.getPedagogicalContext().getOldPedagogyEvaluations().getDelayedEvaluation();
+                LocalDate accountedEvalNew = expe.getPedagogicalContext().getNewPedagogyEvaluations().getAccountedEvaluation();
+                LocalDate delayedEvalNew = expe.getPedagogicalContext().getNewPedagogyEvaluations().getDelayedEvaluation();
+                
+                LocalDate mostRecentOld = isTheMostRecentDate(accountedEvalOld, delayedEvalOld);
+                LocalDate mostRecentNew = isTheMostRecentDate(accountedEvalNew, delayedEvalNew);
+                LocalDate mostRecentDate = isTheMostRecentDate(mostRecentOld, mostRecentNew);
+                
+                boolean inProgress = mostRecentDate != null && today.isBefore(mostRecentDate);
+                
+                return Map.of(
+                    "id", (Object) expe.getId(),
+                    "keywords", expe.getKeywords(),
+                    "personalKeywords", expe.getPersonalKeywords() != null ? expe.getPersonalKeywords() : "",
+                    "institutionName", expe.getInstitution().getName(),
+                    "teachingTitle", expe.getPedagogicalContext().getTeachingTitle(),
+                    "studyField", expe.getPedagogicalContext().getStudyField(),
+                    "yearOfStudy", expe.getPedagogicalContext().getYearOfStudy(),
+                    "inProgress", inProgress
+                );
+            })
             .collect(Collectors.toList());
         
         return ResponseEntity.ok(experimentationsList);
+    }
+
+    private LocalDate isTheMostRecentDate(LocalDate firstDate, LocalDate secondDate){
+        // On part du principe que les dates peuvent être null si non exigées.
+        LocalDate mostRecentDate = null;
+        if (firstDate != null && secondDate != null) {
+            mostRecentDate = firstDate.isAfter(secondDate) ? firstDate : secondDate;
+        } else if (firstDate != null) {
+            mostRecentDate = firstDate;
+        } else if (secondDate != null) {
+            mostRecentDate = secondDate;
+        }
+        return mostRecentDate;
     }
 
     @DeleteMapping("/delete/{id}") 

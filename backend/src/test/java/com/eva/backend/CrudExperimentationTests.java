@@ -188,6 +188,18 @@ public class CrudExperimentationTests {
     @Test
     public void testGetExperimentationListOfOneUser() throws Exception {
         createAnExperimentation();
+
+        Evaluations oldEvaluations2 = Evaluations.builder()
+                .initialEvaluation(LocalDate.of(2024, 1, 15))
+                .immediateEvaluation(LocalDate.of(2024, 2, 15))
+                .delayedEvaluation(LocalDate.of(2024, 3, 15))
+                .build();
+
+        Evaluations newEvaluations2 = Evaluations.builder()
+                .initialEvaluation(LocalDate.of(2024, 1, 15))
+                .immediateEvaluation(LocalDate.of(2024, 2, 15))
+                .delayedEvaluation(LocalDate.of(2024, 3, 15))
+                .build();
         
         // Deuxième expérimentation avec des données différentes
         PedagogicalContext pedagogicalContext2 = PedagogicalContext.builder()
@@ -205,8 +217,8 @@ public class CrudExperimentationTests {
                 .studentsNumber("28")
                 .oldPedagogy("Cours théorique")
                 .newPedagogy("Apprentissage par l'expérimentation")
-                .oldPedagogyEvaluations(Evaluations.builder().build())
-                .newPedagogyEvaluations(Evaluations.builder().build())
+                .oldPedagogyEvaluations(oldEvaluations2)
+                .newPedagogyEvaluations(newEvaluations2)
                 .build();
 
         Experimentation experimentation2 = Experimentation.builder()
@@ -228,7 +240,7 @@ public class CrudExperimentationTests {
                         .andExpect(status().isOk());
 
         // Récupérer la liste des expérimentations de l'utilisateur
-        mockMvc.perform(get("/expe/getAll")
+        mockMvc.perform(get("/expe/getAllOfOneUser")
                         .cookie(new jakarta.servlet.http.Cookie("jwt", jwtCookie)))
                         .andExpect(status().isOk())
                         .andExpect(jsonPath("$.length()").value(2))
@@ -241,6 +253,7 @@ public class CrudExperimentationTests {
                         .andExpect(jsonPath("$[0].teachingTitle").value("Algèbre et géométrie"))
                         .andExpect(jsonPath("$[0].studyField").value("Mathématiques"))
                         .andExpect(jsonPath("$[0].yearOfStudy").value("5ème A"))
+                        .andExpect(jsonPath("$[0].inProgress").value(true))
                         .andExpect(jsonPath("$[1].id").value(2))
                         .andExpect(jsonPath("$[1].keywords[0]").value("physique"))
                         .andExpect(jsonPath("$[1].keywords[1]").value("sciences"))
@@ -250,6 +263,7 @@ public class CrudExperimentationTests {
                         .andExpect(jsonPath("$[1].teachingTitle").value("Mécanique et énergie"))
                         .andExpect(jsonPath("$[1].studyField").value("Physique"))
                         .andExpect(jsonPath("$[1].yearOfStudy").value("4ème B"))
+                        .andExpect(jsonPath("$[1].inProgress").value(false))
                         .andExpect(jsonPath("$[0].protocol").doesNotExist())
                         .andExpect(jsonPath("$[0].isSharingData").doesNotExist())
                         .andExpect(jsonPath("$[0].pedagogicalContext.learningDifficulty").doesNotExist());

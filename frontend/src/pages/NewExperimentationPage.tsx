@@ -168,7 +168,7 @@ async function sendPostRequest(data: any, setError:Dispatch<SetStateAction<Error
      
     if (response.ok){
         const result = await response.json();
-        navigate(`/application/experimentationProfile/${result.id}`);
+        navigate(`/application/experimentationSummary/${result.id}`);
     } else {
         setError(new Error(`Erreur ${response.status}: ${response.statusText}`));
     }
