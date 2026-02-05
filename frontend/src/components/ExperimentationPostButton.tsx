@@ -7,7 +7,8 @@ export type Data = {
     yearOfStudy: string,
     teachingTitle: string,
     keywords: Array<string>,
-    personalKeywords: string
+    personalKeywords: string,
+    inProgress: boolean,
 }
 
 type ExpeData = {
@@ -16,7 +17,10 @@ type ExpeData = {
 
 export function ExperimentationPostButton({data}:ExpeData){
     return  <Button href={`/application/experimentationSummary/${data.id}`} className={styles.container}>
-                <h5>Expérimentation</h5>
+                <div className={styles.title}>
+                    <h5>Expérimentation</h5>
+                    {data.inProgress ? <p className={styles.inProgress}>En cours</p>: <p className={styles.finished}>Terminée</p>}
+                </div>
                 <div className={styles.header}>
                     <p>{data.institutionName}</p>
                     <p>{data.yearOfStudy}</p>
