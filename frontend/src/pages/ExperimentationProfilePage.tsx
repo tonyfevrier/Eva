@@ -212,7 +212,7 @@ function fillKeywords(data: any, expeData:ExperimentationData){
 
 async function sendPostRequest(id:string|undefined, data: any, setError:Dispatch<SetStateAction<Error|null>>, navigate: NavigateFunction){
     const response = await fetch(`http://localhost:9000/expe/update/${id}`, {
-            method: "POST",
+            method: "PUT",
             headers:{
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
@@ -225,8 +225,7 @@ async function sendPostRequest(id:string|undefined, data: any, setError:Dispatch
         });
      
     if (response.ok){
-        const result = await response.json();
-        navigate(`/application/experimentationProfile/${result.id}`);
+        navigate(`/application/expe`);
     } else {
         setError(new Error(`Erreur ${response.status}: ${response.statusText}`));
     }

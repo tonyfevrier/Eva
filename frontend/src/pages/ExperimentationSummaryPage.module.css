@@ -1,3 +1,9 @@
-.btnContainer > *{
+.btnContainer > * {
     margin: 1em;
+}
+
+.deleteBtn{
+    background-color: #ffebee;
+    color: #c62828;
+    margin-top: 1.5em;
 }

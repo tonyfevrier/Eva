@@ -1,13 +1,18 @@
 import { useFetch } from "../hooks/useFetch";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams, type NavigateFunction } from "react-router-dom";
 import { Spinner } from "../components/Spinner";
 import { Button } from "../components/Button";
 import { Infos } from "../components/Infos";
 import styles from "./ExperimentationSummaryPage.module.css"
+import { useState, type Dispatch, type SetStateAction } from "react";
+import { Modal } from "../components/Modal";
  
 export function ExperimentationSummaryPage(){
     const {id} = useParams();
     const {loading, data, error} = useFetch<Record<string, any>>(`http://localhost:9000/expe/get/${id}`);
+    const [deleteError, setDeleteError] = useState<Error|null>(null);
+    const [printModal, setPrintModal] = useState<boolean>(false);
+    const navigate = useNavigate();
 
     if (loading){
         return <Spinner/>
@@ -22,6 +27,14 @@ export function ExperimentationSummaryPage(){
         let keywords = "";
         for (const word of Array.from(data.keywords)){
             keywords += word + ", "; 
+        }
+
+        const handleToggleModal = () => {
+            setPrintModal(!printModal);
+        }
+
+        const handleDeleteConfirm = async () => {
+            sendDeleteRequest(id, setDeleteError, navigate);
         }
 
         return <>
@@ -67,8 +80,33 @@ export function ExperimentationSummaryPage(){
                      
                     <div className={styles.btnContainer} >
                         <Button href={`/application/modifyExpe/${id}`}>Modifier l'expérimentation</Button>
-                        <Button href="/application/expe">Confirmer l'expérimentation</Button>
+                        <Button href="/application/expe">Voir la liste des expérimentations</Button>
                     </div>
+                    <Button className={styles.deleteBtn} onClick={handleToggleModal}>Supprimer l'expérimentation</Button>
+                    {printModal && <Modal title="Suppression de l'expérimentation" postTitle="Confirmation de fermeture" postContent="Confirmez-vous la suppression de votre expérimentation?" onClose={handleToggleModal} onSave={handleDeleteConfirm}/>}
+                    {deleteError?.message && <p>{deleteError?.message}</p>}
                </>
     }
 } 
+
+async function sendDeleteRequest(id: string|undefined, setDeleteError: Dispatch<SetStateAction<Error|null>>, navigate: NavigateFunction){
+    const response = await fetch(`http://localhost:9000/expe/delete/${id}`, {
+            method: "delete",
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+            },
+            credentials: "include"  
+        })
+        .catch(requestError => {
+            setDeleteError(requestError);
+            throw requestError;
+        });
+
+    // Redirection si la requête est acceptée 
+    if (response.ok){
+         navigate("/application/expe");
+    } else {
+        setDeleteError(new Error(`Erreur ${response.status}: ${response.statusText}`));
+    }
+}
