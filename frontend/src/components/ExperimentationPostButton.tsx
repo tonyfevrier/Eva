@@ -16,7 +16,7 @@ type ExpeData = {
 }
 
 export function ExperimentationPostButton({data}:ExpeData){
-    return  <Button href={`/application/experimentationSummary/${data.id}`} className={styles.container}>
+    return  <Button href={`/experimentationSummary/${data.id}`} className={styles.container}>
                 <div className={styles.title}>
                     <h5>Expérimentation</h5>
                     {data.inProgress ? <p className={styles.inProgress}>En cours</p>: <p className={styles.finished}>Terminée</p>}

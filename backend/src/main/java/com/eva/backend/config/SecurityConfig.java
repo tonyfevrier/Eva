@@ -59,7 +59,7 @@ public class SecurityConfig {
                         .requestMatchers("/auth/register", "/auth/login",
                                          "/auth/logout", "/auth/refresh",
                                           "/auth/resetMail", "/auth/recoverPwd",
-                                          "/expe/getAll")
+                                          "/expe/get/*", "/expe/getAll")
                                           .permitAll() //ces url sont accessibles à tous
                         .requestMatchers("/auth/users").hasRole("ADMIN")
                         .anyRequest().authenticated()) //filtre exigeant l'authentification pour tout requête

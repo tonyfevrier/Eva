@@ -6,10 +6,13 @@ import { Infos } from "../components/Infos";
 import styles from "./ExperimentationSummaryPage.module.css"
 import { useState, type Dispatch, type SetStateAction } from "react";
 import { Modal } from "../components/Modal";
+import { useTheme } from "../hooks/useTheme";
  
 export function ExperimentationSummaryPage(){
+    const {isAuthenticated} = useTheme(); 
     const {id} = useParams();
-    const {loading, data, error} = useFetch<Record<string, any>>(`http://localhost:9000/expe/get/${id}`);
+    const credentials = undefined;  
+    const {loading, data, error} = useFetch<Record<string, any>>(`http://localhost:9000/expe/get/${id}`, credentials);
     const [deleteError, setDeleteError] = useState<Error|null>(null);
     const [printModal, setPrintModal] = useState<boolean>(false);
     const navigate = useNavigate();
@@ -78,11 +81,14 @@ export function ExperimentationSummaryPage(){
                         </div>
                     </div>
                      
-                    <div className={styles.btnContainer} >
-                        <Button href={`/application/modifyExpe/${id}`}>Modifier l'expérimentation</Button>
-                        <Button href="/application/expe">Voir la liste des expérimentations</Button>
-                    </div>
-                    <Button className={styles.deleteBtn} onClick={handleToggleModal}>Supprimer l'expérimentation</Button>
+                    {isAuthenticated && 
+                    <>
+                        <div className={styles.btnContainer} >
+                            <Button href={`/application/modifyExpe/${id}`}>Modifier l'expérimentation</Button>
+                            <Button href="/application/expe">Voir la liste des expérimentations</Button>
+                        </div>
+                        <Button className={styles.deleteBtn} onClick={handleToggleModal}>Supprimer l'expérimentation</Button>
+                    </>}
                     {printModal && <Modal title="Suppression de l'expérimentation" postTitle="Confirmation de fermeture" postContent="Confirmez-vous la suppression de votre expérimentation?" onClose={handleToggleModal} onSave={handleDeleteConfirm}/>}
                     {deleteError?.message && <p>{deleteError?.message}</p>}
                </>

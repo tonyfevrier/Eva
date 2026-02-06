@@ -59,6 +59,10 @@ const routes: RouteObject[] = [
         element: <ExperimentationListPage isUserExpeList={false}/>
       },
       {
+        path: "experimentationSummary/:id",
+        element : <ExperimentationSummaryPage/>, 
+      },
+      {
         path : "/application",
         element : <AuthenticatedLayout/>,
         children : [
@@ -85,10 +89,6 @@ const routes: RouteObject[] = [
             {
               path: "expe",
               element : <ExperimentationPage/>
-            },
-            {
-              path: "experimentationSummary/:id",
-              element : <ExperimentationSummaryPage/>, 
             },
             {
               path: "modifyExpe/:id",
