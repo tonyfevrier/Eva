@@ -1,5 +1,6 @@
 package com.eva.backend.service;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,10 @@ public class ExperimentationService {
 
     public Optional<Experimentation> findById(Long id){
         return experimentationRepository.findById(id);
+    }
+
+    public List<Experimentation> findExperimentations(){
+        return experimentationRepository.findAll();
     }
 
     public void deleteById(Long id){

@@ -244,30 +244,114 @@ public class CrudExperimentationTests {
                         .cookie(new jakarta.servlet.http.Cookie("jwt", jwtCookie)))
                         .andExpect(status().isOk())
                         .andExpect(jsonPath("$.length()").value(2))
-                        .andExpect(jsonPath("$[0].id").value(1))
-                        .andExpect(jsonPath("$[0].keywords[0]").value("mathématiques"))
-                        .andExpect(jsonPath("$[0].keywords[1]").value("apprentissage actif"))
-                        .andExpect(jsonPath("$[0].keywords[2]").value("collège"))
-                        .andExpect(jsonPath("$[0].personalKeywords").value("motivation, collaboration"))
-                        .andExpect(jsonPath("$[0].institutionName").value("Institution Initiale"))
-                        .andExpect(jsonPath("$[0].teachingTitle").value("Algèbre et géométrie"))
-                        .andExpect(jsonPath("$[0].studyField").value("Mathématiques"))
-                        .andExpect(jsonPath("$[0].yearOfStudy").value("5ème A"))
-                        .andExpect(jsonPath("$[0].inProgress").value(true))
-                        .andExpect(jsonPath("$[1].id").value(2))
-                        .andExpect(jsonPath("$[1].keywords[0]").value("physique"))
-                        .andExpect(jsonPath("$[1].keywords[1]").value("sciences"))
+                        .andExpect(jsonPath("$[1].id").value(1))
+                        .andExpect(jsonPath("$[1].keywords[0]").value("mathématiques"))
+                        .andExpect(jsonPath("$[1].keywords[1]").value("apprentissage actif"))
                         .andExpect(jsonPath("$[1].keywords[2]").value("collège"))
-                        .andExpect(jsonPath("$[1].personalKeywords").value("expérimentation, pratique"))
+                        .andExpect(jsonPath("$[1].personalKeywords").value("motivation, collaboration"))
                         .andExpect(jsonPath("$[1].institutionName").value("Institution Initiale"))
-                        .andExpect(jsonPath("$[1].teachingTitle").value("Mécanique et énergie"))
-                        .andExpect(jsonPath("$[1].studyField").value("Physique"))
-                        .andExpect(jsonPath("$[1].yearOfStudy").value("4ème B"))
-                        .andExpect(jsonPath("$[1].inProgress").value(false))
-                        .andExpect(jsonPath("$[0].protocol").doesNotExist())
-                        .andExpect(jsonPath("$[0].isSharingData").doesNotExist())
-                        .andExpect(jsonPath("$[0].pedagogicalContext.learningDifficulty").doesNotExist());
+                        .andExpect(jsonPath("$[1].teachingTitle").value("Algèbre et géométrie"))
+                        .andExpect(jsonPath("$[1].studyField").value("Mathématiques"))
+                        .andExpect(jsonPath("$[1].yearOfStudy").value("5ème A"))
+                        .andExpect(jsonPath("$[1].inProgress").value(true))
+                        .andExpect(jsonPath("$[0].id").value(2))
+                        .andExpect(jsonPath("$[0].keywords[0]").value("physique"))
+                        .andExpect(jsonPath("$[0].keywords[1]").value("sciences"))
+                        .andExpect(jsonPath("$[0].keywords[2]").value("collège"))
+                        .andExpect(jsonPath("$[0].personalKeywords").value("expérimentation, pratique"))
+                        .andExpect(jsonPath("$[0].institutionName").value("Institution Initiale"))
+                        .andExpect(jsonPath("$[0].teachingTitle").value("Mécanique et énergie"))
+                        .andExpect(jsonPath("$[0].studyField").value("Physique"))
+                        .andExpect(jsonPath("$[0].yearOfStudy").value("4ème B"))
+                        .andExpect(jsonPath("$[0].inProgress").value(false))
+                        .andExpect(jsonPath("$[1].protocol").doesNotExist())
+                        .andExpect(jsonPath("$[1].isSharingData").doesNotExist())
+                        .andExpect(jsonPath("$[1].pedagogicalContext.learningDifficulty").doesNotExist());
     }
+
+    @Test
+    public void testGetExperimentationList() throws Exception {
+        createAnExperimentation();
+
+        Evaluations oldEvaluations2 = Evaluations.builder()
+                .initialEvaluation(LocalDate.of(2024, 1, 15))
+                .immediateEvaluation(LocalDate.of(2024, 2, 15))
+                .delayedEvaluation(LocalDate.of(2024, 3, 15))
+                .build();
+
+        Evaluations newEvaluations2 = Evaluations.builder()
+                .initialEvaluation(LocalDate.of(2024, 1, 15))
+                .immediateEvaluation(LocalDate.of(2024, 2, 15))
+                .delayedEvaluation(LocalDate.of(2024, 3, 15))
+                .build();
+        
+        // Deuxième expérimentation avec des données différentes
+        PedagogicalContext pedagogicalContext2 = PedagogicalContext.builder()
+                .learningDifficulty("Difficultés en sciences")
+                .learningDifficultyOrigin("Manque de méthode")
+                .studyField("Physique")
+                .teachingTitle("Mécanique et énergie")
+                .knowledges("Forces, vitesse, accélération")
+                .prerequisite("Mathématiques de base")
+                .organisationParticularities("Travaux pratiques")
+                .classesFrequencies("3 fois par semaine")
+                .classesDates("Mardi, jeudi et vendredi")
+                .yearOfStudy("4ème B")
+                .studentsSpecificities("Classe standard")
+                .studentsNumber("28")
+                .oldPedagogy("Cours théorique")
+                .newPedagogy("Apprentissage par l'expérimentation")
+                .oldPedagogyEvaluations(oldEvaluations2)
+                .newPedagogyEvaluations(newEvaluations2)
+                .build();
+
+        Experimentation experimentation2 = Experimentation.builder()
+                .keywords(Arrays.asList("physique", "sciences", "collège"))
+                .personalKeywords("expérimentation, pratique")
+                .protocol("Protocole 2")
+                .isSharingData(false)
+                .dataPath("")
+                .pedagogicalContext(pedagogicalContext2)
+                .build();
+
+        ExperimentationRequest experimentationRequest2 = new ExperimentationRequest(experimentation2, institution.getId());
+        String experimentationJson2 = objectMapper.writeValueAsString(experimentationRequest2);
+
+        mockMvc.perform(post("/expe/create")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(experimentationJson2)
+                        .cookie(new jakarta.servlet.http.Cookie("jwt", jwtCookie)))
+                        .andExpect(status().isOk());
+
+        // Récupérer la liste des expérimentations de l'utilisateur
+        mockMvc.perform(get("/expe/getAllOfOneUser")
+                        .cookie(new jakarta.servlet.http.Cookie("jwt", jwtCookie)))
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$.length()").value(2))
+                        .andExpect(jsonPath("$[1].id").value(1))
+                        .andExpect(jsonPath("$[1].keywords[0]").value("mathématiques"))
+                        .andExpect(jsonPath("$[1].keywords[1]").value("apprentissage actif"))
+                        .andExpect(jsonPath("$[1].keywords[2]").value("collège"))
+                        .andExpect(jsonPath("$[1].personalKeywords").value("motivation, collaboration"))
+                        .andExpect(jsonPath("$[1].institutionName").value("Institution Initiale"))
+                        .andExpect(jsonPath("$[1].teachingTitle").value("Algèbre et géométrie"))
+                        .andExpect(jsonPath("$[1].studyField").value("Mathématiques"))
+                        .andExpect(jsonPath("$[1].yearOfStudy").value("5ème A"))
+                        .andExpect(jsonPath("$[1].inProgress").value(true))
+                        .andExpect(jsonPath("$[0].id").value(2))
+                        .andExpect(jsonPath("$[0].keywords[0]").value("physique"))
+                        .andExpect(jsonPath("$[0].keywords[1]").value("sciences"))
+                        .andExpect(jsonPath("$[0].keywords[2]").value("collège"))
+                        .andExpect(jsonPath("$[0].personalKeywords").value("expérimentation, pratique"))
+                        .andExpect(jsonPath("$[0].institutionName").value("Institution Initiale"))
+                        .andExpect(jsonPath("$[0].teachingTitle").value("Mécanique et énergie"))
+                        .andExpect(jsonPath("$[0].studyField").value("Physique"))
+                        .andExpect(jsonPath("$[0].yearOfStudy").value("4ème B"))
+                        .andExpect(jsonPath("$[0].inProgress").value(false))
+                        .andExpect(jsonPath("$[1].protocol").doesNotExist())
+                        .andExpect(jsonPath("$[1].isSharingData").doesNotExist())
+                        .andExpect(jsonPath("$[1].pedagogicalContext.learningDifficulty").doesNotExist());
+    } 
 
     @Test
     public void testUpdateExperimentation() throws Exception {
