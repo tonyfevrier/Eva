@@ -69,6 +69,7 @@ public class CrudExperimentationTests {
     public void setup() throws Exception {
         String userJson = userCreation.registerAUser();        
         jwtCookie = userCreation.login(userJson);
+        userCreation.registerAdditionalData(jwtCookie);
         institution = createInstitution(); 
     }
 
@@ -175,7 +176,9 @@ public class CrudExperimentationTests {
                         .andExpect(jsonPath("$.pedagogicalContext.newPedagogyEvaluations.initialEvaluation").value("2026-01-20"))
                         .andExpect(jsonPath("$.pedagogicalContext.newPedagogyEvaluations.immediateEvaluation").value("2026-02-20"))
                         .andExpect(jsonPath("$.pedagogicalContext.newPedagogyEvaluations.delayedEvaluation").value("2026-03-20"))
-                        .andExpect(jsonPath("$.pedagogicalContext.newPedagogyEvaluations.accountedEvaluation").doesNotExist());
+                        .andExpect(jsonPath("$.pedagogicalContext.newPedagogyEvaluations.accountedEvaluation").doesNotExist())
+                        .andExpect(jsonPath("$.userOwnsExpe").value(true))
+                        .andExpect(jsonPath("$.contactMail").value("marie.tremblay@mail.com"));
     }
 
     @Test
@@ -183,6 +186,39 @@ public class CrudExperimentationTests {
         mockMvc.perform(get("/expe/get/999")
                         .cookie(new jakarta.servlet.http.Cookie("jwt", jwtCookie)))
                         .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void testGetExpeOfOtherUser() throws Exception {
+        createAnExperimentation();
+        
+        // Créer et se connecter avec un deuxième utilisateur
+        String secondUserJson = """
+                {
+                    "lastName": "Martin",
+                    "firstName": "Pierre",
+                    "birthday": "1990-05-15",
+                    "mail": "pierre.martin@mail.com",
+                    "password": "password456",
+                    "confirmPassword": "password456"
+                }
+                """;
+        
+        mockMvc.perform(post("/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(secondUserJson))
+                        .andExpect(status().isOk());
+        
+        String secondUserCookie = userCreation.login(secondUserJson);
+        userCreation.registerAdditionalData(secondUserCookie);
+        
+        // Le deuxième utilisateur consulte l'expérimentation du premier
+        mockMvc.perform(get("/expe/get/1")
+                        .cookie(new jakarta.servlet.http.Cookie("jwt", secondUserCookie)))
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$.id").value(1))
+                        .andExpect(jsonPath("$.userOwnsExpe").value(false))
+                        .andExpect(jsonPath("$.contactMail").value("marie.tremblay@mail.com"));
     }
 
     @Test

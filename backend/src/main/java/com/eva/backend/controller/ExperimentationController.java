@@ -19,6 +19,8 @@ import com.eva.backend.service.ExperimentationService;
 import com.eva.backend.service.InstitutionService;
 import com.eva.backend.service.UserService;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -41,6 +43,9 @@ public class ExperimentationController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private RequestUtils requestUtils;
+
     @PostMapping("/create") 
     //@Transactional //Important pour que ma ligne 42 permette aussi d'enregistrer l'expérimentation dans user pour maintenir la relation birectionnelle   
     public ResponseEntity<?> createExperimentation(@RequestBody ExperimentationRequest experimentationRequest, @AuthenticationPrincipal User authenticatedUser){
@@ -59,13 +64,19 @@ public class ExperimentationController {
     }
 
     @GetMapping("/get/{id}")
-    public ResponseEntity<?> getExperimentation(@PathVariable Long id) {
+    public ResponseEntity<?> getExperimentation(@PathVariable Long id, HttpServletRequest request) {
         Optional<Experimentation> optionalExperimentation = experimentationService.findById(id);
         if (optionalExperimentation.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
         
         Experimentation experimentation = optionalExperimentation.get();
+
+        String token = requestUtils.getTokenFromRequest(request, "jwt");
+        User authenticatedUser = userService.findByToken(token);
+        User user = experimentation.getUser();
+        Boolean userOwnsExpe = authenticatedUser != null && authenticatedUser.getId().equals(user.getId());
+
         Institution institution = experimentation.getInstitution();
         Map<String, Object> response = Map.of(
             "id", experimentation.getId(),
@@ -75,7 +86,9 @@ public class ExperimentationController {
             "affiliation", Map.of("id", institution.getId(),
                                       "name", institution.getName()),
             "pedagogicalContext", experimentation.getPedagogicalContext(),
-            "isSharingData", experimentation.getIsSharingData()
+            "isSharingData", experimentation.getIsSharingData(),
+            "userOwnsExpe", userOwnsExpe,
+            "contactMail", user.getAdditionalData().isAcceptContact()?user.getMail():""
         );
         
         return ResponseEntity.ok(response);
