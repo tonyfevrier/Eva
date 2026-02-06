@@ -19,6 +19,7 @@ import { InstitutionPage } from './pages/InstitutionPage';
 import { InstitutionProfilePage } from './pages/InstitutionProfilePage';
 import { ExperimentationSummaryPage } from './pages/ExperimentationSummaryPage';
 import { ExperimentationProfilePage } from './pages/ExperimentationProfilePage';
+import { ExperimentationListPage } from './pages/ExperimentationListPage';
 
 const routes: RouteObject[] = [
   {
@@ -52,6 +53,10 @@ const routes: RouteObject[] = [
       {
         path : "/pwdUpdated",
         element: <Goto href="/login" label="Votre mot de passe a bien été modifié" buttonLabel="Revenir à la page de login"/>
+      },
+      {
+        path : "/database",
+        element: <ExperimentationListPage isUserExpeList={false}/>
       },
       {
         path : "/application",
