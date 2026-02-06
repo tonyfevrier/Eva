@@ -6,10 +6,8 @@ import { Infos } from "../components/Infos";
 import styles from "./ExperimentationSummaryPage.module.css"
 import { useState, type Dispatch, type SetStateAction } from "react";
 import { Modal } from "../components/Modal";
-import { useTheme } from "../hooks/useTheme";
  
 export function ExperimentationSummaryPage(){
-    const {isAuthenticated} = useTheme(); 
     const {id} = useParams();
     const credentials = undefined;  
     const {loading, data, error} = useFetch<Record<string, any>>(`http://localhost:9000/expe/get/${id}`, credentials);
@@ -26,11 +24,13 @@ export function ExperimentationSummaryPage(){
     }
 
     if (data){
-        
-        let keywords = "";
-        for (const word of Array.from(data.keywords)){
-            keywords += word + ", "; 
-        }
+
+        const authenticatedUserOwnsExpe = data.userOwnsExpe;
+        const ownerAcceptsContact = data.contactMail !== "";
+        const oldAccountedEvaluationExists = data.pedagogicalContext.oldPedagogyEvaluations.accountedEvaluation !== null;
+        const newAccountedEvaluationExists = data.pedagogicalContext.newPedagogyEvaluations.accountedEvaluation !== null;
+
+        const keywords = Array.from(data.keywords).join(", ");
 
         const handleToggleModal = () => {
             setPrintModal(!printModal);
@@ -42,11 +42,16 @@ export function ExperimentationSummaryPage(){
 
         return <>
                     <h1>Récapitulatif de l'expérimentation</h1>
+                    {ownerAcceptsContact && 
+                    <>
+                        <h4>Contact</h4>
+                        <Infos title="Pour plus d'informations, vous pouvez écrire au courriel suivant" info={data.contactMail}></Infos>
+                    </>}
                     <h4>Mots clés</h4>
-                    <Infos title="Mots-clés" info={keywords}/>
-                    <Infos title="Mots-clés personnalisés" info={data.personalKeywords}/>
+                    {keywords !== "" && <Infos title="Mots-clés" info={keywords}/>}
+                    {data.personalKeywords !== "" && <Infos title="Mots-clés personnalisés" info={data.personalKeywords}/>}
                     <h4>Contexte pédagogique</h4>
-                    <Infos title="Nom de l'institution" info={data.institutionName}/> 
+                    <Infos title="Nom de l'institution" info={data?.affiliation?.name}/> 
                     <Infos title="Titre de l'enseignement" info={data.pedagogicalContext.teachingTitle}/> 
                     <Infos title="Domaine d'étude" info={data.pedagogicalContext.studyField}/> 
                     <Infos title="Année d'étude" info={data.pedagogicalContext.yearOfStudy}/> 
@@ -70,18 +75,18 @@ export function ExperimentationSummaryPage(){
                             <Infos title="Évaluation initiale" info={data.pedagogicalContext.oldPedagogyEvaluations.initialEvaluation}/> 
                             <Infos title="Évaluation immédiate" info={data.pedagogicalContext.oldPedagogyEvaluations.immediateEvaluation}/> 
                             <Infos title="Évaluation différée" info={data.pedagogicalContext.oldPedagogyEvaluations.delayedEvaluation}/> 
-                            <Infos title="Évaluation comptabilisée" info={data.pedagogicalContext.oldPedagogyEvaluations.accountedEvaluation}/>   
+                            {oldAccountedEvaluationExists && <Infos title="Évaluation comptabilisée" info={data.pedagogicalContext.oldPedagogyEvaluations.accountedEvaluation}/>}  
                         </div>
                         <div>
                             <h5>Nouvelle pratique</h5>
                             <Infos title="Évaluation initiale" info={data.pedagogicalContext.newPedagogyEvaluations.initialEvaluation}/> 
                             <Infos title="Évaluation immédiate" info={data.pedagogicalContext.newPedagogyEvaluations.immediateEvaluation}/> 
                             <Infos title="Évaluation différée" info={data.pedagogicalContext.newPedagogyEvaluations.delayedEvaluation}/> 
-                            <Infos title="Évaluation comptabilisée" info={data.pedagogicalContext.newPedagogyEvaluations.accountedEvaluation}/>      
+                            {newAccountedEvaluationExists && <Infos title="Évaluation comptabilisée" info={data.pedagogicalContext.newPedagogyEvaluations.accountedEvaluation}/>}      
                         </div>
                     </div>
                      
-                    {isAuthenticated && 
+                    {authenticatedUserOwnsExpe && 
                     <>
                         <div className={styles.btnContainer} >
                             <Button href={`/application/modifyExpe/${id}`}>Modifier l'expérimentation</Button>
@@ -94,6 +99,7 @@ export function ExperimentationSummaryPage(){
                </>
     }
 } 
+
 
 async function sendDeleteRequest(id: string|undefined, setDeleteError: Dispatch<SetStateAction<Error|null>>, navigate: NavigateFunction){
     const response = await fetch(`http://localhost:9000/expe/delete/${id}`, {

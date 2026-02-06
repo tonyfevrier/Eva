@@ -73,9 +73,9 @@ public class ExperimentationController {
         Experimentation experimentation = optionalExperimentation.get();
 
         String token = requestUtils.getTokenFromRequest(request, "jwt");
-        User authenticatedUser = userService.findByToken(token);
+        User authenticatedUser = !token.isEmpty()? userService.findByToken(token):null;
         User user = experimentation.getUser();
-        Boolean userOwnsExpe = authenticatedUser != null && authenticatedUser.getId().equals(user.getId());
+        Boolean userOwnsExpe = authenticatedUser != null? authenticatedUser.getId().equals(user.getId()):false;
 
         Institution institution = experimentation.getInstitution();
         Map<String, Object> response = Map.of(
