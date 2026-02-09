@@ -1,12 +1,13 @@
-import { Input } from "../components/Input";
 import { Button } from "../components/Button";
-import { useState, type Dispatch, type SetStateAction } from "react";
+import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import { useNavigate, type NavigateFunction } from "react-router-dom";
 import { useTheme } from "../hooks/useTheme";
-import { Textarea } from "../components/Textarea";
-import { Select } from "../components/Select";
+import { InstitutionCreationPage} from "./InstitutionCreationPage";
+import { InstitutionSelectionPage } from "./InstitutionSelectionPage";
 
-type InstitutionFormData = {
+export type InstitutionFormData = InstitutionCreationData | InstitutionSelectionData | null;
+
+export type InstitutionCreationData = {
     name: string,
     town: string,
     category: string,
@@ -16,72 +17,48 @@ type InstitutionFormData = {
     institutionSpecifities: string,
     studentsSpecificities: string,
     teachersSpecificities: string,
-}
+};
 
+export type InstitutionSelectionData = { affiliationId: string };
 
 export function InstitutionPage(){
     const {isProfileCompleted, setIsProfileCompleted} = useTheme();
+    const [userCreatesInstitution, setUserCreatesInstitution] = useState<boolean>(false);
+    const [selectionFormData, setSelectionFormData] = useState<InstitutionSelectionData>({affiliationId: ""});
     const initialformData = {name: "", town: "", category: "", contactMail: "", socialStatus: "",
                              institutionSpecifities: "", studentsSpecificities: "",
                              studentsNumber: "", teachersSpecificities: ""};
-    const [formData, setFormData] = useState<InstitutionFormData>(initialformData);
+    const [creationFormData, setCreationFormData] = useState<InstitutionCreationData>(initialformData);
+    
     const [error, setError] = useState<Error|null>(null);
     const navigate = useNavigate();
 
-    const areRequiredInputsFilled = formData.name !== "" && formData.contactMail !== "jj/mm/aaaa" &&
-                                    formData.category !== "" && formData.socialStatus &&
-                                    formData.studentsNumber !== "";
-
+    const areRequiredInputsFilled = userCreatesInstitution 
+    ? creationFormData.name !== "" && creationFormData.town && creationFormData.category !== "" && creationFormData.contactMail !== "" && creationFormData.socialStatus !== "" && creationFormData.studentsNumber !== ""
+    : selectionFormData.affiliationId !== "";
+  
     const handleSubmit = (e:React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
-        const data = {name: formData.name, town: formData.town, category: formData.category,
-                      contactMail: formData.contactMail,
-                      socialStatus: formData.socialStatus,
-                      studentsNumber: formData.studentsNumber,
-                      institutionSpecifities: formData.institutionSpecifities,
-                      studentsSpecificities: formData.studentsSpecificities,
-                      teachersSpecificities: formData.teachersSpecificities}
+        const data = userCreatesInstitution?creationFormData:selectionFormData;
         sendPostRequest(data, setError, navigate, setIsProfileCompleted);
         if (e.currentTarget.name === "saveQuit"){
             navigate("/");
         } 
     }
 
-
     return <>
                 <h1>Tes établissements</h1>
-                {isProfileCompleted? <p> Vous avez enregistré un établissement avec succès, vous pouvez en entrer un autre</p>:
+                {isProfileCompleted? <p> Vous avez enregistré un établissement avec succès, vous pouvez en enregistrer un autre</p>:
                                      <p>Pour terminer l'enregistrement, vous allez maintenant rentrer les détails sur votre ou vos établissements d'exercice.</p> }
+                
+                {!userCreatesInstitution && <InstitutionSelectionPage setData={setSelectionFormData}/>}
+                {userCreatesInstitution && <InstitutionCreationPage formData={creationFormData} setData={setCreationFormData}/>}
+                
 
-                <form>
-                    <Input title="Nom de l'établissement" name="name" type="text" value={formData.name} onChange={(e)=>{setFormData({...formData, name: e.target.value})}} required/>
-                    <Input title="Ville" name="ville" type="text" value={formData.town} onChange={(e)=>{setFormData({...formData, town: e.target.value})}}/>
-                    <Input title="Mail de contact" name="contactMail" type="mail" value={formData.contactMail} onChange={(e)=>{setFormData({...formData, contactMail: e.target.value})}} required/>
-                    <Select title="Type" value={formData.category} onChange={(e)=>{setFormData({...formData, category: e.target.value})}} required>
-                        <option value="">Choisissez une des options suivantes</option>
-                        <option value="Public">Public</option>
-                        <option value="Privé">Privé</option>
-                        <option value="Privé hors contrat">Privé hors contrat</option>
-                        <option value="Autre">Autre</option>
-                    </Select>
-                    <Select title="Niveau socio-économique moyen des apprenants" value={formData.socialStatus} onChange={(e)=>{setFormData({...formData, socialStatus: e.target.value})}} required>
-                        <option value="">Choisissez une des options suivantes</option>
-                        <option value="Très faible">Très faible</option>
-                        <option value="Faible">Faible</option>
-                        <option value="Moyen">Moyen</option>
-                        <option value="Elevé">Elevé</option>
-                        <option value="Très élevé">Très élevé</option>
-                    </Select>
-                    <Input title="Nombre approximatif d'étudiants" type="text" name="studentsNumber" value={formData.studentsNumber} onChange={(e)=>{setFormData({...formData, studentsNumber: e.target.value})}} required/>
-                    <Textarea title="Particularités de l'établissement" name="institutionSpecifities" value={formData.institutionSpecifities} onChange={(e)=>{setFormData({...formData, institutionSpecifities: e.target.value})}}/>
-                    <Textarea title="Particularités des apprenants" name="studentsSpecificities" value={formData.studentsSpecificities} onChange={(e)=>{setFormData({...formData, studentsSpecificities: e.target.value})}}/>
-                    <Textarea title="Particularités des enseignants" name="teachersSpecificities" value={formData.teachersSpecificities} onChange={(e)=>{setFormData({...formData, teachersSpecificities: e.target.value})}}/>
-
-                    {isProfileCompleted && <Button onClick={()=>{navigate("/")}}>Quitter la page</Button> }
-                    <Button disabled={!areRequiredInputsFilled} name="saveStay" onClick={handleSubmit}>Sauver et entrer un autre établissement</Button>
-                    <Button disabled={!areRequiredInputsFilled} name="saveQuit" onClick={handleSubmit}>Sauver et quitter la page</Button>
-                    {error?.message && <p>{error?.message}</p>}
-                </form>
+                <Button onClick={() => {setUserCreatesInstitution(!userCreatesInstitution)}}>{userCreatesInstitution?"Choisir un établissement existant":"Créer un établissement"}</Button>
+                <Button disabled={!areRequiredInputsFilled} name="save" onClick={handleSubmit}>Sauver l'établissement</Button>
+                {isProfileCompleted && <Button onClick={()=>{navigate("/")}}>Quitter la page</Button> }
+                {error?.message && <p>{error?.message}</p>}
            </>
 }
 
@@ -102,8 +79,12 @@ async function sendPostRequest(data: InstitutionFormData, setFetchError:Dispatch
      
     if (response.ok){
         setIsProfileCompleted(true);
+        alert("Vous venez d'enregistrer un établissement avec succès!")
+        setFetchError(null);
     } else {
         setFetchError(new Error(`Erreur ${response.status}: ${response.statusText}`));
     }
     return response
 }
+
+

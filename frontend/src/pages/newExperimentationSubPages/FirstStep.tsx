@@ -6,7 +6,7 @@ import type { ExperimentationData } from "../NewExperimentationPage"
 import { useFetch } from "../../hooks/useFetch"
 import { Spinner } from "../../components/Spinner"
 import { Goto } from "../../components/Goto"
-import { FilteredSelector } from "../../components/FilteredSelector"
+import { ModalFilteredSelector } from "../../components/ModalFilteredSelector"
 import { Button } from "../../components/Button"
 import styles from "./FirstStep.module.css"
 
@@ -41,7 +41,7 @@ export function FirstStep({state, setState, handleClickOnCloud}:FirstStepState){
                         {state.affiliation.name !== "" && <p className={styles.institution}>{state.affiliation.name}</p>}
                         <Button onClick={() => setIsModalOpen(true)}> {state.affiliation.name !== ""?"Modifiez votre choix":"Cliquez pour choisir"}</Button>
                     </div>  
-                    {isModalOpen && <FilteredSelector title="Choisissez votre affiliation" items={data["institutions"]} onClick={handleChooseAffiliation} setIsModalOpen={setIsModalOpen}/>}
+                    {isModalOpen && <ModalFilteredSelector title="Choisissez votre affiliation" items={data["institutions"]} onClick={handleChooseAffiliation} setIsModalOpen={setIsModalOpen}/>}
                     <Goto href="/application/institution" label="Si vous n'avez pas trouvé votre établissement" buttonLabel="Créez-le ici"/>
                     <Cloud title="Choisissez éventuellement des mots clés" options={state.keywords} onClick={handleClickOnCloud}/>
                     <Input title="Autres mots clés personnalisés" value={state.personalKeywords} onChange={e => {setState({...state, personalKeywords: e.target.value})}}/>
