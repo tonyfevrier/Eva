@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Optional;
@@ -24,7 +25,9 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.eva.backend.model.Institution;
+import com.eva.backend.model.User;
 import com.eva.backend.repository.InstitutionRepository;
+import com.eva.backend.repository.UserRepository;
 import com.eva.backend.service.InstitutionService;
 import com.eva.backend.utils.UserCreation;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -47,6 +50,9 @@ public class CrudInstitutionTests {
 
     @Autowired
     private InstitutionRepository institutionRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Autowired
     private UserCreation userCreation;
@@ -218,6 +224,37 @@ public class CrudInstitutionTests {
                 .andExpect(jsonPath("$.institutions[1].name", is("Institution 2")))
                 .andExpect(jsonPath("$.institutions[2].id", is(saved3.getId().intValue())))
                 .andExpect(jsonPath("$.institutions[2].name", is("Institution 3")));
+    }
+
+    @Test
+    public void testAssociateExistingInstitutionToUser() throws Exception {
+        Institution institution = createInstitution();
+        User userBefore = userRepository.findByMail("marie.tremblay@mail.com");
+
+        String requestBody = objectMapper.writeValueAsString(
+            java.util.Map.of("affiliationId", institution.getId())
+        );
+
+        // Appel du endpoint d'association
+        mockMvc.perform(post("/institution/associate")
+                .cookie(new jakarta.servlet.http.Cookie("jwt", jwtCookie))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message", is("Institution ajoutée")));
+
+        // Vérification que l'institution contient bien l'utilisateur
+        Institution updatedInstitution = institutionRepository.findByIdWithUsers(institution.getId());
+        assertNotNull(updatedInstitution, "L'institution devrait être présente dans la base de données");
+        assertTrue(updatedInstitution.getUsers().stream()
+                .anyMatch(u -> u.getId().equals(userBefore.getId())),
+                "L'institution devrait contenir l'utilisateur");
+
+        // Vérification que l'utilisateur contient bien l'institution
+        User updatedUser = userRepository.findByMailWithInstitutions(userBefore.getMail());
+        assertTrue(updatedUser.getInstitutions().stream()
+                .anyMatch(i -> i.getId().equals(institution.getId())),
+                "L'utilisateur devrait contenir l'institution");
     }
 
     private Institution createInstitution(){

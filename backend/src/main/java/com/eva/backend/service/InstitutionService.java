@@ -22,6 +22,10 @@ public class InstitutionService {
         return institutionRepository.findById(id);
     }
 
+    public Institution findByIdWithUsers(Long id){
+        return institutionRepository.findByIdWithUsers(id);
+    }
+
     public List<Institution> findAll(){
         return institutionRepository.findAll();
     }

@@ -9,7 +9,10 @@ import com.eva.backend.model.Institution;
 
 @Repository
 public interface InstitutionRepository extends JpaRepository<Institution, Long> {
-    
+
     @Query("SELECT i FROM Institution i LEFT JOIN FETCH i.experimentations WHERE i.contactMail = :contactMail")
     public Institution findByContactMailWithExperimentations(@Param("contactMail") String contactMail);
+
+    @Query("SELECT i FROM Institution i LEFT JOIN FETCH i.users WHERE i.id = :id")
+    public Institution findByIdWithUsers(@Param("id") Long id);
 }

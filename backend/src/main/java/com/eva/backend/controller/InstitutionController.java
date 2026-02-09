@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 import com.eva.backend.model.Institution;
 import com.eva.backend.model.User;
@@ -42,23 +43,38 @@ public class InstitutionController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<?> registerInstitutionAssociateToUser(@RequestBody Institution institution, HttpServletRequest request){
-        String token = requestUtils.getTokenFromRequest(request, "jwt");
-        User user = userService.findByToken(token);
+    public ResponseEntity<?> registerInstitutionAssociateToUser(@RequestBody Institution institution, @AuthenticationPrincipal User authenticatedUser){
+        User user = userService.findByMailWithInstitutions(authenticatedUser.getMail());
 
         if (user.getInstitutions() == null) {
             user.setInstitutions(new ArrayList<>());
         }
 
-        //L'institution envoyée par react ne contient pas de liste pour l'attribut users
-        institution.setUsers(new ArrayList<>());
-        institution.getUsers().add(user);
         Institution savedInstitution = institutionService.save(institution);
         
         user.getInstitutions().add(savedInstitution);        
         userService.saveUpdatedUser(user);
         
         return ResponseEntity.ok(Map.of("message", "Institution créée"));
+    }
+
+    @PostMapping("/associate")
+    public ResponseEntity<?> associateExistingInstitutionToUser(@RequestBody Map<String, Long> body, @AuthenticationPrincipal User authenticatedUser){
+        // Recharger le user avec ses institutions pour éviter LazyInitializationException
+        User user = userService.findByMailWithInstitutions(authenticatedUser.getMail());
+        Institution institution = institutionService.findById(body.get("affiliationId"))
+                .orElseThrow(() -> new IllegalArgumentException("Institution non trouvée"));
+
+        if (user.getInstitutions() == null) {
+            user.setInstitutions(new ArrayList<>());
+        }
+
+        if (!user.getInstitutions().contains(institution)) {
+            user.getInstitutions().add(institution);
+            userService.saveUpdatedUser(user);
+        }
+        
+        return ResponseEntity.ok(Map.of("message", "Institution ajoutée"));
     }
 
     @GetMapping("/get/{id}")

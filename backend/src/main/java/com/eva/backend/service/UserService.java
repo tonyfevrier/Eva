@@ -99,6 +99,10 @@ public class UserService {
         return userRepository.findByMail(mail);
     }
 
+    public User findByMailWithInstitutions(String mail){
+        return userRepository.findByMailWithInstitutions(mail);
+    }
+
     public User findByMailWithExperimentations(String mail){
         return userRepository.findByMailWithExperimentations(mail);
     }
