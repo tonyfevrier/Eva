@@ -1,6 +1,6 @@
 import { Button } from "../components/Button";
-import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
-import { useNavigate, type NavigateFunction } from "react-router-dom";
+import { useState, type Dispatch, type SetStateAction } from "react";
+import { useNavigate } from "react-router-dom";
 import { useTheme } from "../hooks/useTheme";
 import { InstitutionCreationPage} from "./InstitutionCreationPage";
 import { InstitutionSelectionPage } from "./InstitutionSelectionPage";
@@ -40,7 +40,7 @@ export function InstitutionPage(){
     const handleSubmit = (e:React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
         const data = userCreatesInstitution?creationFormData:selectionFormData;
-        sendPostRequest(data, setError, navigate, setIsProfileCompleted);
+        sendPostRequest(data, setError, setIsProfileCompleted, setCreationFormData, setSelectionFormData);
         if (e.currentTarget.name === "saveQuit"){
             navigate("/");
         } 
@@ -63,8 +63,16 @@ export function InstitutionPage(){
 }
 
 
-async function sendPostRequest(data: InstitutionFormData, setFetchError:Dispatch<SetStateAction<Error|null>>, navigate: NavigateFunction, setIsProfileCompleted:Dispatch<SetStateAction<boolean>>){
-    const response = await fetch("http://localhost:9000/institution/create", {
+async function sendPostRequest(
+    data: InstitutionFormData, 
+    setFetchError: Dispatch<SetStateAction<Error|null>>, 
+    setIsProfileCompleted: Dispatch<SetStateAction<boolean>>,
+    setCreationFormData: Dispatch<SetStateAction<InstitutionCreationData>>,
+    setSelectionFormData: Dispatch<SetStateAction<InstitutionSelectionData>>,
+){
+    const isDataAnInstitutionCreationPage = data != null && "name" in data;
+    const endpoint = isDataAnInstitutionCreationPage?"create":"associate"; 
+    const response = await fetch(`http://localhost:9000/institution/${endpoint}`, {
             method: "POST",
             headers:{
                 'Content-Type': 'application/json',
@@ -81,6 +89,10 @@ async function sendPostRequest(data: InstitutionFormData, setFetchError:Dispatch
         setIsProfileCompleted(true);
         alert("Vous venez d'enregistrer un établissement avec succès!")
         setFetchError(null);
+        setCreationFormData({name: "", town: "", category: "", contactMail: "", socialStatus: "",
+                             institutionSpecifities: "", studentsSpecificities: "",
+                             studentsNumber: "", teachersSpecificities: ""});
+        setSelectionFormData({affiliationId: ""});
     } else {
         setFetchError(new Error(`Erreur ${response.status}: ${response.statusText}`));
     }

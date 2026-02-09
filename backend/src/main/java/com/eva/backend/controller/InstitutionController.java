@@ -35,13 +35,6 @@ public class InstitutionController {
     @Autowired
     private InstitutionService institutionService;
 
-    @Autowired
-    private RequestUtils requestUtils;
-
-    InstitutionController(InstitutionService institutionService) {
-        this.institutionService = institutionService;
-    }
-
     @PostMapping("/create")
     public ResponseEntity<?> registerInstitutionAssociateToUser(@RequestBody Institution institution, @AuthenticationPrincipal User authenticatedUser){
         User user = userService.findByMailWithInstitutions(authenticatedUser.getMail());
