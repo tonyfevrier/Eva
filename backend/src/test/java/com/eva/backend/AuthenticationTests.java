@@ -8,19 +8,26 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
+import static org.mockito.Mockito.when;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.eva.backend.model.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import jakarta.mail.Session;
+import jakarta.mail.internet.MimeMessage;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -33,6 +40,15 @@ public class AuthenticationTests {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @MockitoBean
+    private JavaMailSender mailSender;
+
+    @BeforeEach
+    public void setupMailSenderMock() {
+        MimeMessage mimeMessage = new MimeMessage((Session) null);
+        when(mailSender.createMimeMessage()).thenReturn(mimeMessage);
+    }
 
     @Test
     public void testLogin() throws Exception {

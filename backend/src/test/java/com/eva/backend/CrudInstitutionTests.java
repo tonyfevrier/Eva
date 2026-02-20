@@ -10,6 +10,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.when;
 
 import java.util.Optional;
 
@@ -19,9 +20,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.eva.backend.model.Institution;
@@ -31,6 +34,9 @@ import com.eva.backend.repository.UserRepository;
 import com.eva.backend.service.InstitutionService;
 import com.eva.backend.utils.UserCreation;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import jakarta.mail.Session;
+import jakarta.mail.internet.MimeMessage;
 
 
 @SpringBootTest
@@ -57,10 +63,16 @@ public class CrudInstitutionTests {
     @Autowired
     private UserCreation userCreation;
 
+    @MockitoBean
+    private JavaMailSender mailSender;
+
     private String jwtCookie;
 
     @BeforeEach
     public void setup() throws Exception {
+        MimeMessage mimeMessage = new MimeMessage((Session) null);
+        when(mailSender.createMimeMessage()).thenReturn(mimeMessage);
+
         String userJson = userCreation.registerAUser();        
         jwtCookie = userCreation.login(userJson); 
     }

@@ -8,14 +8,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.eva.backend.model.Institution;
@@ -24,8 +27,10 @@ import com.eva.backend.model.UserAdditionalData;
 import com.eva.backend.repository.InstitutionRepository;
 import com.eva.backend.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import static org.mockito.Mockito.when;
+import jakarta.mail.Session;
+import jakarta.mail.internet.MimeMessage;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
@@ -44,6 +49,15 @@ public class AdditionalDataTests {
 
     @Autowired
     private InstitutionRepository institutionRepository;
+
+    @MockitoBean
+    private JavaMailSender mailSender;
+
+    @BeforeEach
+    public void setupMailSenderMock() {
+        MimeMessage mimeMessage = new MimeMessage((Session) null);
+        when(mailSender.createMimeMessage()).thenReturn(mimeMessage);
+    }
 
     @Test
     public void testRegisterAdditionalData() throws Exception {
@@ -173,8 +187,11 @@ public class AdditionalDataTests {
         assertEquals(25000, savedInstitution.getStudentsNumber());
 
         // Vérifier que l'institution contient bien le user
-        Institution institution = institutionRepository.findById(1L).orElseThrow();
+        Institution institution = institutionRepository.findByIdWithUsers(savedInstitution.getId());
+        assertNotNull(institution, "L'institution devrait être retrouvée en base");
+        System.out.println(institution);
         List<User> users = institution.getUsers();
+        assertNotNull(users, "La liste des users de l'institution ne devrait pas être null");
         assertEquals(users.size(),1);
         assertEquals(users.get(0).getMail(), "marie.tremblay@mail.com");
 

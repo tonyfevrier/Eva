@@ -13,20 +13,30 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.Mockito.when;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.eva.backend.model.User;
+import com.eva.backend.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+
+import jakarta.mail.Session;
+import jakarta.mail.internet.MimeMessage;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -39,6 +49,18 @@ public class CrudUserTests {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @MockitoBean
+    private JavaMailSender mailSender;
+
+    @BeforeEach
+    public void setup() {
+        MimeMessage mimeMessage = new MimeMessage((Session) null);
+        when(mailSender.createMimeMessage()).thenReturn(mimeMessage);
+    }
 
     @Test
     @WithMockUser(roles = "ADMIN") // Pour récupérer les users
@@ -61,6 +83,12 @@ public class CrudUserTests {
                        .andExpect(jsonPath("$[0].firstname", is("tony")))
                        .andExpect(jsonPath("$[0].lastname", is("fevrier")))
                        .andExpect(jsonPath("$[0].mail", is("tony.fevrier@gmail.com")));
+
+        User savedUser = userRepository.findByMail("tony.fevrier@gmail.com");
+        assertEquals("tony", savedUser.getFirstname());
+        assertEquals("fevrier", savedUser.getLastname());
+        assertEquals("tony.fevrier@gmail.com", savedUser.getMail());
+        assertFalse(savedUser.getEmailVerified(), "emailVerified devrait être false après inscription");
     } 
 
     @Test

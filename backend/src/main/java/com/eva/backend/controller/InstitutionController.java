@@ -38,36 +38,37 @@ public class InstitutionController {
     @PostMapping("/create")
     public ResponseEntity<?> registerInstitutionAssociateToUser(@RequestBody Institution institution, @AuthenticationPrincipal User authenticatedUser){
         User user = userService.findByMailWithInstitutions(authenticatedUser.getMail());
-
-        if (user.getInstitutions() == null) {
-            user.setInstitutions(new ArrayList<>());
-        }
-
-        Institution savedInstitution = institutionService.save(institution);
-        
-        user.getInstitutions().add(savedInstitution);        
-        userService.saveUpdatedUser(user);
-        
+        mapInstitutionToUser(institution, user);  
         return ResponseEntity.ok(Map.of("message", "Institution créée"));
     }
+
+    
 
     @PostMapping("/associate")
     public ResponseEntity<?> associateExistingInstitutionToUser(@RequestBody Map<String, Long> body, @AuthenticationPrincipal User authenticatedUser){
         // Recharger le user avec ses institutions pour éviter LazyInitializationException
         User user = userService.findByMailWithInstitutions(authenticatedUser.getMail());
-        Institution institution = institutionService.findById(body.get("affiliationId"))
-                .orElseThrow(() -> new IllegalArgumentException("Institution non trouvée"));
+        Institution institution = institutionService.findByIdWithUsers(body.get("affiliationId"));
+        mapInstitutionToUser(institution, user);
+        return ResponseEntity.ok(Map.of("message", "Institution ajoutée"));
+    }
 
+    private void mapInstitutionToUser(Institution institution, User user){
+        if (institution.getUsers() == null){
+            institution.setUsers(new ArrayList<>());
+        }
+        
+        institution.getUsers().add(user);
+        Institution savedInstitution = institutionService.save(institution);
+        
         if (user.getInstitutions() == null) {
             user.setInstitutions(new ArrayList<>());
         }
 
-        if (!user.getInstitutions().contains(institution)) {
-            user.getInstitutions().add(institution);
+        if (!user.getInstitutions().contains(savedInstitution)) {
+            user.getInstitutions().add(savedInstitution);
             userService.saveUpdatedUser(user);
         }
-        
-        return ResponseEntity.ok(Map.of("message", "Institution ajoutée"));
     }
 
     @GetMapping("/get/{id}")
