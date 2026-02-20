@@ -1,5 +1,6 @@
 import React, { useState, type Dispatch, type SetStateAction } from "react"
 import { Button } from "./Button";
+import { FilteredSelector } from "./FilteredSelector";
 import styles from "./ModalFilteredSelector.module.css"
 
 type FilterArgs = {
@@ -12,7 +13,6 @@ type FilterArgs = {
 export function ModalFilteredSelector({title, items, onClick, setIsModalOpen}: FilterArgs){
     /* Modal avec une barre de filtre en haut et une liste de boutons cliquables.
     value est la valeur qui est mise dans l'input destiné à être récupérée*/
-    const [search, setSearch] = useState("");
 
     return  <>
                 <div className={styles.modalOverlay} onClick={() => setIsModalOpen(false)}>
@@ -21,10 +21,7 @@ export function ModalFilteredSelector({title, items, onClick, setIsModalOpen}: F
                             <h2>{title}</h2>
                             <button className={styles.closeButton} onClick={() => setIsModalOpen(false)}>×</button>
                         </div>
-                        <div className={styles.modalBody}>
-                            <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Vous pouvez filtrer les établissements ici"/>
-                            {items.map(item => item.name.toLowerCase().includes(search.toLowerCase()) && <Button className={styles.item} id={item.id} key={item.id} onClick={onClick}>{item.name}</Button>)}
-                        </div> 
+                        <FilteredSelector items={items} onClick={onClick} className={styles.modalBody}/>
                     </div>
                 </div>
             </>

@@ -36,7 +36,7 @@ public class Institution {
     @OneToMany(mappedBy = "institution")
     private List<Experimentation> experimentations;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String name;
 
     @Column(nullable = false)

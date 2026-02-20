@@ -22,6 +22,8 @@ export type InstitutionCreationData = {
 export type InstitutionSelectionData = { affiliationId: string };
 
 export function InstitutionPage(){
+    /*L'utilisateur peut sur cette page soit choisir un établissement dans la liste soit aller sur une page de création.
+    Dès qu'il associe une institution à son compte, son profil est complet. */
     const {isProfileCompleted, setIsProfileCompleted} = useTheme();
     const [userCreatesInstitution, setUserCreatesInstitution] = useState<boolean>(false);
     const [selectionFormData, setSelectionFormData] = useState<InstitutionSelectionData>({affiliationId: ""});
@@ -38,12 +40,10 @@ export function InstitutionPage(){
     : selectionFormData.affiliationId !== "";
   
     const handleSubmit = (e:React.MouseEvent<HTMLButtonElement>) => {
+        /*Envoie le formulaire de données adapté  */
         e.preventDefault();
         const data = userCreatesInstitution?creationFormData:selectionFormData;
         sendPostRequest(data, setError, setIsProfileCompleted, setCreationFormData, setSelectionFormData);
-        if (e.currentTarget.name === "saveQuit"){
-            navigate("/");
-        } 
     }
 
     return <>
