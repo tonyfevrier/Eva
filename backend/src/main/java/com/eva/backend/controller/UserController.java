@@ -49,13 +49,37 @@ public class UserController {
     // @Valid valide les contraintes de forme des inputs (mail, pwd) avant d'entrer dans la méthode.
     // Permet de le faire sur le mot de passe original et pas hashé.
     @PostMapping("/register")
-    public ResponseEntity<?> register(@Valid @RequestBody User user){
+    public ResponseEntity<?> register(@Valid @RequestBody User user) throws MessagingException{
         System.out.println("User: " + user.getMail());
         user.setPassword(encoder.encode(user.getPassword()));
+        user.setEmailVerified(false);
         User savedUser = userService.saveUser(user);
         System.out.println("User saved successfully: " + savedUser.getId());
+
+        userService.sendRecoveryMail(savedUser.getMail(), "verifyMail");
         return ResponseEntity.ok(savedUser);
     }  
+
+    @PostMapping("/confirm")
+    public ResponseEntity<?> confirmRegistration(@RequestBody Map<String, String> body) {
+        /* Vérifie si le cookie du lien est toujours valide et change emailVerified pour l'utilisateur */
+        String token = body.get("token");
+        
+        if (token == null || token.isEmpty() || userService.isTokenExpired(token)){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                                .body(Map.of("message", "Le lien fourni a expiré, relancer la procédure"));
+        }
+
+        User user = userService.findByToken(token);
+        if (user != null){
+            user.setEmailVerified(true);;
+            userService.saveUpdatedUser(user);
+            return ResponseEntity.ok(Map.of("message", "Compte bien créé"));
+        }    
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                             .body(Map.of("message", "Utilisateur introuvable"));          
+    }
     
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody User user) {
@@ -170,7 +194,7 @@ public class UserController {
     @PostMapping("/resetMail")
     public ResponseEntity<?> sendPwdRecoveryMail(@RequestBody Map<String, String> body) throws MessagingException {
         String mail = body.get("mail"); // mail = username in the eva app
-        User user = userService.sendRecoveryMail(mail);
+        User user = userService.sendRecoveryMail(mail, "pwdChange");
         if (user == null){
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)

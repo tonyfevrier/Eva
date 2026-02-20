@@ -52,6 +52,8 @@ public class User implements UserDetails {
     @Size(min = 8, message = "Le mot de passe doit contenir au moins 8 caractères.")
     private String password;
 
+    private Boolean emailVerified;
+
     @Builder.Default
     private String role = "USER";
 

@@ -56,7 +56,7 @@ public class SecurityConfig {
         return  http.csrf(customizer -> customizer.disable()) //désactive csrf par exemple s'il 
                     .cors(Customizer.withDefaults())
                     .authorizeHttpRequests(request -> request
-                        .requestMatchers("/auth/register", "/auth/login",
+                        .requestMatchers("/auth/register", "/auth/login", "/auth/confirm",
                                          "/auth/logout", "/auth/refresh",
                                           "/auth/resetMail", "/auth/recoverPwd",
                                           "/expe/get/*", "/expe/getAll")

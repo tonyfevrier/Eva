@@ -27,13 +27,6 @@ export function RegisterPage(){
         }
     }
 
-    if (sendingState.data !== null){
-        return <>
-                    <h2> Votre inscription a bien été réalisée.</h2>
-                    <a href="/login"> Cliquez ici pour vous logger</a>
-               </>
-    }
-
     return <>
                 <h1> Inscription </h1>
                 <Form ref={registerForm} mapping={inputToStateMapping} sendingState={sendingState} onSubmit={handleClick}></Form>

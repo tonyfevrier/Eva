@@ -20,6 +20,7 @@ import { InstitutionProfilePage } from './pages/InstitutionProfilePage';
 import { ExperimentationSummaryPage } from './pages/ExperimentationSummaryPage';
 import { ExperimentationProfilePage } from './pages/ExperimentationProfilePage';
 import { ExperimentationListPage } from './pages/ExperimentationListPage';
+import { RegisterConfirmationPage } from './pages/RegisterConfirmationPage';
 
 const routes: RouteObject[] = [
   {
@@ -38,6 +39,10 @@ const routes: RouteObject[] = [
         path : "/register",
         element: <RegisterPage/>
       },
+      {
+        path : "/verifyMail",
+        element: <RegisterConfirmationPage/>
+      }, 
       {
         path : "/pwdForget",
         element: <RecoveryPage/>

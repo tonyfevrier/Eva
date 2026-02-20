@@ -107,26 +107,26 @@ public class UserService {
         return userRepository.findByMailWithExperimentations(mail);
     }
 
-    public User sendRecoveryMail(String username) throws MessagingException {
+    public User sendRecoveryMail(String username, String linkEndpoint) throws MessagingException {
         /* si le mail username existe, envoie un mail avec un lien comprenant un token */
         User user = userRepository.findByMail(username);
         if (user != null){
             String token = jwtService.generateToken(username, 600000);
-            MimeMessage message = configureMail(token, username);
+            MimeMessage message = configureMail(token, username, linkEndpoint);
             mailSender.send(message);
             return user;
         }
         return null;
     }
 
-    private MimeMessage configureMail(String token, String username) throws MessagingException{
+    private MimeMessage configureMail(String token, String username, String linkEndpoint) throws MessagingException{
         MimeMessage message = mailSender.createMimeMessage();                    
         MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
         helper.setFrom("noreply.eva.application@gmail.com");
         helper.setTo(username);
         helper.setSubject("Récupération de mot de passe pour l'application EVA");
 
-        String recoveryLink = "http://localhost:5173/pwdChange?token=" + token;
+        String recoveryLink = "http://localhost:5173/" + linkEndpoint + "?token=" + token;
 
         helper.setText(
             "<h3>Réinitialisation de mot de passe de votre compte EVA</h3>" +
