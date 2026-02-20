@@ -11,14 +11,19 @@ export function RegisterPage(){
     const handleClick = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (registerForm.current !== null){
+            setSendingState(prev => ({...prev, error:""})); //On enlève l'erreur d'envoi éventuellement affichée
             const formData = new FormData(registerForm.current); 
             const formHandler = new RegisterFormHandler({formData, setFormState, setSendingState, inputToStateKeyMapping});
 
-            if (formHandler.allInputsAreFilled()){
-                formHandler.sendFormData("http://localhost:9000/auth/register");
-            } else {
+            if (!formHandler.allInputsAreFilled()){
                 formHandler.displayEmptyInputs();
+                return;
             }
+            if (!formHandler.passwordAreCongruent()){
+                formHandler.displayPasswordIncongruent();
+                return;
+            }
+            formHandler.sendFormData("http://localhost:9000/auth/register");
         }
     }
 

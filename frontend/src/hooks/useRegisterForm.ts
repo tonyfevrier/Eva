@@ -6,7 +6,8 @@ export function useRegisterForm(){
             isFirstnameEmpty : false,
             isLastnameEmpty : false,
             isUsernameEmpty : false,
-            isPasswordEmpty : false, 
+            isPasswordEmpty : false,
+            isPasswordCopyEmpty: false
         });
     
     const [sendingState, setSendingState] = useState<SendingStatus<any>>({
@@ -18,13 +19,17 @@ export function useRegisterForm(){
                           "firstname": "isFirstnameEmpty", 
                           "lastname": "isLastnameEmpty",
                           "mail": "isUsernameEmpty",
-                          "password": "isPasswordEmpty"};
+                          "password": "isPasswordEmpty",
+                          "passwordCopy": "isPasswordCopyEmpty",
+                        };
     
     const inputToStateMapping: Record<string, boolean> = {
                           "firstname": formState.isFirstnameEmpty, 
                           "lastname": formState.isLastnameEmpty,
                           "mail": formState.isUsernameEmpty,
-                          "password": formState.isPasswordEmpty};
+                          "password": formState.isPasswordEmpty,
+                          "passwordCopy": formState.isPasswordCopyEmpty,
+                        };
 
     return {inputToStateMapping, setFormState, sendingState, setSendingState, inputToStateKeyMapping};
 }

@@ -14,5 +14,19 @@ export class RegisterFormHandler extends FormHandler<RegisterFormBoolean> {
             this.setSendingState(prev => ({...prev, error: text}))
         }
     }
+
+    displayPasswordIncongruent(){ 
+        this.setSendingState(prev => ({...prev, error: "Les mots de passe doivent avoir au moins 8 caractères et être identiques"}));
+    }
+
+    passwordAreCongruent(){
+        /*Les mots de passe doivent être identiques et de longueur >= 8*/
+        const password = this.formData.get("password");
+        const passwordCopy = this.formData.get("passwordCopy");
+        if (typeof password === "string" && typeof passwordCopy === "string"){
+            return password.length >= 8 && password === passwordCopy;
+        }
+        return false;
+    }
  
 }

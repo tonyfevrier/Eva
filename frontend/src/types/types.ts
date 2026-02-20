@@ -18,6 +18,7 @@ export type RegisterFormBoolean = {
     isLastnameEmpty: boolean,
     isUsernameEmpty: boolean,
     isPasswordEmpty: boolean,
+    isPasswordCopyEmpty: boolean
 };
 
 export type LoginFormBoolean = { 
