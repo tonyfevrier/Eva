@@ -60,6 +60,7 @@ public class UserController {
         return ResponseEntity.ok(savedUser);
     }  
 
+
     @PostMapping("/confirm")
     public ResponseEntity<?> confirmRegistration(@RequestBody Map<String, String> body) {
         /* Vérifie si le cookie du lien est toujours valide et change emailVerified pour l'utilisateur */

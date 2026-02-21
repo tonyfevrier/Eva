@@ -1,17 +1,21 @@
-import { useRef, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import { Form } from "../components/Form";
 import { useRegisterForm } from "../hooks/useRegisterForm";
 import { RegisterFormHandler } from "../utils/authentication/RegisterFormHandler";
 import { Goto } from "../components/Goto";
 
 export function RegisterPage(){
+    const [registrationSent, setRegistrationSent] = useState<Boolean>(false);
     const registerForm = useRef<HTMLFormElement>(null);
     const {inputToStateMapping, setFormState, sendingState, setSendingState, inputToStateKeyMapping} = useRegisterForm();
 
     const handleClick = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (registerForm.current !== null){
-            setSendingState(prev => ({...prev, error:""})); //On enlève l'erreur d'envoi éventuellement affichée
+            //On enlève les erreurs de mauvais remplissage du formulaire éventuellement affichées.
+            setFormState({isFirstnameEmpty : false, isLastnameEmpty : false, isUsernameEmpty : false, isPasswordEmpty : false, isPasswordCopyEmpty: false});
+            setSendingState(prev => ({...prev, error:""})); 
+
             const formData = new FormData(registerForm.current); 
             const formHandler = new RegisterFormHandler({formData, setFormState, setSendingState, inputToStateKeyMapping});
 
@@ -24,12 +28,17 @@ export function RegisterPage(){
                 return;
             }
             formHandler.sendFormData("http://localhost:9000/auth/register");
+            setRegistrationSent(true);
         }
     }
 
-    return <>
+    if (!registrationSent){
+        return <>
                 <h1> Inscription </h1>
                 <Form ref={registerForm} mapping={inputToStateMapping} sendingState={sendingState} onSubmit={handleClick}></Form>
                 <Goto href="/login" label="Vous souhaitez vous connecter?"/>
            </>;
+    }
+    return <Goto href="/login" label="Un courriel vous a été envoyé, veuillez cliquer sur le lien présent dans ce courriel." buttonLabel="Revenir à la page de login"/>
+    
 }

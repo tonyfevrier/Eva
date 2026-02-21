@@ -14,12 +14,13 @@ export function RegisterConfirmationPage(){
 
     if (!registrationConfirmed){
         return <> 
-            <Button onClick={handleClick}>Confirmer la création du compte</Button>
+            <p>Veuillez confirmer la création du compte</p>
+            <Button onClick={handleClick}>Confirmer</Button>
             {error?.message && <p>{error?.message}</p>}
         </>
     }
     return <>
-       {registrationConfirmed && <Goto href="/login" label="Votre inscription a bien été réalisée." buttonLabel="Revenir à la page de login"/>}
+       <Goto href="/login" label="Votre inscription a bien été réalisée." buttonLabel="Revenir à la page de login"/>
     </>
 }
 
