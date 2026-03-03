@@ -1,30 +1,36 @@
 package com.eva.backend;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import com.eva.backend.model.Institution;
 import com.eva.backend.model.User;
 import com.eva.backend.model.UserAdditionalData;
-import com.eva.backend.repository.UserAdditionalDataRepository;
+import com.eva.backend.repository.InstitutionRepository;
 import com.eva.backend.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import static org.mockito.Mockito.when;
+import jakarta.mail.Session;
+import jakarta.mail.internet.MimeMessage;
 
-import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
@@ -39,10 +45,19 @@ public class AdditionalDataTests {
     private ObjectMapper objectMapper;
 
     @Autowired
-    private UserAdditionalDataRepository additionalDataRepository;
+    private UserRepository userRepository;
 
     @Autowired
-    private UserRepository userRepository;
+    private InstitutionRepository institutionRepository;
+
+    @MockitoBean
+    private JavaMailSender mailSender;
+
+    @BeforeEach
+    public void setupMailSenderMock() {
+        MimeMessage mimeMessage = new MimeMessage((Session) null);
+        when(mailSender.createMimeMessage()).thenReturn(mimeMessage);
+    }
 
     @Test
     public void testRegisterAdditionalData() throws Exception {
@@ -51,16 +66,17 @@ public class AdditionalDataTests {
         registerAdditionalData(jwtCookie);
         
         User savedUser = userRepository.findByMail("marie.tremblay@mail.com");
-        UserAdditionalData savedData = additionalDataRepository.findById(savedUser.getId()).orElse(null);
+        UserAdditionalData savedData = savedUser.getAdditionalData();
         assertNotNull(savedData, "Les données additionnelles devraient être enregistrées");
-        assertEquals("Université Paris", savedData.getAffiliation());
         assertTrue(savedData.isAcceptContact());
         assertFalse(savedData.isAcceptMap());
-        assertEquals("123 Rue de la Paix", savedData.getStreet());
-        assertEquals("75001", savedData.getPostcode());
-        assertEquals("Paris", savedData.getTown());
-        assertEquals("+33123456789", savedData.getPhone());
-        assertEquals(savedUser.getId(), savedData.getId());
+        assertEquals("1990-05-15", savedData.getBirthday().toString());
+        assertEquals("Femme", savedData.getGender());
+        assertEquals("Enseignante", savedData.getJob());
+        assertEquals("Mathématiques", savedData.getSpecializedTopics());
+        assertEquals("Géométrie", savedData.getOtherSpecialization());
+        assertEquals("Bienveillant", savedData.getTeacherBehaviour());
+        assertEquals("Passionnée par l'enseignement", savedData.getFreeField());
     }
 
     private String registerAUser() throws Exception{
@@ -92,13 +108,15 @@ public class AdditionalDataTests {
 
     private void registerAdditionalData(String jwtCookie) throws Exception{
         Map<String, Object> additionalData = new HashMap<>();
-        additionalData.put("affiliation", "Université Paris");
         additionalData.put("acceptContact", true);
         additionalData.put("acceptMap", false);
-        additionalData.put("street", "123 Rue de la Paix");
-        additionalData.put("postcode", "75001");
-        additionalData.put("town", "Paris");
-        additionalData.put("phone", "+33123456789");
+        additionalData.put("birthday", "1990-05-15");
+        additionalData.put("gender", "Femme");
+        additionalData.put("job", "Enseignante");
+        additionalData.put("specializedTopics", "Mathématiques");
+        additionalData.put("otherSpecialization", "Géométrie");
+        additionalData.put("teacherBehaviour", "Bienveillant");
+        additionalData.put("freeField", "Passionnée par l'enseignement");
 
         String additionalDataJson = objectMapper.writeValueAsString(additionalData);
 
@@ -116,7 +134,7 @@ public class AdditionalDataTests {
         registerAdditionalDataWithNoAffiliation(jwtCookie);
         
         User savedUser = userRepository.findByMail("marie.tremblay@mail.com");
-        UserAdditionalData savedData = additionalDataRepository.findById(savedUser.getId()).orElse(null);
+        UserAdditionalData savedData = savedUser.getAdditionalData();
         assertNull(savedData);
     }
 
@@ -146,4 +164,58 @@ public class AdditionalDataTests {
                         .andExpect(jsonPath("$.additionalData").isNotEmpty());
     }
 
+    @Test
+    @org.springframework.transaction.annotation.Transactional // Permet de garder la connexion à la table Institution : quand on charge User et qu'il contient une entité d'une autre table, la connection à cette table est fermée a priori.
+    public void testAddAnInstitution() throws Exception {
+        String userJson = registerAUser();
+        String jwtCookie = login(userJson);        
+        
+        // Créer et associer une institution au user
+        createInstitution(jwtCookie);
+        
+        // Vérifier que l'institution est bien créée et associée au user
+        User savedUser = userRepository.findByMail("marie.tremblay@mail.com");
+        assertNotNull(savedUser.getInstitutions(), "La liste des institutions ne devrait pas être null");
+        assertEquals(1, savedUser.getInstitutions().size(), "Le user devrait avoir 1 institution");
+        
+        Institution savedInstitution = savedUser.getInstitutions().get(0);
+        assertNotNull(savedInstitution.getId(), "L'ID de l'institution devrait être généré");
+        assertEquals("Université de Paris", savedInstitution.getName());
+        assertEquals("Paris", savedInstitution.getTown());
+        assertEquals("contact@univ-paris.fr", savedInstitution.getContactMail());
+        assertEquals("Université", savedInstitution.getCategory());
+        assertEquals(25000, savedInstitution.getStudentsNumber());
+
+        // Vérifier que l'institution contient bien le user
+        Institution institution = institutionRepository.findByIdWithUsers(savedInstitution.getId());
+        assertNotNull(institution, "L'institution devrait être retrouvée en base");
+        System.out.println(institution);
+        List<User> users = institution.getUsers();
+        assertNotNull(users, "La liste des users de l'institution ne devrait pas être null");
+        assertEquals(users.size(),1);
+        assertEquals(users.get(0).getMail(), "marie.tremblay@mail.com");
+
+    }
+
+    private void createInstitution(String jwtCookie) throws Exception {
+        Institution institution = Institution.builder()
+                .name("Université de Paris")
+                .town("Paris")
+                .contactMail("contact@univ-paris.fr")
+                .category("Université")
+                .studentsNumber(25000)
+                .socialStatus("Public")
+                .institutionSpecifities("Formation pluridisciplinaire")
+                .studentsSpecificities("Étudiants internationaux")
+                .teachersSpecificities("Enseignants-chercheurs")
+                .build();
+
+        String institutionJson = objectMapper.writeValueAsString(institution);
+
+        mockMvc.perform(post("/institution/create")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(institutionJson)
+                        .cookie(new jakarta.servlet.http.Cookie("jwt", jwtCookie)))
+                        .andExpect(status().isOk());
+    }
 } 

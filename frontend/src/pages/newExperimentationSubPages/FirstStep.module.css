@@ -1,0 +1,12 @@
+.container{
+    display: flex;
+    align-items: center;
+}
+
+.container > *{
+    margin: 1em 2em;
+}
+
+.institution{
+    font-weight: bold;
+}

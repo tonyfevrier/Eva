@@ -14,6 +14,13 @@ import { RecoveryPage } from './pages/RecoveryPage';
 import { Goto } from './components/Goto';
 import { PasswordChangePage } from './pages/PasswordChangePage';
 import { DescribePage } from './pages/DescribePage';
+import { ExperimentationPage } from './pages/ExperimentationPage';
+import { InstitutionPage } from './pages/InstitutionPage';
+import { InstitutionProfilePage } from './pages/InstitutionProfilePage';
+import { ExperimentationSummaryPage } from './pages/ExperimentationSummaryPage';
+import { ExperimentationProfilePage } from './pages/ExperimentationProfilePage';
+import { ExperimentationListPage } from './pages/ExperimentationListPage';
+import { RegisterConfirmationPage } from './pages/RegisterConfirmationPage';
 
 const routes: RouteObject[] = [
   {
@@ -33,20 +40,24 @@ const routes: RouteObject[] = [
         element: <RegisterPage/>
       },
       {
+        path : "/verifyMail",
+        element: <RegisterConfirmationPage/>
+      }, 
+      {
         path : "/pwdForget",
         element: <RecoveryPage/>
       },
       {
         path: "/pwdChange",
         element: <PasswordChangePage/>
+      },  
+      {
+        path : "/database",
+        element: <ExperimentationListPage isUserExpeList={false}/>
       },
       {
-        path : "/seeMail",
-        element: <Goto href="/login" label="Un courriel vous a été envoyé, veuillez cliquer sur le lien présent dans ce courriel." buttonLabel="Revenir à la page de login"/>
-      },
-      {
-        path : "/pwdUpdated",
-        element: <Goto href="/login" label="Votre mot de passe a bien été modifié" buttonLabel="Revenir à la page de login"/>
+        path: "experimentationSummary/:id",
+        element : <ExperimentationSummaryPage/>, 
       },
       {
         path : "/application",
@@ -63,9 +74,24 @@ const routes: RouteObject[] = [
             {
               path: "describeYou",
               element : <DescribePage/>, 
-            }
+            },
+            {
+              path: "institution",
+              element : <InstitutionPage/>, 
+            },
+            {
+              path: "institutionProfile/:id",
+              element : <InstitutionProfilePage/>, 
+            },
+            {
+              path: "expe",
+              element : <ExperimentationPage/>
+            },
+            {
+              path: "modifyExpe/:id",
+              element : <ExperimentationProfilePage/>, 
+            },
         ]
-        
       }
     ]
   }, 
@@ -81,10 +107,14 @@ function App() {
 function Layout(){
   const {isAuthenticated, logout, isProfileCompleted} = useTheme();
   const handleClick = async () => {logout()}
+  const isAnAuthenticatedCompletedProfileUser = isAuthenticated && isProfileCompleted;
   return <>
           <NavBar>
-              { (!isAuthenticated || isAuthenticated && isProfileCompleted) && <a href="/">Accueil</a>}
-              {isAuthenticated && isProfileCompleted && <a href="/application/profile">Profil</a> }
+              { (!isAuthenticated || isAnAuthenticatedCompletedProfileUser) && <a href="/">Accueil</a>}
+              {isAnAuthenticatedCompletedProfileUser && <>
+                                                          <a href="/application/profile">Profil</a>
+                                                          <a href="/application/expe">Mes expérimentations</a>
+                                                        </>}
               {isAuthenticated && <Button onClick={handleClick}>Se déconnecter</Button>}
           </NavBar>
           <Outlet/>

@@ -1,0 +1,20 @@
+.body {
+    margin: 1em 0;
+    line-height: 1.6;
+}
+
+.body :first-child{
+    width: 100%;
+    padding: 1em;
+    margin-bottom: 1em;
+}
+
+.item{
+    display: block;
+    width: 100%;
+}
+
+.item:focus{
+    background-color: greenyellow;
+    color: green;
+}

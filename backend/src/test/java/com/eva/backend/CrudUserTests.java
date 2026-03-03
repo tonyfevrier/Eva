@@ -13,21 +13,30 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.Mockito.when;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.eva.backend.model.User;
-import com.eva.backend.model.UserAdditionalData;
+import com.eva.backend.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+
+import jakarta.mail.Session;
+import jakarta.mail.internet.MimeMessage;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -40,6 +49,18 @@ public class CrudUserTests {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @MockitoBean
+    private JavaMailSender mailSender;
+
+    @BeforeEach
+    public void setup() {
+        MimeMessage mimeMessage = new MimeMessage((Session) null);
+        when(mailSender.createMimeMessage()).thenReturn(mimeMessage);
+    }
 
     @Test
     @WithMockUser(roles = "ADMIN") // Pour récupérer les users
@@ -62,6 +83,12 @@ public class CrudUserTests {
                        .andExpect(jsonPath("$[0].firstname", is("tony")))
                        .andExpect(jsonPath("$[0].lastname", is("fevrier")))
                        .andExpect(jsonPath("$[0].mail", is("tony.fevrier@gmail.com")));
+
+        User savedUser = userRepository.findByMail("tony.fevrier@gmail.com");
+        assertEquals("tony", savedUser.getFirstname());
+        assertEquals("fevrier", savedUser.getLastname());
+        assertEquals("tony.fevrier@gmail.com", savedUser.getMail());
+        assertFalse(savedUser.getEmailVerified(), "emailVerified devrait être false après inscription");
     } 
 
     @Test
@@ -123,13 +150,15 @@ public class CrudUserTests {
         Map<String, Object> updatedUserData = new HashMap<>();
         updatedUserData.put("firstname", "toto");
         updatedUserData.put("password", "newpassword");
-        updatedUserData.put("affiliation", "New Affiliation");
         updatedUserData.put("acceptMap", true);
         updatedUserData.put("acceptContact", false);
-        updatedUserData.put("street", "123 Test Street");
-        updatedUserData.put("postcode", "12345");
-        updatedUserData.put("town", "Test City");
-        updatedUserData.put("phone", "+33612345678");
+        updatedUserData.put("birthday", "1985-03-20");
+        updatedUserData.put("gender", "Homme");
+        updatedUserData.put("job", "Professeur");
+        updatedUserData.put("specializedTopics", "Physique");
+        updatedUserData.put("otherSpecialization", "Mécanique quantique");
+        updatedUserData.put("teacherBehaviour", "Rigoureux");
+        updatedUserData.put("freeField", "Passionné de sciences");
 
         String userJson = objectMapper.writeValueAsString(updatedUserData);
 
@@ -143,20 +172,23 @@ public class CrudUserTests {
                        .andExpect(jsonPath("$[0].firstname", is("toto")))
                        .andExpect(jsonPath("$[0].lastname", is("fevrier")))
                        .andExpect(jsonPath("$[0].mail", is("tony.fevrier@gmail.com")))
-                       .andExpect(jsonPath("$[0].additionalData.affiliation", is("New Affiliation")))
                        .andExpect(jsonPath("$[0].additionalData.acceptMap", is(true)))
                        .andExpect(jsonPath("$[0].additionalData.acceptContact", is(false)))
-                       .andExpect(jsonPath("$[0].additionalData.street", is("123 Test Street")))
-                       .andExpect(jsonPath("$[0].additionalData.postcode", is("12345")))
-                       .andExpect(jsonPath("$[0].additionalData.town", is("Test City")))
-                       .andExpect(jsonPath("$[0].additionalData.phone", is("+33612345678")));
+                       .andExpect(jsonPath("$[0].additionalData.birthday", is("1985-03-20")))
+                       .andExpect(jsonPath("$[0].additionalData.gender", is("Homme")))
+                       .andExpect(jsonPath("$[0].additionalData.job", is("Professeur")))
+                       .andExpect(jsonPath("$[0].additionalData.specializedTopics", is("Physique")))
+                       .andExpect(jsonPath("$[0].additionalData.otherSpecialization", is("Mécanique quantique")))
+                       .andExpect(jsonPath("$[0].additionalData.teacherBehaviour", is("Rigoureux")))
+                       .andExpect(jsonPath("$[0].additionalData.freeField", is("Passionné de sciences")));
         }
 
     @Test
     public void testGetOneUser() throws Exception {
         // Ma config de spring security exige que toute requête post login ait le cookie d'authentification.
         String accessCookie = registerLogUserAndGetAccessCookie();
-        registerAdditionalData(accessCookie);                        
+        registerAdditionalData(accessCookie);
+        createInstitution(accessCookie);
         
         mockMvc.perform(get("/auth/profile")
                         .cookie(new jakarta.servlet.http.Cookie("jwt", accessCookie)))
@@ -164,13 +196,18 @@ public class CrudUserTests {
                         .andExpect(jsonPath("$.firstname", is("tony")))
                         .andExpect(jsonPath("$.lastname", is("fevrier")))
                         .andExpect(jsonPath("$.mail", is("tony.fevrier@gmail.com")))
-                        .andExpect(jsonPath("$.affiliation", is("Université Paris")))
                         .andExpect(jsonPath("$.acceptContact", is(true)))
                         .andExpect(jsonPath("$.acceptMap", is(false)))
-                        .andExpect(jsonPath("$.street", is("123 Rue de la Paix")))
-                        .andExpect(jsonPath("$.postcode", is("75001")))
-                        .andExpect(jsonPath("$.town", is("Paris")))
-                        .andExpect(jsonPath("$.phone", is("+33123456789")));
+                        .andExpect(jsonPath("$.birthday", is("1990-05-15")))
+                        .andExpect(jsonPath("$.gender", is("Homme")))
+                        .andExpect(jsonPath("$.job", is("Enseignant")))
+                        .andExpect(jsonPath("$.specializedTopics", is("Informatique")))
+                        .andExpect(jsonPath("$.otherSpecialization", is("Intelligence Artificielle")))
+                        .andExpect(jsonPath("$.teacherBehaviour", is("Pédagogue")))
+                        .andExpect(jsonPath("$.freeField", is("Passionné de technologie")))
+                        .andExpect(jsonPath("$.institutions", hasSize(1)))
+                        .andExpect(jsonPath("$.institutions[0]['id']", is(1)))
+                        .andExpect(jsonPath("$.institutions[0]['name']", is("Université de Test")));
     }
 
     @Test
@@ -184,13 +221,15 @@ public class CrudUserTests {
                         .andExpect(jsonPath("$.firstname", is("tony")))
                         .andExpect(jsonPath("$.lastname", is("fevrier")))
                         .andExpect(jsonPath("$.mail", is("tony.fevrier@gmail.com")))
-                        .andExpect(jsonPath("$.affiliation", is("")))
                         .andExpect(jsonPath("$.acceptContact", is(false)))
                         .andExpect(jsonPath("$.acceptMap", is(false)))
-                        .andExpect(jsonPath("$.street", is("")))
-                        .andExpect(jsonPath("$.postcode", is("")))
-                        .andExpect(jsonPath("$.town", is("")))
-                        .andExpect(jsonPath("$.phone", is("")));
+                        .andExpect(jsonPath("$.birthday", is("")))
+                        .andExpect(jsonPath("$.gender", is("")))
+                        .andExpect(jsonPath("$.job", is("")))
+                        .andExpect(jsonPath("$.specializedTopics", is("")))
+                        .andExpect(jsonPath("$.otherSpecialization", is("")))
+                        .andExpect(jsonPath("$.teacherBehaviour", is("")))
+                        .andExpect(jsonPath("$.freeField", is("")));
     }
 
     private String registerAUser() throws Exception{
@@ -230,19 +269,40 @@ public class CrudUserTests {
 
     private void registerAdditionalData(String jwtCookie) throws Exception{
         Map<String, Object> additionalData = new HashMap<>();
-        additionalData.put("affiliation", "Université Paris");
         additionalData.put("acceptContact", true);
         additionalData.put("acceptMap", false);
-        additionalData.put("street", "123 Rue de la Paix");
-        additionalData.put("postcode", "75001");
-        additionalData.put("town", "Paris");
-        additionalData.put("phone", "+33123456789");
+        additionalData.put("birthday", "1990-05-15");
+        additionalData.put("gender", "Homme");
+        additionalData.put("job", "Enseignant");
+        additionalData.put("specializedTopics", "Informatique");
+        additionalData.put("otherSpecialization", "Intelligence Artificielle");
+        additionalData.put("teacherBehaviour", "Pédagogue");
+        additionalData.put("freeField", "Passionné de technologie");
 
         String additionalDataJson = objectMapper.writeValueAsString(additionalData);
 
         mockMvc.perform(post("/user/addData")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(additionalDataJson)
+                        .cookie(new jakarta.servlet.http.Cookie("jwt", jwtCookie)))
+                        .andExpect(status().isOk());
+    }
+
+    private void createInstitution(String jwtCookie) throws Exception {
+        Map<String, Object> institutionData = new HashMap<>();
+        institutionData.put("name", "Université de Test");
+        institutionData.put("town", "Paris");
+        institutionData.put("contactMail", "contact@universite-test.fr");
+        institutionData.put("category", "Université");
+        institutionData.put("studentsNumber", 5000);
+        institutionData.put("socialStatus", "Public");
+        institutionData.put("institutionSpecifities", "Spécialisée en sciences");
+
+        String institutionJson = objectMapper.writeValueAsString(institutionData);
+
+        mockMvc.perform(post("/institution/create")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(institutionJson)
                         .cookie(new jakarta.servlet.http.Cookie("jwt", jwtCookie)))
                         .andExpect(status().isOk());
     }

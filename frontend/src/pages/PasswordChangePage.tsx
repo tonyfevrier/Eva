@@ -1,7 +1,7 @@
 import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import { Button } from "../components/Button";
 import { Input } from "../components/Input";
-import { useNavigate, type NavigateFunction } from "react-router-dom";
+import { Goto } from "../components/Goto";
 
 
 type DataType = {
@@ -10,9 +10,9 @@ type DataType = {
 }
 
 export function PasswordChangePage(){
+    const [pwdSent, setPwdSent] = useState<Boolean>(false);
     const [passwords, setPasswords] = useState({password:"", passwordCopy:""})
     const [fetchError, setFetchError] = useState<Error|null>(null);
-    const navigate = useNavigate();
     const [token, setToken] = useState("");
 
     /*Extraire le token de l'url au premier chargement de la page */
@@ -40,10 +40,11 @@ export function PasswordChangePage(){
         }
 
         const data = {password: passwords.password, token: token};          
-        sendPostRequest(data, setFetchError, navigate);
+        sendPostRequest(data, setFetchError, setPwdSent);
     }
 
-    return <>
+    if (!pwdSent){
+        return <>
                 <h1> Changer de mot de passe </h1>
                 <form onSubmit={handleSavePassword}>
                     <Input title="Veuillez entrer un nouveau mot de passe" type="password" name="password" value={passwords.password} onChange={handleFormChange}/>
@@ -52,10 +53,12 @@ export function PasswordChangePage(){
                 </form>
                 {fetchError?.message && <p>{fetchError?.message}</p> }
            </>
+    }
+    return <Goto href="/login" label="Votre mot de passe a bien été modifié" buttonLabel="Revenir à la page de login"/>
 }
 
 
-async function sendPostRequest(data: DataType, setFetchError:Dispatch<SetStateAction<Error|null>>, navigate: NavigateFunction){
+async function sendPostRequest(data: DataType, setFetchError:Dispatch<SetStateAction<Error|null>>, setPwdSent:Dispatch<SetStateAction<Boolean>>){
     const response = await fetch("http://localhost:9000/auth/recoverPwd", {
             method: "POST",
             headers:{
@@ -69,7 +72,7 @@ async function sendPostRequest(data: DataType, setFetchError:Dispatch<SetStateAc
         });
     
     if (response.ok){
-        navigate("/pwdUpdated");    
+        setPwdSent(true);    
     } else {
         setFetchError(new Error(`Erreur ${response.status}: ${response.statusText}`));
     }
