@@ -9,6 +9,7 @@ export type Data = {
     keywords: Array<string>,
     personalKeywords: string,
     inProgress: boolean,
+    studyField: string
 }
 
 type ExpeData = {
