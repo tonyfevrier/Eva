@@ -1,5 +1,9 @@
 package com.eva.backend.controller;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -15,14 +19,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.eva.backend.model.Institution;
 import com.eva.backend.model.User;
 import com.eva.backend.model.UserAdditionalData;
+import com.eva.backend.service.ConfirmationMailService;
 import com.eva.backend.service.UserService;
 import com.eva.backend.records.CookieEssentials;
 import com.eva.backend.records.TwoCookies;
 
 import jakarta.mail.MessagingException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
@@ -45,13 +50,38 @@ public class UserController {
     // @Valid valide les contraintes de forme des inputs (mail, pwd) avant d'entrer dans la méthode.
     // Permet de le faire sur le mot de passe original et pas hashé.
     @PostMapping("/register")
-    public ResponseEntity<?> register(@Valid @RequestBody User user){
+    public ResponseEntity<?> register(@Valid @RequestBody User user) throws MessagingException{
         System.out.println("User: " + user.getMail());
         user.setPassword(encoder.encode(user.getPassword()));
+        user.setEmailVerified(false);
         User savedUser = userService.saveUser(user);
         System.out.println("User saved successfully: " + savedUser.getId());
+
+        userService.sendConfirmationMail(savedUser.getMail());
         return ResponseEntity.ok(savedUser);
     }  
+
+
+    @PostMapping("/confirm")
+    public ResponseEntity<?> confirmRegistration(@RequestBody Map<String, String> body) {
+        /* Vérifie si le cookie du lien est toujours valide et change emailVerified pour l'utilisateur */
+        String token = body.get("token");
+
+        if (token == null || token.isEmpty() || userService.isTokenExpired(token)){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                                .body(Map.of("message", "Le lien fourni a expiré, relancer la procédure"));
+        }
+
+        User user = userService.findByToken(token);
+        if (user != null){
+            user.setEmailVerified(true);;
+            userService.saveUpdatedUser(user);
+            return ResponseEntity.ok(Map.of("message", "Compte bien créé"));
+        }    
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                             .body(Map.of("message", "Utilisateur introuvable"));          
+    }
     
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody User user) {
@@ -103,33 +133,50 @@ public class UserController {
         // User is found thanks to the access Cookie.
         String token = requestUtils.getTokenFromRequest(request, "jwt");
         User user = userService.findByToken(token);
-        Optional<UserAdditionalData> optionalAdditionalData = userService.getAdditionalDataFrom(user);
-        if (!optionalAdditionalData.isEmpty()){
-            UserAdditionalData additionalData = optionalAdditionalData.get();
-            return ResponseEntity.ok(Map.of("firstname", user.getFirstname(),
-                                            "lastname", user.getLastname(),
-                                            "mail", user.getUsername(),
-                                            "affiliation", additionalData.getAffiliation(),
-                                            "acceptContact", additionalData.isAcceptContact(),
-                                            "acceptMap", additionalData.isAcceptMap(),
-                                            "street", additionalData.getStreet(),
-                                            "postcode", additionalData.getPostcode(),
-                                            "town", additionalData.getTown(),
-                                            "phone", additionalData.getPhone()));
+        UserAdditionalData additionalData = user.getAdditionalData();
+        List<Institution> institutions = user.getInstitutions();
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("firstname", user.getFirstname());
+        response.put("lastname", user.getLastname());
+        response.put("mail", user.getUsername());
+        
+        if (additionalData != null){
+            response.put("acceptContact", additionalData.isAcceptContact());
+            response.put("acceptMap", additionalData.isAcceptMap());
+            response.put("birthday", additionalData.getBirthday());
+            response.put("gender", additionalData.getGender());
+            response.put("job", additionalData.getJob());
+            response.put("specializedTopics", additionalData.getSpecializedTopics());
+            response.put("otherSpecialization", additionalData.getOtherSpecialization());
+            response.put("teacherBehaviour", additionalData.getTeacherBehaviour());
+            response.put("freeField", additionalData.getFreeField());
         } else {
-            return ResponseEntity.ok(Map.of("firstname", user.getFirstname(),
-                                            "lastname", user.getLastname(),
-                                            "mail", user.getUsername(),
-                                            "affiliation", "",
-                                            "acceptContact", false,
-                                            "acceptMap", false,
-                                            "street", "",
-                                            "postcode", "",
-                                            "town", "",
-                                            "phone", ""));
+            response.put("acceptContact", false);
+            response.put("acceptMap", false);
+            response.put("birthday", "");
+            response.put("gender", "");
+            response.put("job", "");
+            response.put("specializedTopics", "");
+            response.put("otherSpecialization", "");
+            response.put("teacherBehaviour", "");
+            response.put("freeField", "");
+        }
+
+        if (institutions != null){
+            List<Map<String, Object>> institutionsList = new ArrayList<>();
+            for (Institution institution : institutions) {
+                institutionsList.add(Map.of(
+                    "id", institution.getId(),
+                    "name", institution.getName()
+                ));
+            }
+            response.put("institutions", institutionsList);
         }
         
+        return ResponseEntity.ok(response);
     }
+
 
     @DeleteMapping("/delete")
     public void delete(HttpServletRequest request) {
@@ -145,8 +192,6 @@ public class UserController {
         userService.update(body, updatedUser, encoder);
         return ResponseEntity.ok(updatedUser);
     }
-
-    
 
     @PostMapping("/resetMail")
     public ResponseEntity<?> sendPwdRecoveryMail(@RequestBody Map<String, String> body) throws MessagingException {

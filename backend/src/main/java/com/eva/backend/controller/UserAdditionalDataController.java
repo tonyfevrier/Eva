@@ -1,10 +1,9 @@
 package com.eva.backend.controller;
 
+import java.time.LocalDate;
 import java.util.Map;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,17 +12,13 @@ import org.springframework.http.ResponseEntity;
 
 import com.eva.backend.model.User;
 import com.eva.backend.model.UserAdditionalData;
-import com.eva.backend.service.UserAdditionalDataService;
 import com.eva.backend.service.UserService;
 
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/user")
 public class UserAdditionalDataController {
-    @Autowired
-    private UserAdditionalDataService addService;
 
     @Autowired 
     private UserService userService;
@@ -35,17 +30,24 @@ public class UserAdditionalDataController {
     public ResponseEntity<?> registerAdditionalData(@RequestBody Map<String, Object> body, HttpServletRequest request){
         String token = requestUtils.getTokenFromRequest(request, "jwt");
         User user = userService.findByToken(token);
-
         UserAdditionalData addData = new UserAdditionalData();
-        addData.setUser(user);
-        addData.setAffiliation((String) body.get("affiliation"));
         addData.setAcceptContact((boolean) body.get("acceptContact"));
         addData.setAcceptMap((boolean) body.get("acceptMap"));
-        addData.setStreet((String) body.get("street"));
-        addData.setPostcode((String) body.get("postcode"));
-        addData.setTown((String) body.get("town"));
-        addData.setPhone((String) body.get("phone"));
-        addService.save(addData);
+        
+        String birthdayStr = (String) body.get("birthday");
+        if (birthdayStr != null && !birthdayStr.isEmpty()) {
+            addData.setBirthday(LocalDate.parse(birthdayStr));
+        }
+        
+        addData.setGender((String) body.get("gender"));
+        addData.setJob((String) body.get("job"));
+        addData.setSpecializedTopics((String) body.get("specializedTopics"));
+        addData.setOtherSpecialization((String) body.get("otherSpecialization"));
+        addData.setTeacherBehaviour((String) body.get("teacherBehaviour"));
+        addData.setFreeField((String) body.get("freeField"));
+
+        user.setAdditionalData(addData);
+        userService.saveUpdatedUser(user);
         return ResponseEntity.ok(addData);
     }
  

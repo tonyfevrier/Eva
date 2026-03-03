@@ -31,7 +31,7 @@ export function LoginPage({}){
     }
 
     if (isAuthenticated && isProfileCompleted){
-        return <>
+        return  <>
                     <Goto href="/" label="Vous êtes connecté." buttonLabel="Retournez à l'accueil"/>
                 </>
     }

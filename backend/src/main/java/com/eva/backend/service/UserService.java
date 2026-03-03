@@ -1,7 +1,7 @@
 package com.eva.backend.service;
 
+import java.time.LocalDate;
 import java.util.Map;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -9,6 +9,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.http.ResponseCookie;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -41,9 +42,6 @@ public class UserService {
 
     @Autowired
     private JavaMailSender mailSender;
-
-    @Autowired
-    private UserAdditionalDataService additionalDataService;
 
     public User saveUser(User user){
         User existingUser = userRepository.findByMail(user.getMail());
@@ -101,42 +99,26 @@ public class UserService {
         return userRepository.findByMail(mail);
     }
 
-    public User sendRecoveryMail(String username) throws MessagingException {
-        /* si le mail username existe, envoie un mail avec un lien comprenant un token */
-        User user = userRepository.findByMail(username);
-        if (user != null){
-            String token = jwtService.generateToken(username, 600000);
-            MimeMessage message = configureMail(token, username);
-            mailSender.send(message);
-            return user;
-        }
-        return null;
+    public User findByMailWithInstitutions(String mail){
+        return userRepository.findByMailWithInstitutions(mail);
     }
 
-    private MimeMessage configureMail(String token, String username) throws MessagingException{
-        MimeMessage message = mailSender.createMimeMessage();                    
-        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-        helper.setFrom("noreply.eva.application@gmail.com");
-        helper.setTo(username);
-        helper.setSubject("Récupération de mot de passe pour l'application EVA");
+    public User findByMailWithExperimentations(String mail){
+        return userRepository.findByMailWithExperimentations(mail);
+    }
 
-        String recoveryLink = "http://localhost:5173/pwdChange?token=" + token;
+    public User sendConfirmationMail(String username) throws MessagingException {
+        MailWithLinkService mailService = new ConfirmationMailService(userRepository, mailSender, jwtService);
+        return mailService.sendMail(username);
+    }
 
-        helper.setText(
-            "<h3>Réinitialisation de mot de passe de votre compte EVA</h3>" +
-            "<p>Cliquez sur le lien ci-dessous pour réinitialiser votre mot de passe :</p>" +
-            "<a href=\"" + recoveryLink + "\">Réinitialiser mon mot de passe</a>",
-            true  // true = HTML, false = texte brut
-        );
-        return message;
+    public User sendRecoveryMail(String username) throws MessagingException {
+        MailWithLinkService mailService = new RecoveryMailService(userRepository, mailSender, jwtService);
+        return mailService.sendMail(username);
     }
 
     public boolean isTokenExpired(String token){
          return jwtService.isTokenExpired(token);
-    }
-
-    public Optional<UserAdditionalData> getAdditionalDataFrom(User user){
-        return additionalDataService.findByUser(user);
     }
 
     public void update(Map<String, Object> body, User userToUpdate, BCryptPasswordEncoder encoder){
@@ -155,22 +137,64 @@ public class UserService {
             userToUpdate.setPassword(encoder.encode(password));
         }
 
-        UserAdditionalData additionalData = userToUpdate.getAdditionalData();
+        userToUpdate = updateAdditionalData(body, userToUpdate);
 
-        if (additionalData == null) {
-            additionalData = createNewUserAdditionalData(userToUpdate);
-            userToUpdate.setAdditionalData(additionalData);
-        }
-
-        additionalDataService.update(body, additionalData); 
-        
         saveUpdatedUser(userToUpdate);
     }
 
-    private UserAdditionalData createNewUserAdditionalData(User user){
-        UserAdditionalData additionalData = new UserAdditionalData();
-        additionalData.setUser(user);
-        additionalData.setAffiliation("");
-        return additionalData;
+    private User updateAdditionalData(Map<String, Object> body, User userToUpdate){
+        UserAdditionalData additionalData = userToUpdate.getAdditionalData();
+
+        if (additionalData == null) {
+            additionalData = new UserAdditionalData();
+        }
+
+        Boolean acceptMap = (Boolean) body.get("acceptMap");
+        if (acceptMap != null){
+            additionalData.setAcceptMap(acceptMap);
+        }
+
+        Boolean acceptContact = (Boolean) body.get("acceptContact");
+        if (acceptContact != null){
+            additionalData.setAcceptContact(acceptContact);
+        }
+
+        String birthday = (String) body.get("birthday");
+        if (birthday != null){
+            additionalData.setBirthday(LocalDate.parse(birthday));
+        }
+
+        String gender = (String) body.get("gender");
+        if (gender != null){
+            additionalData.setGender(gender);
+        }
+
+        String job = (String) body.get("job");
+        if (job != null){
+            additionalData.setJob(job);
+        }
+
+        String specializedTopics = (String) body.get("specializedTopics");
+        if (specializedTopics != null){
+            additionalData.setSpecializedTopics(specializedTopics);
+        }
+
+        String otherSpecialization = (String) body.get("otherSpecialization");
+        if (otherSpecialization != null){
+            additionalData.setOtherSpecialization(otherSpecialization);
+        }
+
+        String teacherBehaviour = (String) body.get("teacherBehaviour");
+        if (teacherBehaviour != null){
+            additionalData.setTeacherBehaviour(teacherBehaviour);
+        }
+
+        String freeField = (String) body.get("freeField");
+        if (freeField != null){
+            additionalData.setFreeField(freeField);
+        }
+        
+        userToUpdate.setAdditionalData(additionalData);
+        return userToUpdate;
     }
 }

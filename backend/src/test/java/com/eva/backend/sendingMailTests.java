@@ -4,6 +4,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -28,17 +29,20 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.eva.backend.model.User;
+import com.eva.backend.repository.UserRepository;
 import com.eva.backend.service.JWTService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.mail.Session;
 import jakarta.mail.internet.MimeMessage;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test") // Utilise application-test.properties
 @DirtiesContext(classMode = ClassMode.BEFORE_EACH_TEST_METHOD) // Réinitialise le contexte (et la bdd) à chaque test
-public class ResetPasswordTests {
+public class SendingMailTests {
 
     @Autowired
     private MockMvc mockMvc;
@@ -48,6 +52,9 @@ public class ResetPasswordTests {
 
     @Autowired
     private JWTService jwtService;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @MockitoBean
     private JavaMailSender mailSender;
@@ -60,8 +67,15 @@ public class ResetPasswordTests {
     }
 
     @Test
+    public void testRegisterSendsVerificationMail() throws Exception {
+        String userJson = registerAUser();
+        verify(mailSender, times(1)).send(any(MimeMessage.class));
+    }
+
+    @Test
     public void testResetMailWithValidEmail() throws Exception {
         registerAUser();
+        clearInvocations(mailSender);
         
         String requestBody = objectMapper.writeValueAsString(
             Map.of("mail", "tony.fevrier@gmail.com")
@@ -138,6 +152,24 @@ public class ResetPasswordTests {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(recoverBody))
                         .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void testConfirmRegistrationSetsEmailVerifiedToTrue() throws Exception {
+        registerAUser();
+
+        String token = jwtService.generateToken("tony.fevrier@gmail.com", 10 * 60 * 1000);
+        String confirmBody = objectMapper.writeValueAsString(Map.of("token", token));
+
+        mockMvc.perform(post("/auth/confirm")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(confirmBody))
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$.message", is("Compte bien créé")));
+
+        User savedUser = userRepository.findByMail("tony.fevrier@gmail.com");
+        assertNotNull(savedUser, "L'utilisateur devrait exister en base après inscription");
+        assertTrue(savedUser.getEmailVerified(), "emailVerified devrait passer à true après confirmation");
     }
 
     private String registerAUser() throws Exception{

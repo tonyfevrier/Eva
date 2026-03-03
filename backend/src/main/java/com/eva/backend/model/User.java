@@ -8,16 +8,22 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
 
@@ -36,6 +42,8 @@ public class User implements UserDetails {
 
     private String lastname;
 
+    private String pseudo;
+
     @Email(message = "Email invalide.")
     @Column(unique = true, nullable = false)
     private String mail;   
@@ -44,11 +52,25 @@ public class User implements UserDetails {
     @Size(min = 8, message = "Le mot de passe doit contenir au moins 8 caractères.")
     private String password;
 
+    private Boolean emailVerified;
+
     @Builder.Default
     private String role = "USER";
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Embedded
     private UserAdditionalData additionalData;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Experimentation> experimentations;
+
+    @ToString.Exclude
+    @ManyToMany
+    @JoinTable(
+        name = "user_institution",
+        joinColumns = @JoinColumn(name = "user_id"),
+        inverseJoinColumns = @JoinColumn(name = "institution_id")
+    )
+    private List<Institution> institutions;
 
     @Override
     public String getUsername(){

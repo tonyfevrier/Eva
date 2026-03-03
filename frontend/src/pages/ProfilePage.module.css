@@ -1,0 +1,9 @@
+.blockTitle {
+    margin-top: 1.5em;
+}
+
+.goto {
+    display: flex;
+    justify-content: space-between;
+    padding: 1em 0 0 1em;
+}
