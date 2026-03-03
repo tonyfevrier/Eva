@@ -3,8 +3,10 @@ import { Form } from "../components/Form";
 import { useRegisterForm } from "../hooks/useRegisterForm";
 import { RegisterFormHandler } from "../utils/authentication/RegisterFormHandler";
 import { Goto } from "../components/Goto";
+import { useTheme } from "../hooks/useTheme";
 
 export function RegisterPage(){
+    const {isAuthenticated} = useTheme();
     const [registrationSent, setRegistrationSent] = useState<Boolean>(false);
     const registerForm = useRef<HTMLFormElement>(null);
     const {inputToStateMapping, setFormState, sendingState, setSendingState, inputToStateKeyMapping} = useRegisterForm();
@@ -32,13 +34,17 @@ export function RegisterPage(){
         }
     }
 
-    if (!registrationSent){
+    if (isAuthenticated){
+        return  <Goto href="/" label="Vous êtes connecté." buttonLabel="Retournez à l'accueil"/>
+    }
+    
+    if (!registrationSent ){
         return <>
                 <h1> Inscription </h1>
                 <Form ref={registerForm} mapping={inputToStateMapping} sendingState={sendingState} onSubmit={handleClick}></Form>
                 <Goto href="/login" label="Vous souhaitez vous connecter?"/>
            </>;
     }
+
     return <Goto href="/login" label="Un courriel vous a été envoyé, veuillez cliquer sur le lien présent dans ce courriel." buttonLabel="Revenir à la page de login"/>
-    
 }

@@ -50,15 +50,7 @@ const routes: RouteObject[] = [
       {
         path: "/pwdChange",
         element: <PasswordChangePage/>
-      },
-      {
-        path : "/seeMail",
-        element: <Goto href="/login" label="Un courriel vous a été envoyé, veuillez cliquer sur le lien présent dans ce courriel." buttonLabel="Revenir à la page de login"/>
-      },
-      {
-        path : "/pwdUpdated",
-        element: <Goto href="/login" label="Votre mot de passe a bien été modifié" buttonLabel="Revenir à la page de login"/>
-      },
+      },  
       {
         path : "/database",
         element: <ExperimentationListPage isUserExpeList={false}/>
