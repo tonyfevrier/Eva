@@ -16,10 +16,10 @@ public class RecoveryMailService extends MailWithLinkService {
     }
 
     @Override
-    protected MailContent generateMailContent(String username, String endPoint){
+    protected MailContent generateMailContent(String username){
         String token = jwtService.generateToken(username, 600000);
         String subject = "Récupération de mot de passe pour l'application EVA";
-        String link = "http://localhost:5173/" + endPoint + "?token=" + token;
+        String link = "http://localhost:5173/pwdChange?token=" + token;
         String content = "<h3>Réinitialisation de mot de passe de votre compte EVA</h3>" +
                   "<p>Cliquez sur le lien ci-dessous pour réinitialiser votre mot de passe :</p>" +
                   "<a href=\"" + link + "\">Réinitialiser mon mot de passe</a>";

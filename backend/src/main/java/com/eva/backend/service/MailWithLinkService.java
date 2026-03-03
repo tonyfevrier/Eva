@@ -19,11 +19,11 @@ public abstract class MailWithLinkService {
         this.mailSender = mailSender;
     }
 
-    public User sendMail(String username, String endPoint) throws MessagingException {
+    public User sendMail(String username) throws MessagingException {
         /* si le mail username existe, envoie un mail avec un lien comprenant un token */
         User user = userRepository.findByMail(username);
         if (user != null){
-            MailContent mailContent =  generateMailContent(username, endPoint);
+            MailContent mailContent =  generateMailContent(username);
             MimeMessage message = configureMail(username, mailContent);
             mailSender.send(message);
             return user;
@@ -41,6 +41,6 @@ public abstract class MailWithLinkService {
         return message;
     }
 
-    protected abstract MailContent generateMailContent(String username, String endPoint);
+    protected abstract MailContent generateMailContent(String username);
     
 }

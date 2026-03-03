@@ -5,9 +5,9 @@ import { Goto } from "../components/Goto";
 export function RegisterConfirmationPage(){
     const [registrationConfirmed, setRegistrationConfirmed] = useState<Boolean>(false);
     const [error, setError] = useState<Error|null>(null);
-    const searchParams = new URLSearchParams();
+    const searchParams = new URLSearchParams(window.location.search);
     const body = JSON.stringify({token: searchParams.get("token")});
-
+    
     const handleClick = () => {
         sendPostRequest(body, setError, setRegistrationConfirmed);
     }

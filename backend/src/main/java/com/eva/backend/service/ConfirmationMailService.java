@@ -16,9 +16,9 @@ public class ConfirmationMailService extends MailWithLinkService {
     }
 
     @Override
-    protected MailContent generateMailContent(String username, String endPoint){
+    protected MailContent generateMailContent(String username){
         String token = jwtService.generateToken(username, 600000);
-        String link = "http://localhost:5173/" + endPoint + "?token=" + token;
+        String link = "http://localhost:5173/verifyMail?token=" + token;
         String subject = "Création de compte sur EVA";
         String content = "<h3>Confirmation de la création de votre compte EVA</h3>" +
                   "<p>Cliquez sur le lien ci-dessous pour confirmer votre inscription :</p>" +

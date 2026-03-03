@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.eva.backend.model.Institution;
 import com.eva.backend.model.User;
 import com.eva.backend.model.UserAdditionalData;
+import com.eva.backend.service.ConfirmationMailService;
 import com.eva.backend.service.UserService;
 import com.eva.backend.records.CookieEssentials;
 import com.eva.backend.records.TwoCookies;
@@ -56,7 +57,7 @@ public class UserController {
         User savedUser = userService.saveUser(user);
         System.out.println("User saved successfully: " + savedUser.getId());
 
-        userService.sendRecoveryMail(savedUser.getMail(), "verifyMail");
+        userService.sendConfirmationMail(savedUser.getMail());
         return ResponseEntity.ok(savedUser);
     }  
 
@@ -65,7 +66,7 @@ public class UserController {
     public ResponseEntity<?> confirmRegistration(@RequestBody Map<String, String> body) {
         /* Vérifie si le cookie du lien est toujours valide et change emailVerified pour l'utilisateur */
         String token = body.get("token");
-        
+
         if (token == null || token.isEmpty() || userService.isTokenExpired(token)){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                                 .body(Map.of("message", "Le lien fourni a expiré, relancer la procédure"));
@@ -195,7 +196,7 @@ public class UserController {
     @PostMapping("/resetMail")
     public ResponseEntity<?> sendPwdRecoveryMail(@RequestBody Map<String, String> body) throws MessagingException {
         String mail = body.get("mail"); // mail = username in the eva app
-        User user = userService.sendRecoveryMail(mail, "pwdChange");
+        User user = userService.sendRecoveryMail(mail);
         if (user == null){
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)

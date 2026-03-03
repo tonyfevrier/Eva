@@ -107,34 +107,14 @@ public class UserService {
         return userRepository.findByMailWithExperimentations(mail);
     }
 
-    public User sendRecoveryMail(String username, String linkEndpoint) throws MessagingException {
-        /* si le mail username existe, envoie un mail avec un lien comprenant un token */
-        User user = userRepository.findByMail(username);
-        if (user != null){
-            String token = jwtService.generateToken(username, 600000);
-            MimeMessage message = configureMail(token, username, linkEndpoint);
-            mailSender.send(message);
-            return user;
-        }
-        return null;
+    public User sendConfirmationMail(String username) throws MessagingException {
+        MailWithLinkService mailService = new ConfirmationMailService(userRepository, mailSender, jwtService);
+        return mailService.sendMail(username);
     }
 
-    private MimeMessage configureMail(String token, String username, String linkEndpoint) throws MessagingException{
-        MimeMessage message = mailSender.createMimeMessage();                    
-        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-        helper.setFrom("noreply.eva.application@gmail.com");
-        helper.setTo(username);
-        helper.setSubject("Récupération de mot de passe pour l'application EVA");
-
-        String recoveryLink = "http://localhost:5173/" + linkEndpoint + "?token=" + token;
-
-        helper.setText(
-            "<h3>Réinitialisation de mot de passe de votre compte EVA</h3>" +
-            "<p>Cliquez sur le lien ci-dessous pour réinitialiser votre mot de passe :</p>" +
-            "<a href=\"" + recoveryLink + "\">Réinitialiser mon mot de passe</a>",
-            true  // true = HTML, false = texte brut
-        );
-        return message;
+    public User sendRecoveryMail(String username) throws MessagingException {
+        MailWithLinkService mailService = new RecoveryMailService(userRepository, mailSender, jwtService);
+        return mailService.sendMail(username);
     }
 
     public boolean isTokenExpired(String token){
