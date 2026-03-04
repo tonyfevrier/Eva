@@ -6,6 +6,8 @@ import { Infos } from "../components/Infos";
 import styles from "./ExperimentationSummaryPage.module.css"
 import { useState, type Dispatch, type SetStateAction } from "react";
 import { Modal } from "../components/Modal";
+import { ModalList } from "../components/ModalList";
+import { Goto } from "../components/Goto";
  
 export function ExperimentationSummaryPage(){
     const {id} = useParams();
@@ -13,6 +15,7 @@ export function ExperimentationSummaryPage(){
     const {loading, data, error} = useFetch<Record<string, any>>(`http://localhost:9000/expe/get/${id}`, credentials);
     const [deleteError, setDeleteError] = useState<Error|null>(null);
     const [printModal, setPrintModal] = useState<boolean>(false);
+    const [printExportModal, setPrintExportModal] = useState<boolean>(false);
     const navigate = useNavigate();
 
     if (loading){
@@ -70,6 +73,13 @@ export function ExperimentationSummaryPage(){
                         <h4>Données d'évaluations</h4>
                         <Infos title="Protocole" info={data.protocol}/>
                         <Infos title="Accepte le partage de données de l'expérimentation" info={data.isSharingData?"oui":"non"}/>
+                        {authenticatedUserOwnsExpe && 
+                        <>
+                            <div className={styles.btnContainer} >
+                                <Button onClick={()=> setPrintExportModal(true)}>Exporter le modèle de tableur</Button>
+                                <Button>Réimporter le tableur rempli</Button>
+                            </div>
+                        </>}
                         <div>
                             <h5>Ancienne pratique</h5>
                             <Infos title="Évaluation initiale" info={data.pedagogicalContext.oldPedagogyEvaluations.initialEvaluation}/> 
@@ -94,6 +104,12 @@ export function ExperimentationSummaryPage(){
                         </div>
                         <Button className={styles.deleteBtn} onClick={handleToggleModal}>Supprimer l'expérimentation</Button>
                     </>}
+                    {printExportModal && 
+                        <ModalList title="Format du fichier souhaité" onClose={()=>setPrintExportModal(false)}>
+                            <Goto label="Fichier xlsx (Excel 2007)" buttonLabel="Exporter" variant="export"/>
+                            <Goto label="Fichier xls (Excel 97-2003)" buttonLabel="Exporter" variant="export"/>
+                            <Goto label="Fichier ods (Libre office calc)" buttonLabel="Exporter" variant="export"/>
+                        </ModalList>}
                     {printModal && <Modal title="Suppression de l'expérimentation" postTitle="Confirmation de fermeture" postContent="Confirmez-vous la suppression de votre expérimentation?" onClose={handleToggleModal} onSave={handleDeleteConfirm}/>}
                     {deleteError?.message && <p>{deleteError?.message}</p>}
                </>
