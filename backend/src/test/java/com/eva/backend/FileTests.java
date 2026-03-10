@@ -123,7 +123,7 @@ public class FileTests {
 				.file(file)
 				.param("id", experimentationId.toString()))
 				.andExpect(status().isOk())
-				.andExpect(content().string("File uploaded successfully: " + expectedFileName));
+				.andExpect(content().string("File uploaded successfully"));
 
 		Path savedFile = Path.of("target", "test-imports", expectedFileName);
 		byte[] savedBytes = Files.readAllBytes(savedFile);
