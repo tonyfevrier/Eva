@@ -9,11 +9,15 @@ import { Modal } from "../components/Modal";
 import { ModalList } from "../components/ModalList";
 import { Goto } from "../components/Goto";
  
+type BodyData = {
+    format: string
+}
+
 export function ExperimentationSummaryPage(){
     const {id} = useParams();
     const credentials = undefined;  
     const {loading, data, error} = useFetch<Record<string, any>>(`http://localhost:9000/expe/get/${id}`, credentials);
-    const [deleteError, setDeleteError] = useState<Error|null>(null);
+    const [sendError, setSendError] = useState<Error|null>(null);
     const [printModal, setPrintModal] = useState<boolean>(false);
     const [printExportModal, setPrintExportModal] = useState<boolean>(false);
     const navigate = useNavigate();
@@ -40,7 +44,11 @@ export function ExperimentationSummaryPage(){
         }
 
         const handleDeleteConfirm = async () => {
-            sendDeleteRequest(id, setDeleteError, navigate);
+            sendDeleteRequest(id, setSendError, navigate);
+        }
+
+        const handleExport = (format: string) => {
+            sendExportRequest({format}, setSendError);
         }
 
         return <>
@@ -77,7 +85,7 @@ export function ExperimentationSummaryPage(){
                         <>
                             <div className={styles.btnContainer} >
                                 <Button onClick={()=> setPrintExportModal(true)}>Exporter le modèle de tableur</Button>
-                                <Button>Réimporter le tableur rempli</Button>
+                                <Button onClick={()=>{}}>Réimporter le tableur rempli</Button>
                             </div>
                         </>}
                         <div>
@@ -106,18 +114,18 @@ export function ExperimentationSummaryPage(){
                     </>}
                     {printExportModal && 
                         <ModalList title="Format du fichier souhaité" onClose={()=>setPrintExportModal(false)}>
-                            <Goto label="Fichier xlsx (Excel 2007)" buttonLabel="Exporter" variant="export"/>
-                            <Goto label="Fichier xls (Excel 97-2003)" buttonLabel="Exporter" variant="export"/>
-                            <Goto label="Fichier ods (Libre office calc)" buttonLabel="Exporter" variant="export"/>
+                            <Goto label="Fichier xlsx (Excel 2007)" buttonLabel="Exporter" variant="export" onClick={() => handleExport("xlsx")}/>
+                            <Goto label="Fichier xls (Excel 97-2003)" buttonLabel="Exporter" variant="export" onClick={() => handleExport("xls")}/>
+                            <Goto label="Fichier ods (Libre office calc)" buttonLabel="Exporter" variant="export" onClick={() => handleExport("ods")}/>
                         </ModalList>}
                     {printModal && <Modal title="Suppression de l'expérimentation" postTitle="Confirmation de fermeture" postContent="Confirmez-vous la suppression de votre expérimentation?" onClose={handleToggleModal} onSave={handleDeleteConfirm}/>}
-                    {deleteError?.message && <p>{deleteError?.message}</p>}
+                    {sendError?.message && <p>{sendError?.message}</p>}
                </>
     }
 } 
 
 
-async function sendDeleteRequest(id: string|undefined, setDeleteError: Dispatch<SetStateAction<Error|null>>, navigate: NavigateFunction){
+async function sendDeleteRequest(id: string|undefined, setSendError: Dispatch<SetStateAction<Error|null>>, navigate: NavigateFunction){
     const response = await fetch(`http://localhost:9000/expe/delete/${id}`, {
             method: "delete",
             headers: {
@@ -127,7 +135,7 @@ async function sendDeleteRequest(id: string|undefined, setDeleteError: Dispatch<
             credentials: "include"  
         })
         .catch(requestError => {
-            setDeleteError(requestError);
+            setSendError(requestError);
             throw requestError;
         });
 
@@ -135,6 +143,46 @@ async function sendDeleteRequest(id: string|undefined, setDeleteError: Dispatch<
     if (response.ok){
          navigate("/application/expe");
     } else {
-        setDeleteError(new Error(`Erreur ${response.status}: ${response.statusText}`));
+        setSendError(new Error(`Erreur ${response.status}: ${response.statusText}`));
     }
+}
+
+async function sendExportRequest(body: BodyData, setSendError: Dispatch<SetStateAction<Error|null>>){
+    const response = await fetch(`http://localhost:9000/file/export`, {
+            method: "post",
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/octet-stream',
+            },
+            body:JSON.stringify(body),
+            credentials: "include"  
+        })
+        .catch(requestError => {
+            setSendError(requestError);
+            throw requestError;
+        });
+
+    if (!response.ok){ 
+        setSendError(new Error(`Erreur ${response.status}: ${response.statusText}`));
+        return;
+    }
+    exportFile(response, body.format);
+    
+}
+
+async function exportFile(response:Response, format: string){
+    const blob = await response.blob();
+    const contentDisposition = response.headers.get("content-disposition") ?? "";
+    const fileNameMatch = contentDisposition.match(/filename\*?=(?:UTF-8''|\")?([^\";]+)/i);
+    const fileNameFromHeader = fileNameMatch?.[1]?.trim();
+    const fileName = decodeURIComponent(fileNameFromHeader ?? `modele-tableur.${format}`);
+
+    const objectUrl = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = objectUrl;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(objectUrl);
 }

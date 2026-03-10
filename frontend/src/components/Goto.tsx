@@ -7,7 +7,7 @@ type GotoType = {
     buttonLabel?: string,
     variant?: "default" | "export",
     className?: string
-}
+} & React.ButtonHTMLAttributes<HTMLButtonElement>
 
 export function Goto({label, href="", buttonLabel="Cliquez ici", variant="default", className="", ...props}:GotoType){
     const variantClassName = variant === "export" ? styles.export : styles.container;
