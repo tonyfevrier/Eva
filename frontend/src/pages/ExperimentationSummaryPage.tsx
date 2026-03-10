@@ -48,7 +48,26 @@ export function ExperimentationSummaryPage(){
         }
 
         const handleExport = (format: string) => {
-            sendExportRequest({format}, setSendError);
+            sendExportRequest({format}, setSendError, setPrintExportModal);
+        }
+
+        const handleImport = () => {
+            const fileInput = document.createElement("input");
+            fileInput.type = "file";
+            fileInput.accept = ".xls,.xlsx,.ods";
+
+            fileInput.onchange = async () => {
+                const selectedFile = fileInput.files?.[0];
+
+                if (!selectedFile){
+                    return;
+                }
+
+                setSendError(null);
+                sendImportRequest(selectedFile, id, setSendError);
+            }
+
+            fileInput.click();
         }
 
         return <>
@@ -85,7 +104,7 @@ export function ExperimentationSummaryPage(){
                         <>
                             <div className={styles.btnContainer} >
                                 <Button onClick={()=> setPrintExportModal(true)}>Exporter le modèle de tableur</Button>
-                                <Button onClick={()=>{}}>Réimporter le tableur rempli</Button>
+                                <Button onClick={handleImport}>Réimporter le tableur rempli</Button>
                             </div>
                         </>}
                         <div>
@@ -147,7 +166,7 @@ async function sendDeleteRequest(id: string|undefined, setSendError: Dispatch<Se
     }
 }
 
-async function sendExportRequest(body: BodyData, setSendError: Dispatch<SetStateAction<Error|null>>){
+async function sendExportRequest(body: BodyData, setSendError: Dispatch<SetStateAction<Error|null>>, setPrintExportModal: Dispatch<SetStateAction<boolean>>){
     const response = await fetch(`http://localhost:9000/file/export`, {
             method: "post",
             headers: {
@@ -162,20 +181,18 @@ async function sendExportRequest(body: BodyData, setSendError: Dispatch<SetState
             throw requestError;
         });
 
-    if (!response.ok){ 
+    if (response.ok){
+        setPrintExportModal(false);
+    } else {
         setSendError(new Error(`Erreur ${response.status}: ${response.statusText}`));
         return;
     }
     exportFile(response, body.format);
-    
 }
 
 async function exportFile(response:Response, format: string){
     const blob = await response.blob();
-    const contentDisposition = response.headers.get("content-disposition") ?? "";
-    const fileNameMatch = contentDisposition.match(/filename\*?=(?:UTF-8''|\")?([^\";]+)/i);
-    const fileNameFromHeader = fileNameMatch?.[1]?.trim();
-    const fileName = decodeURIComponent(fileNameFromHeader ?? `modele-tableur.${format}`);
+    const fileName = `ResultatsEVA_v2.${format}`;
 
     const objectUrl = window.URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -186,3 +203,39 @@ async function exportFile(response:Response, format: string){
     link.remove();
     window.URL.revokeObjectURL(objectUrl);
 }
+
+async function sendImportRequest(file: File, id: string|undefined, setSendError: Dispatch<SetStateAction<Error|null>>){
+    const supportedExtensions = ["xls", "xlsx", "ods"];
+    const extension = file.name.split(".").pop()?.toLowerCase();
+
+    if (!extension || !supportedExtensions.includes(extension)){
+        setSendError(new Error("Le fichier doit être au format .xls, .xlsx ou .ods"));
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+    if (id !== undefined){
+        formData.append("id", id);
+    }
+
+    const response = await fetch(`http://localhost:9000/file/import`, {
+            method: "post",
+            headers: {
+                'Accept': 'application/json',
+            },
+            body: formData,
+            credentials: "include"
+        })
+        .catch(requestError => {
+            setSendError(requestError);
+            throw requestError;
+        });
+
+    if (response.ok){
+        alert("Fichier envoyé avec succès!");
+    } else {
+        setSendError(new Error(`Erreur ${response.status}: ${response.statusText}`));
+    }
+}
+

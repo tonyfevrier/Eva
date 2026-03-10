@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.util.Locale;
 import java.util.Map;
@@ -117,7 +118,7 @@ public class FileController {
                     .body("Invalid file path");
         }
 
-        file.transferTo(filePath);
+        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
         return ResponseEntity.ok("File uploaded successfully: " + filePath.getFileName());
     }
@@ -138,14 +139,14 @@ public class FileController {
         User user = experimentation.getUser();
         PedagogicalContext context = experimentation.getPedagogicalContext();
 
-        String protocol = experimentation.getProtocol();
+        String protocol = experimentation.getProtocol().split(":")[0];
         String date = LocalDate.now().toString();
         String institution = experimentation.getInstitution().getName();
         String lastName = user.getLastname();
         String firstName = user.getFirstname();
         String studyField = context.getStudyField(); 
 
-        return protocol + date + institution + lastName + firstName + studyField + extension;
+        return protocol + "_" + date + "_" + institution + "_" + lastName + "_" + firstName + "_" + studyField + "." + extension;
     }
     
 }

@@ -110,13 +110,7 @@ public class FileTests {
 				.build();
 		when(experimentationRepository.findById(experimentationId)).thenReturn(Optional.of(experimentation));
 
-		String expectedFileName = "Protocole"
-				+ LocalDate.now()
-				+ "InstitutionTest"
-				+ "Doe"
-				+ "John"
-				+ "Math"
-				+ "xlsx";
+		String expectedFileName = "Protocole_"+ LocalDate.now()+ "_InstitutionTest_Doe_John_Math.xlsx";
 
 		MockMultipartFile file = new MockMultipartFile(
 				"file",
