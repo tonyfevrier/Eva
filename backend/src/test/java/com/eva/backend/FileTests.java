@@ -1,6 +1,7 @@
 package com.eva.backend;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -8,6 +9,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDate;
+import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,18 +18,34 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+
+import static org.mockito.Mockito.when;
+
+import com.eva.backend.model.Experimentation;
+import com.eva.backend.model.Institution;
+import com.eva.backend.model.PedagogicalContext;
+import com.eva.backend.model.User;
+import com.eva.backend.repository.ExperimentationRepository;
 
 @SpringBootTest
 @AutoConfigureMockMvc(addFilters = false)
 @ActiveProfiles("test")
-@TestPropertySource(properties = "app.export-dir=target/test-exports")
+@TestPropertySource(properties = {
+		"app.export-dir=target/test-exports",
+		"app.import-dir=target/test-imports"
+})
 public class FileTests {
 
 	@Autowired
 	private MockMvc mockMvc;
+
+	@MockitoBean
+	private ExperimentationRepository experimentationRepository;
 
 	private static final String XLSX_FILE_NAME = "ResultatsEVA_v2_Excel.xlsx";
 	private static final String XLS_FILE_NAME = "ResultatsEVA_v2_Excel97-2003.xls";
@@ -38,7 +57,9 @@ public class FileTests {
 	@BeforeEach
 	void prepareExportFile() throws Exception {
 		Path exportDir = Path.of("target", "test-exports");
+		Path importDir = Path.of("target", "test-imports");
 		Files.createDirectories(exportDir);
+		Files.createDirectories(importDir);
 		Files.write(exportDir.resolve(XLSX_FILE_NAME), XLSX_FILE_CONTENT);
 		Files.write(exportDir.resolve(XLS_FILE_NAME), XLS_FILE_CONTENT);
 		Files.write(exportDir.resolve(ODS_FILE_NAME), ODS_FILE_CONTENT);
@@ -75,6 +96,57 @@ public class FileTests {
 				.andExpect(header().string("Content-Disposition", "attachment; filename=\"ResultatsEVA_v2_LibreOffice.ods\""))
 				.andExpect(content().contentType("application/vnd.oasis.opendocument.spreadsheet"))
 				.andExpect(content().bytes(ODS_FILE_CONTENT));
+	}
+
+	@Test
+	void importFileShouldUploadXlsxFileFromClient() throws Exception {
+		Long experimentationId = 42L;
+		Experimentation experimentation = Experimentation.builder()
+				.id(experimentationId)
+				.protocol("Protocole")
+				.institution(Institution.builder().name("InstitutionTest").build())
+				.user(User.builder().lastname("Doe").firstname("John").build())
+				.pedagogicalContext(PedagogicalContext.builder().studyField("Math").build())
+				.build();
+		when(experimentationRepository.findById(experimentationId)).thenReturn(Optional.of(experimentation));
+
+		String expectedFileName = "Protocole"
+				+ LocalDate.now()
+				+ "InstitutionTest"
+				+ "Doe"
+				+ "John"
+				+ "Math"
+				+ "xlsx";
+
+		MockMultipartFile file = new MockMultipartFile(
+				"file",
+				"input.xlsx",
+				"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+				XLSX_FILE_CONTENT
+		);
+
+		mockMvc.perform(multipart("/file/import")
+				.file(file)
+				.param("id", experimentationId.toString()))
+				.andExpect(status().isOk())
+				.andExpect(content().string("File uploaded successfully: " + expectedFileName));
+
+		Path savedFile = Path.of("target", "test-imports", expectedFileName);
+		byte[] savedBytes = Files.readAllBytes(savedFile);
+		org.junit.jupiter.api.Assertions.assertArrayEquals(XLSX_FILE_CONTENT, savedBytes);
+	}
+
+	@Test
+	void importFileShouldRejectUnsupportedExtension() throws Exception {
+		MockMultipartFile file = new MockMultipartFile(
+				"file",
+				"input.csv",
+				"text/csv",
+				"a,b,c".getBytes(StandardCharsets.UTF_8)
+		);
+
+		mockMvc.perform(multipart("/file/import").file(file))
+				.andExpect(status().isBadRequest());
 	}
     
 }

@@ -1,5 +1,6 @@
 package com.eva.backend.controller;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -12,12 +13,20 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDate;
+import java.util.Locale;
 import java.util.Map;
 
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.eva.backend.model.Experimentation;
+import com.eva.backend.model.PedagogicalContext;
+import com.eva.backend.model.User;
 import com.eva.backend.records.DownloadContent;
+import com.eva.backend.repository.ExperimentationRepository;
 
 
 @RestController
@@ -26,6 +35,12 @@ public class FileController {
 
     @Value("${app.export-dir}")
     private String exportDir;
+
+    @Value("${app.import-dir}")
+    private String importDir;
+
+    @Autowired
+    private ExperimentationRepository experimentationRepository;
 
     @PostMapping("/export")
     public ResponseEntity<byte[]> exportFile(@RequestBody Map<String, String> body) throws IOException {
@@ -59,7 +74,7 @@ public class FileController {
 
     private byte[] getFileContent(String filename) throws IOException{
         Path baseDir = Paths.get(exportDir).toAbsolutePath().normalize();
-        Path filePath = baseDir.resolve(filename).normalize();        
+        Path filePath = baseDir.resolve(filename).normalize();//nettoyer le path des ../ avec normalize et resolve concatène le dossier au nom de fichier        
         return Files.readAllBytes(filePath);
     }
 
@@ -70,6 +85,67 @@ public class FileController {
             case "ods" -> MediaType.parseMediaType("application/vnd.oasis.opendocument.spreadsheet");
             default -> MediaType.APPLICATION_OCTET_STREAM;
         };
+    }
+
+    @PostMapping("/import")
+    public ResponseEntity<String> importFile(@RequestParam("file") MultipartFile file, Long id) throws IOException {
+        if (file == null || file.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Missing uploaded file");
+        }
+
+        String originalFileName = file.getOriginalFilename();//Récupère le path entier côté client
+        if (originalFileName == null || originalFileName.isBlank()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Missing original file name");
+        }
+
+        String safeFileName = Paths.get(originalFileName).getFileName().toString();//supprimer les dossiers dans le nom pr ne garder que le nom du fichier
+        String extension = getFileExtension(safeFileName);
+        if (!"xls".equals(extension) && !"xlsx".equals(extension) && !"ods".equals(extension)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Unsupported file extension. Allowed: xls, xlsx, ods");
+        }
+
+        String importedFileName = createImportedFileName(id, extension);
+        Path baseDir = Paths.get(importDir).toAbsolutePath().normalize();
+        Files.createDirectories(baseDir);
+        Path filePath = baseDir.resolve(importedFileName).normalize();
+
+        if (!filePath.startsWith(baseDir)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Invalid file path");
+        }
+
+        file.transferTo(filePath);
+
+        return ResponseEntity.ok("File uploaded successfully: " + filePath.getFileName());
+    }
+
+    private String getFileExtension(String fileName) {
+        int dotIndex = fileName.lastIndexOf('.');
+        if (dotIndex < 0 || dotIndex == fileName.length() - 1) {
+            return "";
+        }
+        return fileName.substring(dotIndex + 1).toLowerCase(Locale.ROOT);
+    }
+
+    private String createImportedFileName(Long id, String extension){
+        //Nom du fichier de la forme : Variante_Annee_institution_nom_prenom_discipline.format
+
+        /*Récupérer l'expé et l'utilisateur et le contexte */
+        Experimentation experimentation = experimentationRepository.findById(id).orElseThrow();
+        User user = experimentation.getUser();
+        PedagogicalContext context = experimentation.getPedagogicalContext();
+
+        String protocol = experimentation.getProtocol();
+        String date = LocalDate.now().toString();
+        String institution = experimentation.getInstitution().getName();
+        String lastName = user.getLastname();
+        String firstName = user.getFirstname();
+        String studyField = context.getStudyField(); 
+
+        return protocol + date + institution + lastName + firstName + studyField + extension;
     }
     
 }
