@@ -6,3 +6,9 @@
 .container > * {
     padding: 0 1em;
 }
+
+.export{
+    display: flex;
+    justify-content: space-between;
+    margin: 1em;
+}
