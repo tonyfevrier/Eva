@@ -9,7 +9,7 @@ import com.eva.backend.service.DataExtractionService;
 import com.eva.backend.service.PdfGenerationService;
 
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 
 import java.io.IOException;
 import java.util.Map;
@@ -23,7 +23,7 @@ public class PdfController {
     @Autowired
     private PdfGenerationService pdfService;
 
-    @PostMapping("/generate/{id}")
+    @GetMapping("/generate/{id}")
     public ResponseEntity<byte[]> generatePdf(@PathVariable Long id) throws IOException {
         Map<String, Map<String, Object>> data = dataExtractor.extractExperimentationData(id);
         byte[] pdfByte = pdfService.createPdf(data);

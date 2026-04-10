@@ -8,7 +8,8 @@ import { useState, type Dispatch, type SetStateAction } from "react";
 import { Modal } from "../components/Modal";
 import { ModalList } from "../components/ModalList";
 import { Goto } from "../components/Goto";
- 
+import { exportFile } from "../utils/request/fileExport";
+
 type BodyData = {
     format: string
 }
@@ -168,21 +169,6 @@ async function sendExportRequest(body: BodyData, setSendError: Dispatch<SetState
         setSendError(new Error(`Erreur ${response.status}: ${response.statusText}`));
         return;
     }
-    exportFile(response, body.format);
+    exportFile(response, body.format, "ResultatsEVA_v2");
 }
-
-async function exportFile(response:Response, format: string){
-    const blob = await response.blob();
-    const fileName = `ResultatsEVA_v2.${format}`;
-
-    const objectUrl = window.URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = objectUrl;
-    link.download = fileName;
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    window.URL.revokeObjectURL(objectUrl);
-}
-
-
+ 

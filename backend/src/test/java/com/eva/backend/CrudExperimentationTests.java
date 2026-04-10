@@ -626,7 +626,7 @@ public class CrudExperimentationTests {
                 }
                 """;
 
-        mockMvc.perform(post("/expe/interprete/1")
+        mockMvc.perform(post("/expe/interpret/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(interpretationJson)
                         .cookie(new jakarta.servlet.http.Cookie("jwt", jwtCookie)))
