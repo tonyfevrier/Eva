@@ -4,6 +4,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -613,6 +614,27 @@ public class CrudExperimentationTests {
                         .andExpect(jsonPath("$.message").value("Vous n'êtes pas autorisé à supprimer cette expérimentation"));
         
         assertThat(experimentationRepository.findById(1L)).isPresent();
+    }
+
+    @Test
+    public void testAddInterpretation() throws Exception {
+        createAnExperimentation();
+
+        String interpretationJson = """
+                {
+                    "interpretation": "Les resultats montrent une meilleure participation en classe."
+                }
+                """;
+
+        mockMvc.perform(post("/expe/interprete/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(interpretationJson)
+                        .cookie(new jakarta.servlet.http.Cookie("jwt", jwtCookie)))
+                        .andExpect(status().isOk())
+                        .andExpect(content().string("L'interprétation a bien été sauvegardée"));
+
+        Experimentation experimentation = experimentationRepository.findById(1L).orElseThrow();
+        assertThat(experimentation.getInterpretation()).isEqualTo("Les resultats montrent une meilleure participation en classe.");
     }
 
     private Institution createInstitution(){

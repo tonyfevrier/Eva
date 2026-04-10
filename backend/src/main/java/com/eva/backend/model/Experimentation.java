@@ -54,4 +54,6 @@ public class Experimentation {
     private Boolean isSharingData;
 
     private String dataPath;
+
+    private String interpretation;
 }

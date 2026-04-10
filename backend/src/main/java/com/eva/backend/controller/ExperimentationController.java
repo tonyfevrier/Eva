@@ -220,4 +220,12 @@ public class ExperimentationController {
         
         return ResponseEntity.ok(Map.of("message", "L'expérimentation a bien été mise à jour"));
     }
+
+    @PostMapping("/interprete/{id}")
+    private ResponseEntity<?> addInterpretation(@PathVariable Long id, @RequestBody Map<String, String> body){
+        Experimentation experimentation = experimentationService.findById(id).orElseThrow();
+        experimentation.setInterpretation(body.get("interpretation"));
+        experimentationService.save(experimentation);
+        return ResponseEntity.ok("L'interprétation a bien été sauvegardée");
+    }
 }
