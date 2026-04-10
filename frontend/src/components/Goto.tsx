@@ -15,9 +15,9 @@ export function Goto({label, href="", buttonLabel="Cliquez ici", variant="defaul
 
     if (href !== ""){
         return  <div className={resolvedClassName}>
-                <p>{label}</p>
-                <Button href={href} {...props}> {buttonLabel}</Button>
-            </div>  
+                    <p>{label}</p>
+                    <Button href={href} {...props}> {buttonLabel}</Button>
+                </div>  
     } 
     return  <div className={resolvedClassName}>
                 <p>{label}</p>

@@ -51,25 +51,6 @@ export function ExperimentationSummaryPage(){
             sendExportRequest({format}, setSendError, setPrintExportModal);
         }
 
-        const handleImport = () => {
-            const fileInput = document.createElement("input");
-            fileInput.type = "file";
-            fileInput.accept = ".xls,.xlsx,.ods";
-
-            fileInput.onchange = async () => {
-                const selectedFile = fileInput.files?.[0];
-
-                if (!selectedFile){
-                    return;
-                }
-
-                setSendError(null);
-                sendImportRequest(selectedFile, id, setSendError);
-            }
-
-            fileInput.click();
-        }
-
         return <>
                     <h1>Récapitulatif de l'expérimentation</h1>
                     {ownerAcceptsContact && 
@@ -104,7 +85,7 @@ export function ExperimentationSummaryPage(){
                         <>
                             <div className={styles.btnContainer} >
                                 <Button onClick={()=> setPrintExportModal(true)}>Exporter le modèle de tableur</Button>
-                                <Button onClick={handleImport}>Réimporter le tableur rempli</Button>
+                                <Button href={`/application/endExpe/${id}`}>Ajouter les données de l'expérimentation</Button>
                             </div>
                         </>}
                         <div>
@@ -204,38 +185,4 @@ async function exportFile(response:Response, format: string){
     window.URL.revokeObjectURL(objectUrl);
 }
 
-async function sendImportRequest(file: File, id: string|undefined, setSendError: Dispatch<SetStateAction<Error|null>>){
-    const supportedExtensions = ["xls", "xlsx", "ods"];
-    const extension = file.name.split(".").pop()?.toLowerCase();
-
-    if (!extension || !supportedExtensions.includes(extension)){
-        setSendError(new Error("Le fichier doit être au format .xls, .xlsx ou .ods"));
-        return;
-    }
-
-    const formData = new FormData();
-    formData.append("file", file);
-    if (id !== undefined){
-        formData.append("id", id);
-    }
-
-    const response = await fetch(`http://localhost:9000/file/import`, {
-            method: "post",
-            headers: {
-                'Accept': 'application/json',
-            },
-            body: formData,
-            credentials: "include"
-        })
-        .catch(requestError => {
-            setSendError(requestError);
-            throw requestError;
-        });
-
-    if (response.ok){
-        alert("Fichier envoyé avec succès!");
-    } else {
-        setSendError(new Error(`Erreur ${response.status}: ${response.statusText}`));
-    }
-}
 

@@ -11,7 +11,6 @@ import { useHandleAuth } from './hooks/useHandleAuth';
 import { ProfilePage } from './pages/ProfilePage';
 import { Button } from './components/Button';
 import { RecoveryPage } from './pages/RecoveryPage';
-import { Goto } from './components/Goto';
 import { PasswordChangePage } from './pages/PasswordChangePage';
 import { DescribePage } from './pages/DescribePage';
 import { ExperimentationPage } from './pages/ExperimentationPage';
@@ -21,6 +20,7 @@ import { ExperimentationSummaryPage } from './pages/ExperimentationSummaryPage';
 import { ExperimentationProfilePage } from './pages/ExperimentationProfilePage';
 import { ExperimentationListPage } from './pages/ExperimentationListPage';
 import { RegisterConfirmationPage } from './pages/RegisterConfirmationPage';
+import { EndExperimentationPage } from './pages/EndExperimentationPage';
 
 const routes: RouteObject[] = [
   {
@@ -91,6 +91,10 @@ const routes: RouteObject[] = [
               path: "modifyExpe/:id",
               element : <ExperimentationProfilePage/>, 
             },
+            {
+              path: "endExpe/:id",
+              element: <EndExperimentationPage/> 
+            }
         ]
       }
     ]
