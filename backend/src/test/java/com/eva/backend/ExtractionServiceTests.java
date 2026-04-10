@@ -21,7 +21,7 @@ import com.eva.backend.utils.JpaDataCreation;
 @DataJpaTest
 @Import({DataExtractionService.class, JpaDataCreation.class})
 @ActiveProfiles("test")
-public class ExtractionTests {
+public class ExtractionServiceTests {
     @Autowired
     private JpaDataCreation dataCreator;
 
