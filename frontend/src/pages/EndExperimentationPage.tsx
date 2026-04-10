@@ -38,7 +38,9 @@ export function EndExperimentationPage(){
         generatePdf(id, setError);
     }
 
-    const handleEnd = () => {}
+    const handleEnd = () => {
+        endExperimentation(id, setError);
+    }
     
     return <>  
                 <h2>Ajouter les données de l'expérimentation</h2>
@@ -47,7 +49,7 @@ export function EndExperimentationPage(){
                 <Button onClick={handleInterpretation}>Soumettre l'interprétation des données</Button>
                 {error?.message && <p>{error?.message}</p>}
                 <Goto label="Vous pouvez générer le pdf récapitulant votre expérimentation avec ou sans interprétation de données." buttonLabel="Générer le pdf" onClick={handlePdf}/>
-                <Goto label="Vous pouvez marquer l'expérimentation comme terminée." buttonLabel="Terminer" onClick={handleEnd}/>
+                <Goto label="Vous pouvez marquer l'expérimentation comme terminée. Cela permettra à un utilisateur de télécharger le pdf récapitulant les informations, les résultats et leur interprétation." buttonLabel="Terminer" onClick={handleEnd}/>
            </>
 }
 
@@ -121,5 +123,22 @@ async function generatePdf(id: string|undefined, setError: Dispatch<SetStateActi
 
     if (response.ok){
         exportFile(response, "pdf", "experimentation_summary");
+    }
+}
+
+async function endExperimentation(id: string|undefined, setError: Dispatch<SetStateAction<Error|null>>){
+    const response = await fetch(`http://localhost:9000/expe/endExpe/${id}`, {
+        headers: {
+            'Accept': 'application/json'
+        },
+        method: "get",
+        credentials: "include"
+    }).catch(requestError => {
+        setError(requestError);
+        throw requestError
+    });
+
+    if (response.ok){
+        alert("L'expérimentation est considérée comme terminée");
     }
 }
