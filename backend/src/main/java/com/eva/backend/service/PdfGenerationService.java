@@ -81,12 +81,11 @@ public class PdfGenerationService {
     private void writeLines(PdfRenderContext context, String[] wrappedLines) throws IOException {
         for (String wrappedLine : wrappedLines) {
             context.y -= LINE_HEIGHT;
-            /* fin de page on en crée une nouvelle */
+
             if (context.y <= PAGE_MARGIN) {
                 moveToNextPage(context);
             }
-
-            /* écriture des lignes */
+            
             context.stream.newLineAtOffset(0, -LINE_HEIGHT);
             context.stream.showText(wrappedLine);
         }

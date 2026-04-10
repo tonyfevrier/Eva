@@ -40,7 +40,7 @@ import com.eva.backend.repository.ExperimentationRepository;
 		"app.import-dir=target/test-imports"
 })
 public class FileTests {
-
+	/* Tests pour l'export et l'import des fichiers xls de données */
 	@Autowired
 	private MockMvc mockMvc;
 
