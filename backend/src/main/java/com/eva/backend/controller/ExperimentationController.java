@@ -88,6 +88,7 @@ public class ExperimentationController {
             "affiliation", Map.of("id", institution.getId(),
                                       "name", institution.getName()),
             "pedagogicalContext", experimentation.getPedagogicalContext(),
+            "inProgress", experimentation.getInProgress(),
             "isSharingData", experimentation.getIsSharingData(),
             "userOwnsExpe", userOwnsExpe,
             "contactMail", user.getAdditionalData().isAcceptContact()?user.getMail():""

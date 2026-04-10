@@ -109,7 +109,7 @@ async function sendInterpretationRequest(id: string|undefined, body: string, set
     }
 }
 
-async function generatePdf(id: string|undefined, setError: Dispatch<SetStateAction<Error|null>>){
+export async function generatePdf(id: string|undefined, setError: Dispatch<SetStateAction<Error|null>>){
     const response = await fetch(`http://localhost:9000/pdf/generate/${id}`, {
         headers: {
             'Accept': 'application/json'

@@ -175,6 +175,7 @@ public class CrudExperimentationTests {
                         .andExpect(jsonPath("$.affiliation.id").value(institution.getId()))
                         .andExpect(jsonPath("$.affiliation.name").value("Institution Initiale"))
                         .andExpect(jsonPath("$.isSharingData").value(true))
+                        .andExpect(jsonPath("$.inProgress").value(true))
                         .andExpect(jsonPath("$.pedagogicalContext.learningDifficulty").value("Difficulté d'apprentissage en mathématiques"))
                         .andExpect(jsonPath("$.pedagogicalContext.studyField").value("Mathématiques"))
                         .andExpect(jsonPath("$.pedagogicalContext.teachingTitle").value("Algèbre et géométrie"))

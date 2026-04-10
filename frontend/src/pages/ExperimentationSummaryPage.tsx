@@ -9,6 +9,7 @@ import { Modal } from "../components/Modal";
 import { ModalList } from "../components/ModalList";
 import { Goto } from "../components/Goto";
 import { exportFile } from "../utils/request/fileExport";
+import { generatePdf } from "./EndExperimentationPage";
 
 type BodyData = {
     format: string
@@ -52,6 +53,10 @@ export function ExperimentationSummaryPage(){
             sendExportRequest({format}, setSendError, setPrintExportModal);
         }
 
+        const handlePdf = () => {
+            generatePdf(id, setSendError);
+        }
+
         return <>
                     <h1>Récapitulatif de l'expérimentation</h1>
                     {ownerAcceptsContact && 
@@ -59,6 +64,7 @@ export function ExperimentationSummaryPage(){
                         <h4>Contact</h4>
                         <Infos title="Pour plus d'informations, vous pouvez écrire au courriel suivant" info={data.contactMail}></Infos>
                     </>}
+                    {!data.inProgress && <Goto label="L'expérimentation est terminée, vous pouvez récupérer son contexte et ses résultats au format pdf" buttonLabel="Générez le pdf" onClick={handlePdf}/>}
                     <h4>Mots clés</h4>
                     {keywords !== "" && <Infos title="Mots-clés" info={keywords}/>}
                     {data.personalKeywords !== "" && <Infos title="Mots-clés personnalisés" info={data.personalKeywords}/>}
