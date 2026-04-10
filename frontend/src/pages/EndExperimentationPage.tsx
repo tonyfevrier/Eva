@@ -37,6 +37,8 @@ export function EndExperimentationPage(){
     const handlePdf = () => {
         generatePdf(id, setError);
     }
+
+    const handleEnd = () => {}
     
     return <>  
                 <h2>Ajouter les données de l'expérimentation</h2>
@@ -45,6 +47,7 @@ export function EndExperimentationPage(){
                 <Button onClick={handleInterpretation}>Soumettre l'interprétation des données</Button>
                 {error?.message && <p>{error?.message}</p>}
                 <Goto label="Vous pouvez générer le pdf récapitulant votre expérimentation avec ou sans interprétation de données." buttonLabel="Générer le pdf" onClick={handlePdf}/>
+                <Goto label="Vous pouvez marquer l'expérimentation comme terminée." buttonLabel="Terminer" onClick={handleEnd}/>
            </>
 }
 

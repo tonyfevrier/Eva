@@ -56,4 +56,7 @@ public class Experimentation {
     private String dataPath;
 
     private String interpretation;
+
+    @Builder.Default
+    private Boolean inProgress = true;
 }

@@ -28,6 +28,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 
 @RestController
@@ -101,7 +103,6 @@ public class ExperimentationController {
         List<Map<String, Object>> experimentationsList = user.getExperimentations().stream()
             .sorted((e1, e2) -> e2.getId().compareTo(e1.getId()))
             .map(expe -> {
-                boolean inProgress = isExperimentationInProgress(expe);
                 return Map.of(
                     "id", (Object) expe.getId(),
                     "keywords", expe.getKeywords(),
@@ -110,7 +111,7 @@ public class ExperimentationController {
                     "teachingTitle", expe.getPedagogicalContext().getTeachingTitle(),
                     "studyField", expe.getPedagogicalContext().getStudyField(),
                     "yearOfStudy", expe.getPedagogicalContext().getYearOfStudy(),
-                    "inProgress", inProgress
+                    "inProgress", expe.getInProgress()
                 );
             })
             .collect(Collectors.toList());
@@ -118,40 +119,11 @@ public class ExperimentationController {
         return ResponseEntity.ok(experimentationsList);
     }
 
-    private boolean isExperimentationInProgress(Experimentation expe){
-        LocalDate today = LocalDate.now();
-
-        LocalDate accountedEvalOld = expe.getPedagogicalContext().getOldPedagogyEvaluations().getAccountedEvaluation();
-        LocalDate delayedEvalOld = expe.getPedagogicalContext().getOldPedagogyEvaluations().getDelayedEvaluation();
-        LocalDate accountedEvalNew = expe.getPedagogicalContext().getNewPedagogyEvaluations().getAccountedEvaluation();
-        LocalDate delayedEvalNew = expe.getPedagogicalContext().getNewPedagogyEvaluations().getDelayedEvaluation();
-                
-        LocalDate mostRecentOld = isTheMostRecentDate(accountedEvalOld, delayedEvalOld);
-        LocalDate mostRecentNew = isTheMostRecentDate(accountedEvalNew, delayedEvalNew);
-        LocalDate mostRecentDate = isTheMostRecentDate(mostRecentOld, mostRecentNew);
-                
-        return mostRecentDate != null && today.isBefore(mostRecentDate);     
-    }
-
-    private LocalDate isTheMostRecentDate(LocalDate firstDate, LocalDate secondDate){
-        // On part du principe que les dates peuvent être null si non exigées.
-        LocalDate mostRecentDate = null;
-        if (firstDate != null && secondDate != null) {
-            mostRecentDate = firstDate.isAfter(secondDate) ? firstDate : secondDate;
-        } else if (firstDate != null) {
-            mostRecentDate = firstDate;
-        } else if (secondDate != null) {
-            mostRecentDate = secondDate;
-        }
-        return mostRecentDate;
-    }
-
     @GetMapping("/getAll")
     public ResponseEntity<?> getExperimentationList() {
         List<Map<String, Object>> experimentationsList = experimentationService.findExperimentations().stream()
             .sorted((e1, e2) -> e2.getId().compareTo(e1.getId()))
             .map(expe -> {
-                boolean inProgress = isExperimentationInProgress(expe);
                 return Map.of(
                     "id", (Object) expe.getId(),
                     "keywords", expe.getKeywords(),
@@ -160,7 +132,7 @@ public class ExperimentationController {
                     "teachingTitle", expe.getPedagogicalContext().getTeachingTitle(),
                     "studyField", expe.getPedagogicalContext().getStudyField(),
                     "yearOfStudy", expe.getPedagogicalContext().getYearOfStudy(),
-                    "inProgress", inProgress
+                    "inProgress", expe.getInProgress()
                 );
             })
             .collect(Collectors.toList());
@@ -228,4 +200,13 @@ public class ExperimentationController {
         experimentationService.save(experimentation);
         return ResponseEntity.ok("L'interprétation a bien été sauvegardée");
     }
+
+    @GetMapping("/endExpe/{id}")
+    public ResponseEntity<?> endExperimentation(@PathVariable Long id){
+        Experimentation experimentation = experimentationService.findById(id).orElseThrow();
+        experimentation.setInProgress(false);
+        experimentationService.save(experimentation);
+        return ResponseEntity.ok("L'expérimentation est bien marquée comme terminée");
+    }
+    
 }

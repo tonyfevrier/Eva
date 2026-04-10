@@ -175,7 +175,7 @@ export function ProfilePage(){
                 </form>
                 
                 <h4 className={styles.blockTitle}>Etablissements d'exercice</h4>
-                    {data?.institutions.map((institution: {id: string, name: string}) => <Goto className={styles.goto} href={`/application/institutionProfile/${institution.id}`} label={institution.name} buttonLabel="Profil de l'établissement"/>)}
+                    {data?.institutions.map((institution: {id: string, name: string}) => <Goto className={styles.goto} href={`/application/institutionProfile/${institution.id}`} label={institution.name} buttonLabel="Profil de l'établissement" key={institution.id}/>)}
                 
                 <h4 className={styles.blockTitle}>Mots de passe</h4>
                 <form onSubmit={handleSavePassword}>

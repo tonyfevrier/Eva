@@ -312,7 +312,7 @@ public class CrudExperimentationTests {
                         .andExpect(jsonPath("$[0].teachingTitle").value("Mécanique et énergie"))
                         .andExpect(jsonPath("$[0].studyField").value("Physique"))
                         .andExpect(jsonPath("$[0].yearOfStudy").value("4ème B"))
-                        .andExpect(jsonPath("$[0].inProgress").value(false))
+                        .andExpect(jsonPath("$[0].inProgress").value(true))
                         .andExpect(jsonPath("$[1].protocol").doesNotExist())
                         .andExpect(jsonPath("$[1].isSharingData").doesNotExist())
                         .andExpect(jsonPath("$[1].pedagogicalContext.learningDifficulty").doesNotExist());
@@ -635,6 +635,22 @@ public class CrudExperimentationTests {
 
         Experimentation experimentation = experimentationRepository.findById(1L).orElseThrow();
         assertThat(experimentation.getInterpretation()).isEqualTo("Les resultats montrent une meilleure participation en classe.");
+    }
+
+    @Test
+    public void testEndExperimentation() throws Exception {
+        createAnExperimentation();
+
+        Experimentation experimentationBefore = experimentationRepository.findById(1L).orElseThrow();
+        assertThat(experimentationBefore.getInProgress()).isTrue();
+
+        mockMvc.perform(get("/expe/endExpe/1")
+               .cookie(new jakarta.servlet.http.Cookie("jwt", jwtCookie)))
+               .andExpect(status().isOk())
+               .andExpect(content().string("L'expérimentation est bien marquée comme terminée"));
+
+        Experimentation experimentationAfter = experimentationRepository.findById(1L).orElseThrow();
+        assertThat(experimentationAfter.getInProgress()).isFalse();
     }
 
     private Institution createInstitution(){
