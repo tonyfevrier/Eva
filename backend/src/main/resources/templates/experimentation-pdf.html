@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Données de l'expérimentation</title>
+    <style>
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            margin: 50px;
+            line-height: 1.6;
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            font-size: 18px;
+            margin-bottom: 30px;
+            font-weight: bold;
+        }
+        h2 {
+            font-size: 14px;
+            font-weight: bold;
+            margin-top: 15px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+        }
+        .entry {
+            font-size: 12px;
+            margin-bottom: 8px;
+            padding-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Données de l'expérimentation</h1>
+
+    <div th:each="category : ${experimentationData.entrySet()}">
+        <h2 th:text="${category.key}">Catégorie</h2>
+
+        <div th:each="item : ${category.value.entrySet()}" class="entry">
+            <span th:text="${item.key}">clé</span>
+            :
+            <span th:text="${item.value}">valeur</span>
+        </div>
+    </div>
+</body>
+</html>

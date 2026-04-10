@@ -9,13 +9,15 @@ import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
-import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
 import org.springframework.stereotype.Service;
 
 @Service
 public class PdfGenerationService {
     private static final float PAGE_MARGIN = 50f;
     private static final float LINE_HEIGHT = 16f;
+    private static final float BODY_FONT_SIZE = 12f;
+    private static final float TITLE_FONT_SIZE = 16f;
+    private static final float TITLE_BOTTOM_SPACING = 24f;
     private static final int MAX_CHARS_PER_LINE = 110;
 
     private static final class PdfRenderContext {
@@ -42,14 +44,14 @@ public class PdfGenerationService {
 
     private void createPageWithExperimentationData(PDDocument document, Map<String, Map<String, Object>> experimentationData) throws IOException {
         PdfRenderContext context = createRenderContext(document);
-        context.stream.showText("Données de l'expérimentation");
+        writeCenteredTitle(context, "Données de l'expérimentation");
 
         for (Map.Entry<String, Map<String,Object>> category : experimentationData.entrySet()) {
             Map<String, Object> categoryData = category.getValue();
-            context.stream.showText(category.getKey());
+            writeLines(context, createLine(category.getKey()));
 
             for (Map.Entry<String, Object> entry : categoryData.entrySet()) {
-                String line = createLine(entry);
+                String line = createLineForEntry(entry);
                 String[] wrappedLines = splitLine(line);
                 writeLines(context, wrappedLines);
             }
@@ -68,12 +70,32 @@ public class PdfGenerationService {
     private PDPageContentStream prepareContentStream(PDDocument document, PDPage page, float y) throws IOException{
         PDPageContentStream stream = new PDPageContentStream(document, page);
         stream.beginText();
-        stream.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA), 12);
+        stream.setFont(PDType1Font.HELVETICA, BODY_FONT_SIZE);
         stream.newLineAtOffset(PAGE_MARGIN, y);
         return stream;
     }
 
-    private String createLine(Map.Entry<String, Object> entry){
+    private void writeCenteredTitle(PdfRenderContext context, String title) throws IOException {
+        if (context.y <= PAGE_MARGIN + TITLE_BOTTOM_SPACING) {
+            moveToNextPage(context);
+        }
+
+        PDType1Font titleFont = PDType1Font.HELVETICA_BOLD;
+        float titleWidth = titleFont.getStringWidth(title) / 1000 * TITLE_FONT_SIZE;
+        float pageWidth = context.page.getMediaBox().getWidth();
+        float centeredX = (pageWidth - titleWidth) / 2f;
+        float offsetToCenteredX = centeredX - PAGE_MARGIN;
+
+        context.stream.newLineAtOffset(offsetToCenteredX, 0);
+        context.stream.setFont(titleFont, TITLE_FONT_SIZE);
+        context.stream.showText(title);
+        context.stream.setFont(PDType1Font.HELVETICA, BODY_FONT_SIZE);
+
+        context.stream.newLineAtOffset(-offsetToCenteredX, -TITLE_BOTTOM_SPACING);
+        context.y -= TITLE_BOTTOM_SPACING;
+    }
+
+    private String createLineForEntry(Map.Entry<String, Object> entry){
         Object value = entry.getValue();
         return entry.getKey() + " : " + (value == null ? "" : String.valueOf(value));
     }
@@ -123,6 +145,10 @@ public class PdfGenerationService {
             chunks[i] = line.substring(start, end);
         }
         return chunks;
+    }
+
+    private String[] createLine(String text){
+        return new String[] {text};
     }
 
 }

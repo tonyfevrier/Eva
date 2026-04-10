@@ -8,7 +8,6 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,7 +53,7 @@ public class PdfServiceTests {
 		assertThat(Files.size(generatedPdf)).isGreaterThan(0);
 		assertThat(new String(pdfBytes, 0, 4)).isEqualTo("%PDF");
 
-		try (PDDocument document = Loader.loadPDF(pdfBytes)) {
+		try (PDDocument document = PDDocument.load(pdfBytes)) {
 			String text = new PDFTextStripper().getText(document);
 			assertThat(text).contains("Données de l'expérimentation");
 			assertThat(text).contains("Institution Test");

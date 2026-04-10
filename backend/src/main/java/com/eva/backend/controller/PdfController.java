@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.eva.backend.service.DataExtractionService;
 import com.eva.backend.service.PdfGenerationService;
+import com.eva.backend.service.PdfGenerationServiceViaHtml;
 
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,7 +22,7 @@ public class PdfController {
     private DataExtractionService dataExtractor;
 
     @Autowired
-    private PdfGenerationService pdfService;
+    private PdfGenerationServiceViaHtml pdfService;
 
     @GetMapping("/generate/{id}")
     public ResponseEntity<byte[]> generatePdf(@PathVariable Long id) throws IOException {
