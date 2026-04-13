@@ -95,6 +95,24 @@ public class UserService {
         return userRepository.findByMail(username);
     }
 
+    /**
+     * Tente de lire un token JWT de manière sécurisée (sans lever d'exception si invalide).
+     * Retourne null si le token est vide, expiré, ou sa signature ne correspond pas.
+     * Utile pour les routes publiques qui acceptent un utilisateur authentifié optionnel.
+     */
+    public User findByTokenSafely(String token){
+        if (token == null || token.isEmpty()) {
+            return null;
+        }
+        try {
+            String username = jwtService.extractUsername(token);
+            return userRepository.findByMail(username);
+        } catch (Exception e) {
+            // Token invalide, expiré, ou signature ne correspond pas
+            return null;
+        }
+    }
+
     public User findByMail(String mail){ 
         return userRepository.findByMail(mail);
     }

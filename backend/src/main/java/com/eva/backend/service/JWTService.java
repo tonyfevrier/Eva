@@ -12,27 +12,41 @@ import javax.crypto.SecretKey;
 
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Value;
+
+import jakarta.annotation.PostConstruct;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 
+
 @Service
 public class JWTService {
     /* Service de génération de JWT token */
     private String secretKey;
 
-    public JWTService(){
+    @Value("${jwt.secret.key:#{null}}")
+    private String envKey;
+
+    @PostConstruct
+    public void init(){
         /* Construction et encodage d'une clé pour signer le token */
+        // Utilise la clé fixe depuis application.properties (ne pas régénérer à chaque restart)
         try{
-            KeyGenerator keyGen= KeyGenerator.getInstance("HmacSHA256");
-            SecretKey sk = keyGen.generateKey();
-            secretKey = Base64.getEncoder().encodeToString(sk.getEncoded());
+            if (envKey != null && !envKey.isEmpty()) {
+                secretKey = envKey;
+            } else {
+                // Fallback pour développement: génère une clé stable
+                KeyGenerator keyGen= KeyGenerator.getInstance("HmacSHA256");
+                SecretKey sk = keyGen.generateKey();
+                secretKey = Base64.getEncoder().encodeToString(sk.getEncoded());
+                System.err.println("[WARN] jwt.secret.key not set in properties. Using generated key for dev only.");
+            }
         } catch (NoSuchAlgorithmException e){
             System.err.println(e);
         }
-        
     }
     
     public String generateToken(String username, long tokenDurationInMilliSec){

@@ -74,8 +74,9 @@ public class ExperimentationController {
         
         Experimentation experimentation = optionalExperimentation.get();
 
+        // Lit le token de manière sécurisée: retourne null si invalide, sans lever d'exception
         String token = requestUtils.getTokenFromRequest(request, "jwt");
-        User authenticatedUser = !token.isEmpty()? userService.findByToken(token):null;
+        User authenticatedUser = userService.findByTokenSafely(token);
         User user = experimentation.getUser();
         Boolean userOwnsExpe = authenticatedUser != null? authenticatedUser.getId().equals(user.getId()):false;
 

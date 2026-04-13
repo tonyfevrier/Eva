@@ -62,7 +62,8 @@ public class JwtFilter extends OncePerRequestFilter{
             || path.equals("/auth/recoverPwd")
             || path.equals("/auth/resetMail")
             || path.equals("/expe/getAll")
-            || path.startsWith("/expe/get/");
+            || path.startsWith("/expe/get/")
+            || path.startsWith("/pdf/generate/");
     }
 
     private TokenInfo getTokenAndeUsernameFrom(HttpServletRequest request){
