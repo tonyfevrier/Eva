@@ -39,30 +39,32 @@ public class ExtractionServiceTests {
         assertThat(extractedData).containsKeys("Contact", "Catégories", "Contexte pédagogique", "Evaluations");
 
         Map<String, Object> contact = extractedData.get("Contact");
-        assertThat(contact.get("affiliation")).isEqualTo("Institution Test");
-        assertThat(contact.get("contactInstitution")).isEqualTo("contact@test.fr");
-        assertThat(contact.get("contactTeacher")).isEqualTo("marie.tremblay@mail.com");
+        assertThat(contact.get("Affiliation")).isEqualTo("Institution Test");
+        assertThat(contact.get("Institution")).isEqualTo("contact@test.fr");
+        assertThat(contact.get("Contact enseignant")).isEqualTo("marie.tremblay@mail.com");
 
         Map<String, Object> categories = extractedData.get("Catégories");
-        assertThat(categories.get("keywords")).isEqualTo(Arrays.asList("mathématiques", "apprentissage actif", "collège"));
-        assertThat(categories.get("personalKeywords")).isEqualTo("motivation, collaboration");
+        assertThat(categories.get("Mots-clés")).isEqualTo(Arrays.asList("mathématiques", "apprentissage actif", "collège"));
+        assertThat(categories.get("Mots-clés personnels")).isEqualTo("motivation, collaboration");
 
         Map<String, Object> pedagogicalContext = extractedData.get("Contexte pédagogique");
-        assertThat(pedagogicalContext.get("protocol")).isEqualTo("Protocole 1");
-        assertThat(pedagogicalContext.get("learningDifficulty")).isEqualTo("Difficulté d'apprentissage en mathématiques");
-        assertThat(pedagogicalContext.get("studyField")).isEqualTo("Mathématiques");
-        assertThat(pedagogicalContext.get("teachingTitle")).isEqualTo("Algèbre et géométrie");
-        assertThat(pedagogicalContext.get("yearOfStudy")).isEqualTo("5ème A");
-        assertThat(pedagogicalContext.get("studentsNumber")).isEqualTo("24");
+        assertThat(pedagogicalContext.get("Protocole")).isEqualTo("Protocole 1");
+        assertThat(pedagogicalContext.get("Difficulté d'apprentissage")).isEqualTo("Difficulté d'apprentissage en mathématiques");
+        assertThat(pedagogicalContext.get("Domaine d'étude")).isEqualTo("Mathématiques");
+        assertThat(pedagogicalContext.get("Titre de l'enseignement")).isEqualTo("Algèbre et géométrie");
+        assertThat(pedagogicalContext.get("Année d'étude")).isEqualTo("5ème A");
+        assertThat(pedagogicalContext.get("Nombre d'étudiants")).isEqualTo("24");
 
         Map<String, Object> evaluations = extractedData.get("Evaluations");
-        Evaluations oldEvaluations = (Evaluations) evaluations.get("oldPedagogyEvaluations");
-        Evaluations newEvaluations = (Evaluations) evaluations.get("newPedagogyEvaluations");
-        assertThat(oldEvaluations.getInitialEvaluation()).isEqualTo(LocalDate.of(2026, 1, 15));
-        assertThat(oldEvaluations.getImmediateEvaluation()).isEqualTo(LocalDate.of(2026, 2, 15));
-        assertThat(oldEvaluations.getDelayedEvaluation()).isEqualTo(LocalDate.of(2026, 3, 15));
-        assertThat(newEvaluations.getInitialEvaluation()).isEqualTo(LocalDate.of(2026, 1, 20));
-        assertThat(newEvaluations.getImmediateEvaluation()).isEqualTo(LocalDate.of(2026, 2, 20));
-        assertThat(newEvaluations.getDelayedEvaluation()).isEqualTo(LocalDate.of(2026, 3, 20));
+        @SuppressWarnings("unchecked")
+        Map<String, Object> oldEvaluations = (Map<String, Object>) evaluations.get("Evaluations pour l'ancienne pédagogie");
+        @SuppressWarnings("unchecked")
+        Map<String, Object> newEvaluations = (Map<String, Object>) evaluations.get("Evaluations pour la nouvelle pédagogie");
+        assertThat(oldEvaluations.get("Evaluation initiale")).isEqualTo(LocalDate.of(2026, 1, 15));
+        assertThat(oldEvaluations.get("Evaluation immédiate")).isEqualTo(LocalDate.of(2026, 2, 15));
+        assertThat(oldEvaluations.get("Evaluation différée")).isEqualTo(LocalDate.of(2026, 3, 15));
+        assertThat(newEvaluations.get("Evaluation initiale")).isEqualTo(LocalDate.of(2026, 1, 20));
+        assertThat(newEvaluations.get("Evaluation immédiate")).isEqualTo(LocalDate.of(2026, 2, 20));
+        assertThat(newEvaluations.get("Evaluation différée")).isEqualTo(LocalDate.of(2026, 3, 20));
     }
 }

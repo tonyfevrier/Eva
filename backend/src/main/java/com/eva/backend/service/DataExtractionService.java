@@ -1,6 +1,7 @@
 package com.eva.backend.service;
 
 import java.util.Map;
+import java.util.LinkedHashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -9,6 +10,7 @@ import com.eva.backend.model.Experimentation;
 import com.eva.backend.model.Institution;
 import com.eva.backend.model.PedagogicalContext;
 import com.eva.backend.model.User;
+import com.eva.backend.model.Evaluations;
 import com.eva.backend.repository.ExperimentationRepository;
 
 
@@ -23,30 +25,60 @@ public class DataExtractionService {
         User user = experimentation.getUser();
         Institution institution = experimentation.getInstitution();
         PedagogicalContext context = experimentation.getPedagogicalContext();
-        return Map.of(
-            "Contact", Map.of("affiliation", institution.getName(),
-                                  "contactInstitution", institution.getContactMail(),
-                                  "contactTeacher", user.getAdditionalData().isAcceptContact()?user.getMail():""),
-            "Catégories", Map.of("keywords", experimentation.getKeywords(),
-                                 "personalKeywords", experimentation.getPersonalKeywords() != null ? experimentation.getPersonalKeywords() : ""),
-            "Contexte pédagogique", Map.ofEntries(
-                                 Map.entry("protocol", experimentation.getProtocol()),
-                                 Map.entry("learningDifficulty", context.getLearningDifficulty()),
-                                 Map.entry("learningDifficultyOrigin", context.getLearningDifficultyOrigin()),
-                                 Map.entry("studyField", context.getStudyField()),
-                                 Map.entry("teachingTitle", context.getTeachingTitle()),
-                                 Map.entry("knowledges", context.getKnowledges()),
-                                 Map.entry("prerequisite", context.getPrerequisite()),
-                                 Map.entry("organisationParticularities", context.getOrganisationParticularities()),
-                                 Map.entry("classesFrequencies", context.getClassesFrequencies()),
-                                 Map.entry("classesDates", context.getClassesDates()),
-                                 Map.entry("yearOfStudy", context.getYearOfStudy()),
-                                 Map.entry("studentsSpecificities", context.getStudentsSpecificities()),
-                                 Map.entry("studentsNumber", context.getStudentsNumber()),
-                                 Map.entry("oldPedagogy", context.getOldPedagogy()),
-                                 Map.entry("newPedagogy", context.getNewPedagogy())),
-            "Evaluations", Map.of("oldPedagogyEvaluations", context.getOldPedagogyEvaluations(),
-                                      "newPedagogyEvaluations", context.getNewPedagogyEvaluations())
-        );
+        
+        Map<String, Map<String, Object>> data = new LinkedHashMap<>();
+        
+        // Contact
+        Map<String, Object> contact = new LinkedHashMap<>();
+        contact.put("Affiliation", institution.getName());
+        contact.put("Institution", institution.getContactMail());
+        contact.put("Contact enseignant", user.getAdditionalData().isAcceptContact() ? user.getMail() : "");
+        data.put("Contact", contact);
+        
+        // Catégories
+        Map<String, Object> categories = new LinkedHashMap<>();
+        categories.put("Mots-clés", "".join(", ",experimentation.getKeywords()));
+        categories.put("Mots-clés personnels", experimentation.getPersonalKeywords() != null ? experimentation.getPersonalKeywords() : "");
+        data.put("Catégories", categories);
+        
+        // Contexte pédagogique
+        Map<String, Object> pedagogicalContext = new LinkedHashMap<>();
+        pedagogicalContext.put("Protocole", experimentation.getProtocol());
+        pedagogicalContext.put("Difficulté d'apprentissage", context.getLearningDifficulty());
+        pedagogicalContext.put("Origine de la difficulté", context.getLearningDifficultyOrigin());
+        pedagogicalContext.put("Domaine d'étude", context.getStudyField());
+        pedagogicalContext.put("Titre de l'enseignement", context.getTeachingTitle());
+        pedagogicalContext.put("Connaissances", context.getKnowledges());
+        pedagogicalContext.put("Prérequis", context.getPrerequisite());
+        pedagogicalContext.put("Particularités organisationnelles", context.getOrganisationParticularities());
+        pedagogicalContext.put("Fréquence des cours", context.getClassesFrequencies());
+        pedagogicalContext.put("Dates des cours", context.getClassesDates());
+        pedagogicalContext.put("Année d'étude", context.getYearOfStudy());
+        pedagogicalContext.put("Spécificités des étudiants", context.getStudentsSpecificities());
+        pedagogicalContext.put("Nombre d'étudiants", context.getStudentsNumber());
+        pedagogicalContext.put("Ancienne pédagogie", context.getOldPedagogy());
+        pedagogicalContext.put("Nouvelle pédagogie", context.getNewPedagogy());
+        data.put("Contexte pédagogique", pedagogicalContext);
+        
+        // Evaluations
+        Map<String, Object> evaluations = new LinkedHashMap<>();
+        evaluations.put("Evaluations pour l'ancienne pédagogie", convertEvaluationsToMap(context.getOldPedagogyEvaluations()));
+        evaluations.put("Evaluations pour la nouvelle pédagogie", convertEvaluationsToMap(context.getNewPedagogyEvaluations()));
+        data.put("Evaluations", evaluations);
+        
+        return data;
+    }
+    
+    private Map<String, Object> convertEvaluationsToMap(Evaluations evaluations) {
+        Map<String, Object> evalMap = new LinkedHashMap<>();
+        if (evaluations != null) {
+            evalMap.put("Evaluation initiale", evaluations.getInitialEvaluation());
+            evalMap.put("Evaluation immédiate", evaluations.getImmediateEvaluation());
+            evalMap.put("Evaluation différée", evaluations.getDelayedEvaluation());
+            if (evaluations.getAccountedEvaluation() != null){
+                evalMap.put("Evaluation comptabilisée", evaluations.getAccountedEvaluation());
+            }
+        }
+        return evalMap;
     }
 }
