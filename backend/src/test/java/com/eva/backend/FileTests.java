@@ -37,7 +37,8 @@ import com.eva.backend.repository.ExperimentationRepository;
 @ActiveProfiles("test")
 @TestPropertySource(properties = {
 		"app.export-dir=target/test-exports",
-		"app.import-dir=target/test-imports"
+		"app.import-dir.xls=target/test-imports",
+		"app.import-dir.pdf=target/test-imports"
 })
 public class FileTests {
 	/* Tests pour l'export et l'import des fichiers xls de données */
@@ -53,6 +54,7 @@ public class FileTests {
 	private static final byte[] XLSX_FILE_CONTENT = "test-file-content-xlsx".getBytes(StandardCharsets.UTF_8);
 	private static final byte[] XLS_FILE_CONTENT = "test-file-content-xls".getBytes(StandardCharsets.UTF_8);
 	private static final byte[] ODS_FILE_CONTENT = "test-file-content-ods".getBytes(StandardCharsets.UTF_8);
+	private static final byte[] PDF_FILE_CONTENT = "test-file-content-pdf".getBytes(StandardCharsets.UTF_8);
 
 	@BeforeEach
 	void prepareExportFile() throws Exception {
@@ -121,11 +123,13 @@ public class FileTests {
 
 		mockMvc.perform(multipart("/file/import")
 				.file(file)
-				.param("id", experimentationId.toString()))
+				.param("id", experimentationId.toString())
+				.param("importType", "xls"))
 				.andExpect(status().isOk())
 				.andExpect(content().string("File uploaded successfully"));
 
-		Path savedFile = Path.of("target", "test-imports", expectedFileName);
+		Path savedFile = Path.of("target","test-imports", expectedFileName);
+
 		byte[] savedBytes = Files.readAllBytes(savedFile);
 		org.junit.jupiter.api.Assertions.assertArrayEquals(XLSX_FILE_CONTENT, savedBytes);
 	}
@@ -142,5 +146,54 @@ public class FileTests {
 		mockMvc.perform(multipart("/file/import").file(file))
 				.andExpect(status().isBadRequest());
 	}
+
+	@Test
+	void importFileShouldUploadPdfTestFileFromClient() throws Exception {
+		String experimentationId = "1";
+		String expectedFileName = "test_id1_1.pdf";
+
+		MockMultipartFile file = new MockMultipartFile(
+				"file",
+				"input.pdf",
+				"application/pdf",
+				PDF_FILE_CONTENT
+		);
+
+		mockMvc.perform(multipart("/file/import")
+				.file(file)
+				.param("id", experimentationId)
+				.param("importType", "pdfTest"))
+				.andExpect(status().isOk())
+				.andExpect(content().string("File uploaded successfully"));
+
+		Path savedFile = Path.of("target","test-imports", expectedFileName);
+		
+		byte[] savedBytes = Files.readAllBytes(savedFile);
+		org.junit.jupiter.api.Assertions.assertArrayEquals(PDF_FILE_CONTENT, savedBytes);
+	} 
     
+	@Test
+	void importFileShouldUploadPdfQuestionnaireFileFromClient() throws Exception {
+		String experimentationId = "1";
+		String expectedFileName = "questionnaire_id1_1.pdf";
+
+		MockMultipartFile file = new MockMultipartFile(
+				"file",
+				"input.pdf",
+				"application/pdf",
+				PDF_FILE_CONTENT
+		);
+
+		mockMvc.perform(multipart("/file/import")
+				.file(file)
+				.param("id", experimentationId)
+				.param("importType", "pdfQuestionnaire"))
+				.andExpect(status().isOk())
+				.andExpect(content().string("File uploaded successfully"));
+
+		Path savedFile = Path.of("target","test-imports", expectedFileName);
+		
+		byte[] savedBytes = Files.readAllBytes(savedFile);
+		org.junit.jupiter.api.Assertions.assertArrayEquals(PDF_FILE_CONTENT, savedBytes);
+	} 
 }

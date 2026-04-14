@@ -67,6 +67,7 @@ async function sendImportRequest(file: File, id: string|undefined, setError: Dis
 
     const formData = new FormData();
     formData.append("file", file);
+    formData.append("importType", "xls");
     if (id !== undefined){
         formData.append("id", id);
     }

@@ -20,14 +20,13 @@ public class PdfTestImportStrategy implements FileImportStrategy {
 
     @Override 
     public boolean supports(String importType){
-        if ("pdf".equals(importType)){
-            return true;
-        }
-        return false;
+        return "pdfTest".equals(importType);
     }
 
     @Override
-    public String getImportDir() { return importDir; }
+    public String getImportDir() { 
+        return importDir; 
+    }
     
     @Override
     public String createImportedFileName(Long id, String extension) {

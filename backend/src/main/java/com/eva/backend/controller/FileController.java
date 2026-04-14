@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.web.bind.annotation.PostMapping;
@@ -39,7 +40,7 @@ public class FileController {
     
 
     @PostMapping("/import")
-    public ResponseEntity<String> importFile(@RequestParam("file") MultipartFile file, Long id) throws IOException {
+    public ResponseEntity<String> importFile(@RequestParam("file") MultipartFile file, Long id, String importType) throws IOException {
         if (file == null || file.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("Missing uploaded file");
@@ -53,12 +54,13 @@ public class FileController {
 
         String safeFileName = Paths.get(originalFileName).getFileName().toString();//supprimer les dossiers dans le nom pr ne garder que le nom du fichier
         String extension = fileService.getFileExtension(safeFileName);
-        if (!"xls".equals(extension) && !"xlsx".equals(extension) && !"ods".equals(extension)) {
+        List<String> authorizedExtensions = List.of("xls", "xlsx", "ods", "pdf");
+        if (!authorizedExtensions.contains(extension)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Unsupported file extension. Allowed: xls, xlsx, ods");
+                    .body("Unsupported file extension.");
         }
 
-        fileService.registerImportedFile(extension, file, id, extension);
+        fileService.registerImportedFile(importType, file, id, extension);
         return ResponseEntity.ok("File uploaded successfully");
     }
 

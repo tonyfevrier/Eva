@@ -19,8 +19,6 @@ import com.eva.backend.model.PedagogicalContext;
 import com.eva.backend.model.User;
 import com.eva.backend.repository.ExperimentationRepository;
 
-import lombok.val;
-
 @Component
 public class XlsImportStrategy implements FileImportStrategy {
     @Value("${app.import-dir.xls}")
@@ -31,15 +29,13 @@ public class XlsImportStrategy implements FileImportStrategy {
     
      @Override 
     public boolean supports(String importType){
-        List<String> validFormats = List.of("xls", "ods", "xlsx");
-        if (validFormats.contains(importType)){
-            return true;
-        }
-        return false;
+        return importType.equals("xls");
     }
 
     @Override
-    public String getImportDir() { return importDir; }
+    public String getImportDir() { 
+        return importDir; 
+    }
     
     @Override
     public String createImportedFileName(Long id, String extension) {
@@ -60,7 +56,7 @@ public class XlsImportStrategy implements FileImportStrategy {
     }
 
     @Override
-    public void copy(MultipartFile file, Path filePath) throws IOException{
+    public void copy(MultipartFile file, Path filePath) throws IOException {
         Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
     }
 }

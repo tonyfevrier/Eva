@@ -81,6 +81,7 @@ public class FileService {
                                                       .filter(s -> s.supports(importType))
                                                       .findFirst()
                                                       .orElseThrow();
+
         String importedFileName = strategy.createImportedFileName(id, extension);
         Path filePath = writeFilePath(importedFileName, strategy.getImportDir());
         strategy.copy(file, filePath);
