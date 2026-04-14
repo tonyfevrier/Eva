@@ -44,12 +44,14 @@ export function EndExperimentationPage(){
     
     return <>  
                 <h2>Ajouter les données de l'expérimentation</h2>
-                <Goto label="Importer le fichier de données" buttonLabel="Importer" onClick={handleImport}/>
+                <Goto variant="export" label="Importer le fichier de données brutes" buttonLabel="Importer" onClick={handleImport}/>
                 <Textarea title="Dans cet encart, vous pouvez interpréter vos données." value={interpretation} onChange={(e) => setInterpretation(e.target.value)}></Textarea>
                 <Button onClick={handleInterpretation}>Soumettre l'interprétation des données</Button>
+                <Goto variant="export" label="Importez au format pdf les tests administrés aux étudiants." buttonLabel="Importer" onClick={()=>{}}/>
+                <Goto variant="export" label="Importez au format pdf les questionnaires de recherche administrés aux étudiants." buttonLabel="Importer" onClick={()=>{}}/>
                 {error?.message && <p>{error?.message}</p>}
-                <Goto label="Vous pouvez générer le pdf récapitulant votre expérimentation avec ou sans interprétation de données." buttonLabel="Générer le pdf" onClick={handlePdf}/>
-                <Goto label="Vous pouvez marquer l'expérimentation comme terminée. Cela permettra à un utilisateur de télécharger le pdf récapitulant les informations, les résultats et leur interprétation." buttonLabel="Terminer" onClick={handleEnd}/>
+                <Goto variant="export" label="Vous pouvez générer le pdf récapitulant votre expérimentation avec ou sans interprétation de données." buttonLabel="Générer le pdf" onClick={handlePdf}/>
+                <Goto variant="export" label="Vous pouvez marquer l'expérimentation comme terminée. Tout utilisateur pourra télécharger le pdf généré." buttonLabel="Terminer" onClick={handleEnd}/>
            </>
 }
 
