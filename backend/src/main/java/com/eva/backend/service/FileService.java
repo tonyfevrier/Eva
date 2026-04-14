@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Locale;
 
 import org.springframework.http.MediaType;
@@ -20,6 +21,7 @@ import com.eva.backend.model.PedagogicalContext;
 import com.eva.backend.model.User;
 import com.eva.backend.records.DownloadContent;
 import com.eva.backend.repository.ExperimentationRepository;
+import com.eva.backend.utils.fileInterfaces.FileImportStrategy;
 
 @Service
 public class FileService {
@@ -27,11 +29,11 @@ public class FileService {
     @Value("${app.export-dir}")
     private String exportDir;
 
-    @Value("${app.import-dir}")
-    private String importDir;
+    private final List<FileImportStrategy> importStrategies;
 
-    @Autowired
-    private ExperimentationRepository experimentationRepository;
+    public FileService(List<FileImportStrategy> importStrategies) {
+        this.importStrategies = importStrategies;
+    }
 
     public DownloadContent prepareContentForDownload(String format) throws IOException {
         String filename = createFileName(format);
@@ -74,27 +76,14 @@ public class FileService {
         return fileName.substring(dotIndex + 1).toLowerCase(Locale.ROOT);
     }
 
-    public void registerImportedFile(MultipartFile file, Long id, String extension) throws IOException{
-        String importedFileName = createImportedFileName(id, extension);
-        Path filePath = writeFilePath(importedFileName, importDir);
-        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-    }
-
-    private String createImportedFileName(Long id, String extension){
-        //Nom du fichier de la forme : Variante_Annee_institution_nom_prenom_discipline.format
-
-        Experimentation experimentation = experimentationRepository.findById(id).orElseThrow();
-        User user = experimentation.getUser();
-        PedagogicalContext context = experimentation.getPedagogicalContext();
-
-        String protocol = experimentation.getProtocol().split(":")[0];
-        String date = LocalDate.now().toString();
-        String institution = experimentation.getInstitution().getName();
-        String lastName = user.getLastname();
-        String firstName = user.getFirstname();
-        String studyField = context.getStudyField(); 
-
-        return protocol + "_" + date + "_" + institution + "_" + lastName + "_" + firstName + "_" + studyField + "." + extension;
+    public void registerImportedFile(String importType, MultipartFile file, Long id, String extension) throws IOException {
+        FileImportStrategy strategy = importStrategies.stream()
+                                                      .filter(s -> s.supports(importType))
+                                                      .findFirst()
+                                                      .orElseThrow();
+        String importedFileName = strategy.createImportedFileName(id, extension);
+        Path filePath = writeFilePath(importedFileName, strategy.getImportDir());
+        strategy.copy(file, filePath);
     }
 
     private Path writeFilePath(String filename, String directory) throws IOException{

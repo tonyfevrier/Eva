@@ -44,7 +44,7 @@ public class ExtractionServiceTests {
         assertThat(contact.get("Contact enseignant")).isEqualTo("marie.tremblay@mail.com");
 
         Map<String, Object> categories = extractedData.get("Catégories");
-        assertThat(categories.get("Mots-clés")).isEqualTo(Arrays.asList("mathématiques", "apprentissage actif", "collège"));
+        assertThat(categories.get("Mots-clés")).isEqualTo("mathématiques, apprentissage actif, collège");
         assertThat(categories.get("Mots-clés personnels")).isEqualTo("motivation, collaboration");
 
         Map<String, Object> pedagogicalContext = extractedData.get("Contexte pédagogique");

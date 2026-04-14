@@ -7,10 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.Map;
 
 import org.springframework.web.bind.annotation.PostMapping;
@@ -61,7 +58,7 @@ public class FileController {
                     .body("Unsupported file extension. Allowed: xls, xlsx, ods");
         }
 
-        fileService.registerImportedFile(file, id, extension);
+        fileService.registerImportedFile(extension, file, id, extension);
         return ResponseEntity.ok("File uploaded successfully");
     }
 
