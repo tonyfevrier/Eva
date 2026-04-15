@@ -1,4 +1,4 @@
-export async function exportFile(response:Response, format: string, name: string){
+export async function exportFile(response:Response, format: string|FormDataEntryValue|null, name: string){
     const blob = await response.blob();
     const fileName = name + "." + format;
 

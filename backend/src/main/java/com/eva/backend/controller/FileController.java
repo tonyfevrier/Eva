@@ -28,13 +28,12 @@ public class FileController {
     private FileService fileService;
 
     @PostMapping("/export")
-    public ResponseEntity<byte[]> exportFile(@RequestBody Map<String, String> body) throws IOException {
-        String format = body.get("format");
-        if (format == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Missing 'format' in request body".getBytes());
+    public ResponseEntity<byte[]> exportFile(String entry, String exportType) throws IOException {
+        if (entry == null || exportType == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Missing request body".getBytes());
         }
 
-        DownloadContent content = fileService.prepareContentForDownload(format);        
+        DownloadContent content = fileService.prepareContentForDownload(exportType, entry);        
         return ResponseEntity.ok().headers(content.headers()).body(content.fileBytes());
     }
     
@@ -63,7 +62,4 @@ public class FileController {
         fileService.registerImportedFile(importType, file, id, extension);
         return ResponseEntity.ok("File uploaded successfully");
     }
-
-    
-    
 }

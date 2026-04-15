@@ -13,7 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Component
 public class PdfTestImportStrategy implements FileImportStrategy {
-    @Value("${app.import-dir.pdf}")
+    @Value("${app.pdf-dir}")
     private String importDir;
 
     private static final Pattern FILE_NAME_PATTERN = Pattern.compile("^(.*_)(\\d+)(\\.[^.]+)$");

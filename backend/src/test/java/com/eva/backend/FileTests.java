@@ -36,9 +36,9 @@ import com.eva.backend.repository.ExperimentationRepository;
 @AutoConfigureMockMvc(addFilters = false)
 @ActiveProfiles("test")
 @TestPropertySource(properties = {
-		"app.export-dir=target/test-exports",
-		"app.import-dir.xls=target/test-imports",
-		"app.import-dir.pdf=target/test-imports"
+		"app.xls-data-model-dir=target/test-exports",
+		"app.xls-data-dir=target/test-imports",
+		"app.pdf-dir=target/test-imports",
 })
 public class FileTests {
 	/* Tests pour l'export et l'import des fichiers xls de données */
@@ -70,8 +70,8 @@ public class FileTests {
 	@Test
 	void exportFileShouldDownloadXlsxFile() throws Exception {
 		mockMvc.perform(post("/file/export")
-						.contentType(MediaType.APPLICATION_JSON)
-						.content("{\"format\":\"xlsx\"}"))
+						.param("entry", "xlsx")
+						.param("exportType", "format"))
 				.andExpect(status().isOk())
 				.andExpect(header().string("Content-Disposition", "attachment; filename=\"ResultatsEVA_v2_Excel.xlsx\""))
 				.andExpect(content().contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
@@ -81,8 +81,8 @@ public class FileTests {
 	@Test
 	void exportFileShouldDownloadXlsFile() throws Exception {
 		mockMvc.perform(post("/file/export")
-						.contentType(MediaType.APPLICATION_JSON)
-						.content("{\"format\":\"xls\"}"))
+						.param("entry", "xls")
+						.param("exportType", "format"))
 				.andExpect(status().isOk())
 				.andExpect(header().string("Content-Disposition", "attachment; filename=\"ResultatsEVA_v2_Excel97-2003.xls\""))
 				.andExpect(content().contentType("application/vnd.ms-excel"))
@@ -92,8 +92,8 @@ public class FileTests {
 	@Test
 	void exportFileShouldDownloadOdsFile() throws Exception {
 		mockMvc.perform(post("/file/export")
-						.contentType(MediaType.APPLICATION_JSON)
-						.content("{\"format\":\"ods\"}"))
+						.param("entry", "ods")
+						.param("exportType", "format"))
 				.andExpect(status().isOk())
 				.andExpect(header().string("Content-Disposition", "attachment; filename=\"ResultatsEVA_v2_LibreOffice.ods\""))
 				.andExpect(content().contentType("application/vnd.oasis.opendocument.spreadsheet"))

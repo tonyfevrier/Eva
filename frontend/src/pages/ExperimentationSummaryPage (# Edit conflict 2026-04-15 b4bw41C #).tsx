@@ -50,7 +50,10 @@ export function ExperimentationSummaryPage(){
         }
 
         const handleExport = (format: string) => {
-            sendExportRequest(format, setSendError, setPrintExportModal);
+            const formData = new FormData();
+            formData.append("entry", format);
+            formData.append("exportType", "format");
+            sendExportRequest(formData, setSendError, setPrintExportModal);
         }
 
         const handlePdf = () => {
@@ -154,15 +157,12 @@ async function sendDeleteRequest(id: string|undefined, setSendError: Dispatch<Se
     }
 }
 
-async function sendExportRequest(format: string, setSendError: Dispatch<SetStateAction<Error|null>>, setPrintExportModal: Dispatch<SetStateAction<boolean>>){
-    const formData = new FormData();
-    formData.append("entry", format);
-    formData.append("exportType", "format");
-    
+async function sendExportRequest(formData: FormData, setSendError: Dispatch<SetStateAction<Error|null>>, setPrintExportModal: Dispatch<SetStateAction<boolean>>){
     const response = await fetch(`http://localhost:9000/file/export`, {
             method: "post",
             headers: {
-                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'Accept': 'application/octet-stream',
             },
             body: formData,
             credentials: "include"  
@@ -178,6 +178,6 @@ async function sendExportRequest(format: string, setSendError: Dispatch<SetState
         setSendError(new Error(`Erreur ${response.status}: ${response.statusText}`));
         return;
     }
-    exportFile(response, format, "ResultatsEVA_v2");
+    exportFile(response, body.format, "ResultatsEVA_v2");
 }
  

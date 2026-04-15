@@ -1,13 +1,10 @@
 package com.eva.backend.utils.fileInterfaces;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,7 +18,7 @@ import com.eva.backend.repository.ExperimentationRepository;
 
 @Component
 public class XlsImportStrategy implements FileImportStrategy {
-    @Value("${app.import-dir.xls}")
+    @Value("${app.xls-data-dir}")
     private String importDir;
 
     @Autowired
