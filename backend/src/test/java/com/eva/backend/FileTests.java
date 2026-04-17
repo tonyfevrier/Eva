@@ -1,17 +1,23 @@
 package com.eva.backend;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.hamcrest.Matchers.is;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.Optional;
+import java.util.stream.Stream;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,6 +71,29 @@ public class FileTests {
 		Files.write(exportDir.resolve(XLSX_FILE_NAME), XLSX_FILE_CONTENT);
 		Files.write(exportDir.resolve(XLS_FILE_NAME), XLS_FILE_CONTENT);
 		Files.write(exportDir.resolve(ODS_FILE_NAME), ODS_FILE_CONTENT);
+	}
+
+	@AfterEach
+	void cleanTestDirectories() throws Exception {
+		cleanDirectory(Path.of("target", "test-exports"));
+		cleanDirectory(Path.of("target", "test-imports"));
+	}
+
+	private void cleanDirectory(Path directory) throws IOException {
+		if (!Files.isDirectory(directory)) {
+			return;
+		}
+
+		try (Stream<Path> files = Files.list(directory)) {
+			files.filter(Files::isRegularFile)
+					.forEach(path -> {
+						try {
+							Files.deleteIfExists(path);
+						} catch (IOException e) {
+							throw new RuntimeException(e);
+						}
+					});
+		}
 	}
 
 	@Test
@@ -162,7 +191,7 @@ public class FileTests {
 		mockMvc.perform(multipart("/file/import")
 				.file(file)
 				.param("id", experimentationId)
-				.param("importType", "pdfTest"))
+				.param("importType", "test"))
 				.andExpect(status().isOk())
 				.andExpect(content().string("File uploaded successfully"));
 
@@ -187,7 +216,7 @@ public class FileTests {
 		mockMvc.perform(multipart("/file/import")
 				.file(file)
 				.param("id", experimentationId)
-				.param("importType", "pdfQuestionnaire"))
+				.param("importType", "questionnaire"))
 				.andExpect(status().isOk())
 				.andExpect(content().string("File uploaded successfully"));
 
@@ -196,4 +225,34 @@ public class FileTests {
 		byte[] savedBytes = Files.readAllBytes(savedFile);
 		org.junit.jupiter.api.Assertions.assertArrayEquals(PDF_FILE_CONTENT, savedBytes);
 	} 
+
+	@Test
+	void getFileNamesShouldReturnBadRequestWhenImportTypeIsMissing() throws Exception {
+		mockMvc.perform(get("/file/getFileNames"))
+				.andExpect(status().isBadRequest());
+	}
+
+	@Test
+	void getFileNamesShouldReturnOnlyNamesContainingImportType() throws Exception {
+		Path importDir = Path.of("target", "test-imports");
+		Files.createDirectories(importDir);
+
+		Files.write(importDir.resolve("test_id1_1.pdf"), PDF_FILE_CONTENT);
+		Files.write(importDir.resolve("test_id2_1.pdf"), PDF_FILE_CONTENT);
+		Files.write(importDir.resolve("test_id1_2.pdf"), PDF_FILE_CONTENT);
+		Files.write(importDir.resolve("questionnaire_id1_1.pdf"), PDF_FILE_CONTENT);
+
+		mockMvc.perform(get("/file/getFileNames")
+						.param("importType", "test")
+						.param("id", "1"))
+						.andExpect(status().isOk())
+						.andExpect(jsonPath("$.fileNames[0]", is("test_id1_1.pdf")))
+						.andExpect(jsonPath("$.fileNames[1]", is("test_id1_2.pdf"))); 
+
+		mockMvc.perform(get("/file/getFileNames")
+						.param("importType", "questionnaire")
+						.param("id", "1"))
+						.andExpect(status().isOk())
+						.andExpect(jsonPath("$.fileNames[0]", is("questionnaire_id1_1.pdf")));
+	}
 }

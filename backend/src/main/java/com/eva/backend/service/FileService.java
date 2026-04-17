@@ -6,6 +6,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.springframework.http.MediaType;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,9 +21,6 @@ import com.eva.backend.utils.fileInterfaces.FileImportStrategy;
 
 @Service
 public class FileService {
-
-    /*@Value("${app.xls-data-model-dir}")
-    private String exportDir;*/
 
     /* Les service sont chargés dès le début et pas à chaque requête.
     Il n'est donc pas conseillé d'importer une classe fille d'une classe abstraite
@@ -53,28 +52,10 @@ public class FileService {
         return new DownloadContent(headers, fileBytes);
     }
 
-    /*private String getFileName(String format){
-        return switch (format) {
-            case "xls" -> "ResultatsEVA_v2_Excel97-2003.xls";
-            case "xlsx" -> "ResultatsEVA_v2_Excel.xlsx";
-            case "ods" -> "ResultatsEVA_v2_LibreOffice.ods";
-            default -> "ResultatsEVA_v2_Excel.xlsx";
-        };
-    }*/
-
     private byte[] getExportFileContent(String filename, String exportDir) throws IOException{
         Path filePath = writeFilePath(filename, exportDir);
         return Files.readAllBytes(filePath);
     }
-
-    /*private MediaType resolveContentType(String format) {
-        return switch (format) {
-            case "xls" -> MediaType.parseMediaType("application/vnd.ms-excel");
-            case "xlsx" -> MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-            case "ods" -> MediaType.parseMediaType("application/vnd.oasis.opendocument.spreadsheet");
-            default -> MediaType.APPLICATION_OCTET_STREAM;
-        };
-    }*/
 
     public String getFileExtension(String fileName) {
         int dotIndex = fileName.lastIndexOf('.');
@@ -101,5 +82,17 @@ public class FileService {
         Files.createDirectories(baseDir);
         Path filePath = baseDir.resolve(filename).normalize();//nettoyer le path des ../ avec normalize et resolve concatène le dossier au nom de fichier        
         return filePath;
+    }
+
+    public boolean fileIdEqualsExperimentationId(String fileName, Long id){
+        Pattern FILE_NAME_PATTERN = Pattern.compile("^[a-z]+_id(\\d+)_\\d+\\.[^.]+$");
+        Matcher matcher = FILE_NAME_PATTERN.matcher(fileName);
+
+        if (!matcher.matches()) {
+            throw new IllegalArgumentException("Nom de fichier invalide : " + fileName);
+        }
+
+        Long number = Long.parseLong(matcher.group(1));
+        return number.equals(id);
     }
 }

@@ -1,18 +1,21 @@
 package com.eva.backend.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -28,6 +31,9 @@ public class FileController {
 
     @Autowired
     private FileService fileService;
+
+    @Value("${app.pdf-dir}")
+    private String pdfDir;
 
     @PostMapping("/export")
     public ResponseEntity<byte[]> exportFile(String entry, String exportType) throws IOException {
@@ -66,9 +72,32 @@ public class FileController {
     }
 
     @GetMapping("/getFileNames")
-    public ResponseEntity<?> getPdfFileNames(String importType) {
-        /* récupérer tous les fichiers qui contienent importType en minuscule*/
-        return ResponseEntity.ok("");
+    public ResponseEntity<?> getPdfFileNames(String importType, Long id) throws IOException {
+        if (importType == null || importType.isBlank()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", "Missing importType"));
+        }
+
+        Path testsDirectory = Paths.get(pdfDir).toAbsolutePath().normalize();
+        List<String> fileNames;
+
+        if (!Files.isDirectory(testsDirectory)) {
+            return ResponseEntity.ok(Map.of("fileNames", List.of()));
+        }
+
+        try (Stream<Path> files = Files.list(testsDirectory)) {
+            fileNames = files
+                        .filter(Files::isRegularFile)
+                        .map(path -> path.getFileName().toString())
+                        .filter(name -> 
+                            {
+                            return name.contains(importType) && fileService.fileIdEqualsExperimentationId(name, id);
+                         })
+                        .sorted()
+                        .toList();
+        }
+
+        return ResponseEntity.ok(Map.of("fileNames", fileNames));
     }
-    
 }
+
