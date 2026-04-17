@@ -228,7 +228,7 @@ public class FileTests {
 
 	@Test
 	void getFileNamesShouldReturnBadRequestWhenImportTypeIsMissing() throws Exception {
-		mockMvc.perform(get("/file/getFileNames/1"))
+		mockMvc.perform(post("/file/getFileNames/1"))
 				.andExpect(status().isBadRequest());
 	}
 
@@ -242,14 +242,14 @@ public class FileTests {
 		Files.write(importDir.resolve("test_id1_2.pdf"), PDF_FILE_CONTENT);
 		Files.write(importDir.resolve("questionnaire_id1_1.pdf"), PDF_FILE_CONTENT);
 
-		mockMvc.perform(get("/file/getFileNames/1")
+		mockMvc.perform(post("/file/getFileNames/1")
 						.param("importType", "test")
 						.param("id", "1"))
 						.andExpect(status().isOk())
 						.andExpect(jsonPath("$.fileNames[0]", is("test_id1_1.pdf")))
 						.andExpect(jsonPath("$.fileNames[1]", is("test_id1_2.pdf"))); 
 
-		mockMvc.perform(get("/file/getFileNames/1")
+		mockMvc.perform(post("/file/getFileNames/1")
 						.param("importType", "questionnaire")
 						.param("id", "1"))
 						.andExpect(status().isOk())

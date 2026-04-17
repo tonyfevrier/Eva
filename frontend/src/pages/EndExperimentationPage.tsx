@@ -10,14 +10,15 @@ import { Checkbox } from "../components/CheckBox";
 export function EndExperimentationPage(){
     const [isFileModalOpen, setIsFileModalOpen] = useState<boolean>(false);
     const [importType, setImportType] = useState<string>("xls");
+    const [fileNames, setFileNames] = useState<Array<string>>([""]);
     const [error, setError] = useState<Error|null>(null);
     const {id} = useParams();
     const [interpretation, setInterpretation] = useState<string>("");
 
-    const handleImportFile = () => {
+    const handleImportFile = (type: string = importType) => {
         const fileInput = document.createElement("input");
         fileInput.type = "file";
-        fileInput.accept = importType == "xls" ?".xls,.xlsx,.ods": ".pdf";
+        fileInput.accept = type == "xls" ?".xls,.xlsx,.ods": ".pdf";
 
         fileInput.onchange = async () => {
             const selectedFile = fileInput.files?.[0];
@@ -27,15 +28,16 @@ export function EndExperimentationPage(){
             }
 
             setError(null);
-            sendImportRequest(selectedFile, id, setError, importType);
+            sendImportRequest(selectedFile, id, setError, type);
         }
 
         fileInput.click();
     }
 
     const handleImportXls = () => {
-        setImportType("xls");
-        handleImportFile();
+        const nextImportType = "xls";
+        setImportType(nextImportType);
+        handleImportFile(nextImportType);
     }
 
     const handleInterpretation = () => {
@@ -54,9 +56,10 @@ export function EndExperimentationPage(){
     const handleDisplayFileModal = (e: React.MouseEvent<HTMLButtonElement>) => {
         /*on change l'importType pour préparer l'import en cas d'ajout d'un fichier,
         on affiche également les fichiers pdf du type de l'import */
+        const nextImportType = e.currentTarget.id;
         setIsFileModalOpen(true);
-        setImportType(e.currentTarget.id);
-        const fileNames = getRegisteredFileNames(id, setError);
+        setImportType(nextImportType);
+        getRegisteredFileNames(nextImportType, id, setError, setFileNames);
     }
     
     return <>  
@@ -71,7 +74,7 @@ export function EndExperimentationPage(){
                 <Goto variant="export" label="Vous pouvez marquer l'expérimentation comme terminée. Tout utilisateur pourra télécharger le pdf généré." buttonLabel="Terminer" onClick={handleEnd}/>
                 {isFileModalOpen && 
                     <ModalList title="Ajouter ou supprimer des tests" onClose={() => {setIsFileModalOpen(false)}}>
-                        <Checkbox title="" options={[""]}/>
+                        <Checkbox title="" options={fileNames}/>
                         <Button onClick={handleImportFile}>Ajouter un fichier</Button>
                         <Button onClick={()=>{}}>Supprimer les fichiers sélectionnés</Button>
                     </ModalList>
@@ -169,12 +172,16 @@ async function endExperimentation(id: string|undefined, setError: Dispatch<SetSt
     }
 }
 
-async function getRegisteredFileNames(id: string|undefined, setError: Dispatch<SetStateAction<Error|null>>){
+async function getRegisteredFileNames(fileType: string, id: string|undefined, setError: Dispatch<SetStateAction<Error|null>>, setFileNames: Dispatch<SetStateAction<Array<string>>>){
+    const formData= new FormData();
+    formData.append("importType", fileType);
+    
     const response = await fetch(`http://localhost:9000/file/getFileNames/${id}`, {
         headers: {
             'Accept': 'application/json'
         },
-        method: "get",
+        method: "post",
+        body: formData,
         credentials: "include"
     }).catch(requestError => {
         setError(requestError);
@@ -183,7 +190,7 @@ async function getRegisteredFileNames(id: string|undefined, setError: Dispatch<S
 
     if (response.ok){
         const data = JSON.parse(await response.text());
-        return data.fileNames
+        setFileNames(data.fileNames);
     } else {
         setError(new Error(`Erreur ${response.status}: ${response.statusText}`))
     }

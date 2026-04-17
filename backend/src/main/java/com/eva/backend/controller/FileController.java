@@ -72,7 +72,7 @@ public class FileController {
         return ResponseEntity.ok("File uploaded successfully");
     }
 
-    @GetMapping("/getFileNames/{id}")
+    @PostMapping("/getFileNames/{id}")
     public ResponseEntity<?> getPdfFileNames(String importType, @PathVariable Long id) throws IOException {
         if (importType == null || importType.isBlank()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
