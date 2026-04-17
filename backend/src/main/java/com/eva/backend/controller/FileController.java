@@ -22,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.eva.backend.records.DownloadContent;
 import com.eva.backend.service.FileService;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 
 
@@ -71,8 +72,8 @@ public class FileController {
         return ResponseEntity.ok("File uploaded successfully");
     }
 
-    @GetMapping("/getFileNames")
-    public ResponseEntity<?> getPdfFileNames(String importType, Long id) throws IOException {
+    @GetMapping("/getFileNames/{id}")
+    public ResponseEntity<?> getPdfFileNames(String importType, @PathVariable Long id) throws IOException {
         if (importType == null || importType.isBlank()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("message", "Missing importType"));

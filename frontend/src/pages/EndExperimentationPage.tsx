@@ -51,9 +51,12 @@ export function EndExperimentationPage(){
         endExperimentation(id, setError);
     }
 
-    const handleDisplayModal = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const handleDisplayFileModal = (e: React.MouseEvent<HTMLButtonElement>) => {
+        /*on change l'importType pour préparer l'import en cas d'ajout d'un fichier,
+        on affiche également les fichiers pdf du type de l'import */
         setIsFileModalOpen(true);
         setImportType(e.currentTarget.id);
+        const fileNames = getRegisteredFileNames(id, setError);
     }
     
     return <>  
@@ -61,8 +64,8 @@ export function EndExperimentationPage(){
                 <Goto id="xls" variant="export" label="Importer le fichier de données brutes" buttonLabel="Importer" onClick={handleImportXls}/>
                 <Textarea title="Dans cet encart, vous pouvez interpréter vos données." value={interpretation} onChange={(e) => setInterpretation(e.target.value)}></Textarea>
                 <Button onClick={handleInterpretation}>Soumettre l'interprétation des données</Button>
-                <Goto id="test" variant="export" label="Importez au format pdf les tests administrés aux étudiants." buttonLabel="Importer" onClick={handleDisplayModal}/>
-                <Goto id="questionnaire" variant="export" label="Importez au format pdf les questionnaires de recherche administrés aux étudiants." buttonLabel="Importer" onClick={handleDisplayModal}/>
+                <Goto id="test" variant="export" label="Importez au format pdf les tests administrés aux étudiants." buttonLabel="Importer" onClick={handleDisplayFileModal}/>
+                <Goto id="questionnaire" variant="export" label="Importez au format pdf les questionnaires de recherche administrés aux étudiants." buttonLabel="Importer" onClick={handleDisplayFileModal}/>
                 {error?.message && <p>{error?.message}</p>}
                 <Goto variant="export" label="Vous pouvez générer le pdf récapitulant votre expérimentation avec ou sans interprétation de données." buttonLabel="Générer le pdf" onClick={handlePdf}/>
                 <Goto variant="export" label="Vous pouvez marquer l'expérimentation comme terminée. Tout utilisateur pourra télécharger le pdf généré." buttonLabel="Terminer" onClick={handleEnd}/>
@@ -163,5 +166,25 @@ async function endExperimentation(id: string|undefined, setError: Dispatch<SetSt
 
     if (response.ok){
         alert("L'expérimentation est considérée comme terminée");
+    }
+}
+
+async function getRegisteredFileNames(id: string|undefined, setError: Dispatch<SetStateAction<Error|null>>){
+    const response = await fetch(`http://localhost:9000/file/getFileNames/${id}`, {
+        headers: {
+            'Accept': 'application/json'
+        },
+        method: "get",
+        credentials: "include"
+    }).catch(requestError => {
+        setError(requestError);
+        throw requestError
+    });
+
+    if (response.ok){
+        const data = JSON.parse(await response.text());
+        return data.fileNames
+    } else {
+        setError(new Error(`Erreur ${response.status}: ${response.statusText}`))
     }
 }
