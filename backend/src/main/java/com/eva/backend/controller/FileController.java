@@ -18,6 +18,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.eva.backend.records.DownloadContent;
 import com.eva.backend.service.FileService;
+import org.springframework.web.bind.annotation.GetMapping;
+
 
 
 @RestController
@@ -62,4 +64,11 @@ public class FileController {
         fileService.registerImportedFile(importType, file, id, extension);
         return ResponseEntity.ok("File uploaded successfully");
     }
+
+    @GetMapping("/getFileNames")
+    public ResponseEntity<?> getPdfFileNames(String importType) {
+        /* récupérer tous les fichiers qui contienent importType en minuscule*/
+        return ResponseEntity.ok("");
+    }
+    
 }

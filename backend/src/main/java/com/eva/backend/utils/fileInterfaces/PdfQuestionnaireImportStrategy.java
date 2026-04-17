@@ -20,7 +20,7 @@ public class PdfQuestionnaireImportStrategy implements FileImportStrategy {
 
     @Override 
     public boolean supports(String importType){
-        return "pdfQuestionnaire".equals(importType);
+        return "questionnaire".equals(importType);
     }
 
     @Override

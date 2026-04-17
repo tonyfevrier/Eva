@@ -20,7 +20,7 @@ public class PdfTestImportStrategy implements FileImportStrategy {
 
     @Override 
     public boolean supports(String importType){
-        return "pdfTest".equals(importType);
+        return "test".equals(importType);
     }
 
     @Override

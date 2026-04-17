@@ -9,13 +9,13 @@ export function ModalList({title = "Edit post", children, onClose}: PropsWithChi
     return <div className="modal show" tabIndex={-1} style={{display: "block"}}>
                 <div className="modal-dialog">
                     <div className="modal-content">
-                    <div className="modal-header">
-                        <h5 className="modal-title">{title}</h5>
-                        <button className="btn btn-close" data-bs-dismiss="modal" aria-label="Close" onClick={onClose}></button>
-                    </div>
-                    <div>
-                        {children}
-                    </div>
+                        <div className="modal-header">
+                            <h5 className="modal-title">{title}</h5>
+                            <button className="btn btn-close" data-bs-dismiss="modal" aria-label="Close" onClick={onClose}></button>
+                        </div>
+                        <div>
+                            {children}
+                        </div>
                     </div>
                 </div>
             </div>

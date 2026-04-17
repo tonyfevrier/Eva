@@ -4,32 +4,41 @@ import { useParams } from "react-router-dom";
 import { Textarea } from "../components/Textarea";
 import { Button } from "../components/Button";
 import { exportFile } from "../utils/request/fileExport";
+import { ModalList } from "../components/ModalList";
+import { Checkbox } from "../components/CheckBox";
 
 export function EndExperimentationPage(){
+    const [isFileModalOpen, setIsFileModalOpen] = useState<boolean>(false);
+    const [importType, setImportType] = useState<string>("xls");
     const [error, setError] = useState<Error|null>(null);
     const {id} = useParams();
     const [interpretation, setInterpretation] = useState<string>("");
-    
-    const handleImport = () => {
-            const fileInput = document.createElement("input");
-            fileInput.type = "file";
-            fileInput.accept = ".xls,.xlsx,.ods";
 
-            fileInput.onchange = async () => {
-                const selectedFile = fileInput.files?.[0];
+    const handleImportFile = () => {
+        const fileInput = document.createElement("input");
+        fileInput.type = "file";
+        fileInput.accept = importType == "xls" ?".xls,.xlsx,.ods": ".pdf";
 
-                if (!selectedFile){
-                    return;
-                }
+        fileInput.onchange = async () => {
+            const selectedFile = fileInput.files?.[0];
 
-                setError(null);
-                sendImportRequest(selectedFile, id, setError);
+            if (!selectedFile){
+                return;
             }
 
-            fileInput.click();
+            setError(null);
+            sendImportRequest(selectedFile, id, setError, importType);
         }
 
-    const handleInterpretation = (e: React.MouseEvent<HTMLInputElement>) => {
+        fileInput.click();
+    }
+
+    const handleImportXls = () => {
+        setImportType("xls");
+        handleImportFile();
+    }
+
+    const handleInterpretation = () => {
         const body = JSON.stringify({"interpretation": interpretation});
         sendInterpretationRequest(id, body, setError, setInterpretation);
     }
@@ -41,33 +50,45 @@ export function EndExperimentationPage(){
     const handleEnd = () => {
         endExperimentation(id, setError);
     }
+
+    const handleDisplayModal = (e: React.MouseEvent<HTMLButtonElement>) => {
+        setIsFileModalOpen(true);
+        setImportType(e.currentTarget.id);
+    }
     
     return <>  
                 <h2>Ajouter les données de l'expérimentation</h2>
-                <Goto variant="export" label="Importer le fichier de données brutes" buttonLabel="Importer" onClick={handleImport}/>
+                <Goto id="xls" variant="export" label="Importer le fichier de données brutes" buttonLabel="Importer" onClick={handleImportXls}/>
                 <Textarea title="Dans cet encart, vous pouvez interpréter vos données." value={interpretation} onChange={(e) => setInterpretation(e.target.value)}></Textarea>
                 <Button onClick={handleInterpretation}>Soumettre l'interprétation des données</Button>
-                <Goto variant="export" label="Importez au format pdf les tests administrés aux étudiants." buttonLabel="Importer" onClick={()=>{}}/>
-                <Goto variant="export" label="Importez au format pdf les questionnaires de recherche administrés aux étudiants." buttonLabel="Importer" onClick={()=>{}}/>
+                <Goto id="test" variant="export" label="Importez au format pdf les tests administrés aux étudiants." buttonLabel="Importer" onClick={handleDisplayModal}/>
+                <Goto id="questionnaire" variant="export" label="Importez au format pdf les questionnaires de recherche administrés aux étudiants." buttonLabel="Importer" onClick={handleDisplayModal}/>
                 {error?.message && <p>{error?.message}</p>}
                 <Goto variant="export" label="Vous pouvez générer le pdf récapitulant votre expérimentation avec ou sans interprétation de données." buttonLabel="Générer le pdf" onClick={handlePdf}/>
                 <Goto variant="export" label="Vous pouvez marquer l'expérimentation comme terminée. Tout utilisateur pourra télécharger le pdf généré." buttonLabel="Terminer" onClick={handleEnd}/>
+                {isFileModalOpen && 
+                    <ModalList title="Ajouter ou supprimer des tests" onClose={() => {setIsFileModalOpen(false)}}>
+                        <Checkbox title="" options={[""]}/>
+                        <Button onClick={handleImportFile}>Ajouter un fichier</Button>
+                        <Button onClick={()=>{}}>Supprimer les fichiers sélectionnés</Button>
+                    </ModalList>
+                }
            </>
 }
 
 
-async function sendImportRequest(file: File, id: string|undefined, setError: Dispatch<SetStateAction<Error|null>>){
-    const supportedExtensions = ["xls", "xlsx", "ods"];
+async function sendImportRequest(file: File, id: string|undefined, setError: Dispatch<SetStateAction<Error|null>>, importType: string){
+    const supportedExtensions = importType == "xls" ? "xls, xlsx ou ods" : "pdf";
     const extension = file.name.split(".").pop()?.toLowerCase();
 
     if (!extension || !supportedExtensions.includes(extension)){
-        setError(new Error("Le fichier doit être au format .xls, .xlsx ou .ods"));
+        setError(new Error(`Le fichier doit être au format ${supportedExtensions}`));
         return;
     }
 
     const formData = new FormData();
     formData.append("file", file);
-    formData.append("importType", "xls");
+    formData.append("importType", importType);
     if (id !== undefined){
         formData.append("id", id);
     }
