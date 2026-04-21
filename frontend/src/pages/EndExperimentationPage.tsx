@@ -28,6 +28,7 @@ export function EndExperimentationPage(){
 
             setError(null);
             sendImportRequest(selectedFile, id, setError, type);
+            setIsFileModalOpen(false);
         }
 
         fileInput.click();
@@ -86,8 +87,6 @@ export function EndExperimentationPage(){
 async function sendImportRequest(file: File, id: string|undefined, setError: Dispatch<SetStateAction<Error|null>>, importType: string){
     const supportedExtensions = importType == "xls" ? "xls, xlsx ou ods" : "pdf";
     const extension = file.name.split(".").pop()?.toLowerCase();
-
-    console.log(importType)
 
     if (!extension || !supportedExtensions.includes(extension)){
         setError(new Error(`Le fichier doit être au format ${supportedExtensions}`));

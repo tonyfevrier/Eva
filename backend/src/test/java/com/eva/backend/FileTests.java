@@ -255,4 +255,24 @@ public class FileTests {
 						.andExpect(status().isOk())
 						.andExpect(jsonPath("$.fileNames[0]", is("questionnaire_id1_1.pdf")));
 	}
+
+	@Test
+	void deleteFilesShouldDeleteProvidedFileNames() throws Exception {
+		Path importDir = Path.of("target", "test-imports");
+		Files.createDirectories(importDir);
+
+		Path firstFile = importDir.resolve("test_id1_1.pdf");
+		Path secondFile = importDir.resolve("questionnaire_id1_1.pdf");
+		Files.write(firstFile, PDF_FILE_CONTENT);
+		Files.write(secondFile, PDF_FILE_CONTENT);
+
+		mockMvc.perform(post("/file/delete")
+				.param("fileNames", "test_id1_1.pdf")
+				.param("fileNames", "questionnaire_id1_1.pdf"))
+				.andExpect(status().isOk())
+				.andExpect(content().string("Files are deleted"));
+
+		org.junit.jupiter.api.Assertions.assertFalse(Files.exists(firstFile));
+		org.junit.jupiter.api.Assertions.assertFalse(Files.exists(secondFile));
+	}
 }

@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import org.springframework.http.MediaType;
 import org.springframework.beans.factory.annotation.Value;
@@ -84,7 +85,22 @@ public class FileService {
         return filePath;
     }
 
-    public boolean fileIdEqualsExperimentationId(String fileName, Long id){
+    public List<String> getFileNames(Path directory, String importType, Long id) throws IOException {
+        try (Stream<Path> files = Files.list(directory)) {
+            List<String> fileNames = files
+                        .filter(Files::isRegularFile)
+                        .map(path -> path.getFileName().toString())
+                        .filter(name -> 
+                            {
+                            return name.contains(importType) && fileIdEqualsExperimentationId(name, id);
+                         })
+                        .sorted()
+                        .toList();
+            return fileNames;
+        }
+    }
+
+    private boolean fileIdEqualsExperimentationId(String fileName, Long id){
         Pattern FILE_NAME_PATTERN = Pattern.compile("^[a-z]+_id(\\d+)_\\d+\\.[^.]+$");
         Matcher matcher = FILE_NAME_PATTERN.matcher(fileName);
 
@@ -94,5 +110,13 @@ public class FileService {
 
         Long number = Long.parseLong(matcher.group(1));
         return number.equals(id);
+    }
+
+    public void deleteFiles(Path testsDirectory, List<String> fileNames) throws IOException{
+        for (String fileName : fileNames) {
+            String safeFileName = Paths.get(fileName).getFileName().toString();
+            Path targetFile = testsDirectory.resolve(safeFileName).normalize();
+            Files.deleteIfExists(targetFile);
+        }
     }
 }

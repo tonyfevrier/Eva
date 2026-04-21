@@ -55,7 +55,6 @@ public class FileController {
         }
 
         String originalFileName = file.getOriginalFilename();//Récupère le path entier côté client
-        System.out.println(originalFileName);
         if (originalFileName == null || originalFileName.isBlank()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("Missing original file name");
@@ -81,25 +80,30 @@ public class FileController {
         }
 
         Path testsDirectory = Paths.get(pdfDir).toAbsolutePath().normalize();
-        List<String> fileNames;
 
         if (!Files.isDirectory(testsDirectory)) {
             return ResponseEntity.ok(Map.of("fileNames", List.of()));
         }
 
-        try (Stream<Path> files = Files.list(testsDirectory)) {
-            fileNames = files
-                        .filter(Files::isRegularFile)
-                        .map(path -> path.getFileName().toString())
-                        .filter(name -> 
-                            {
-                            return name.contains(importType) && fileService.fileIdEqualsExperimentationId(name, id);
-                         })
-                        .sorted()
-                        .toList();
+        List<String> fileNames = fileService.getFileNames(testsDirectory, importType, id);
+        return ResponseEntity.ok(Map.of("fileNames", fileNames));
+    }
+
+    @PostMapping("/delete") 
+    public ResponseEntity<?> deleteFiles(@RequestParam("fileNames") List<String> fileNames) throws IOException {
+        if (fileNames == null || fileNames.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", "Missing fileNames"));
+        }
+        Path testsDirectory = Paths.get(pdfDir).toAbsolutePath().normalize();
+
+        if (!Files.isDirectory(testsDirectory)) {
+            return ResponseEntity.ok(Map.of("fileNames", List.of()));
         }
 
-        return ResponseEntity.ok(Map.of("fileNames", fileNames));
+        fileService.deleteFiles(testsDirectory, fileNames);
+
+        return ResponseEntity.ok("Files are deleted");
     }
 }
 
