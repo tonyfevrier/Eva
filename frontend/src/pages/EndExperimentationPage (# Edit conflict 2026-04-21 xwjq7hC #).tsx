@@ -10,8 +10,7 @@ import { LinkCheckbox } from "../components/LinkCheckBox";
 export function EndExperimentationPage(){
     const [isFileModalOpen, setIsFileModalOpen] = useState<boolean>(false);
     const [importType, setImportType] = useState<string>("xls");
-    const [fileNames, setFileNames] = useState<Array<string>>([]);
-    const [fileNamesToDelete, setFileNamesToDelete] = useState<Array<string>>([]);
+    const [fileNames, setFileNames] = useState<Array<string>>([""]);
     const [error, setError] = useState<Error|null>(null);
     const {id} = useParams();
     const [interpretation, setInterpretation] = useState<string>("");
@@ -58,29 +57,10 @@ export function EndExperimentationPage(){
         /*on change l'importType pour préparer l'import en cas d'ajout d'un fichier,
         on affiche également les fichiers pdf du type de l'import */
         const nextImportType = e.currentTarget.id;
+        console.log(e.currentTarget.id)
+        setIsFileModalOpen(true);
         setImportType(nextImportType);
-        getRegisteredFileNames(nextImportType, id, setError, setFileNames, setIsFileModalOpen);
-    }
-
-    const modifyFileNamesToDelete = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const fileName = e.currentTarget.value;
-        setFileNamesToDelete((previousFileNamesToDelete) => {
-            if (previousFileNamesToDelete.includes(fileName)) {
-                return previousFileNamesToDelete.filter((name) => name !== fileName);
-            }
-
-            return [...previousFileNamesToDelete, fileName];
-        });
-    }
-
-    const handleDeleteFiles = () => {
-        sendDeleteRequest(fileNamesToDelete, setError);
-        handleCloseModal();
-    }
-
-    const handleCloseModal = () => {
-        setIsFileModalOpen(false)
-        setFileNamesToDelete([]);
+        getRegisteredFileNames(nextImportType, id, setError, setFileNames);
     }
     
     return <>  
@@ -94,10 +74,10 @@ export function EndExperimentationPage(){
                 <Goto variant="export" label="Vous pouvez générer le pdf récapitulant votre expérimentation avec ou sans interprétation de données." buttonLabel="Générer le pdf" onClick={handlePdf}/>
                 <Goto variant="export" label="Vous pouvez marquer l'expérimentation comme terminée. Tout utilisateur pourra télécharger le pdf généré." buttonLabel="Terminer" onClick={handleEnd}/>
                 {isFileModalOpen && 
-                    <ModalList title="Ajouter ou supprimer des tests" onClose={handleCloseModal}>
-                        <LinkCheckbox title="Fichiers enregistrés" options={fileNames} onChange={modifyFileNamesToDelete}/>
+                    <ModalList title="Ajouter ou supprimer des tests" onClose={() => {setIsFileModalOpen(false)}}>
+                        <LinkCheckbox title="Fichiers enregistrés" options={fileNames}/>
                         <Button onClick={() => handleImportFile()} style={{margin: '.5em'}}>Ajouter un fichier</Button>
-                        <Button onClick={handleDeleteFiles} style={{margin: '.5em'}}>Supprimer les fichiers sélectionnés</Button>
+                        <Button onClick={()=>{}} style={{margin: '.5em'}}>Supprimer les fichiers sélectionnés</Button>
                     </ModalList>
                 }
            </>
@@ -193,7 +173,7 @@ async function endExperimentation(id: string|undefined, setError: Dispatch<SetSt
     }
 }
 
-async function getRegisteredFileNames(fileType: string, id: string|undefined, setError: Dispatch<SetStateAction<Error|null>>, setFileNames: Dispatch<SetStateAction<Array<string>>>, setIsFileModalOpen: Dispatch<SetStateAction<boolean>>){
+async function getRegisteredFileNames(fileType: string, id: string|undefined, setError: Dispatch<SetStateAction<Error|null>>, setFileNames: Dispatch<SetStateAction<Array<string>>>){
     const formData= new FormData();
     formData.append("importType", fileType);
     
@@ -212,19 +192,18 @@ async function getRegisteredFileNames(fileType: string, id: string|undefined, se
     if (response.ok){
         const data = JSON.parse(await response.text());
         setFileNames(data.fileNames);
-        setIsFileModalOpen(true);
     } else {
         setError(new Error(`Erreur ${response.status}: ${response.statusText}`))
     }
 }
 
-async function sendDeleteRequest(fileNames: Array<string>, setError: Dispatch<SetStateAction<Error|null>>){
-    const formData = new FormData();
-    fileNames.forEach(fileName => formData.append("fileNames", fileName));
+async function sendDeleteRequest(setError: Dispatch<SetStateAction<Error|null>>){
+    const formData= new FormData();
+    formData.append("fileNames", );
     
     const response = await fetch(`http://localhost:9000/file/delete`, {
         headers: {
-            'Accept': 'application/json',
+            'Accept': 'application/json'
         },
         method: "post",
         body: formData,
@@ -234,9 +213,7 @@ async function sendDeleteRequest(fileNames: Array<string>, setError: Dispatch<Se
         throw requestError
     });
 
-    if (response.ok){ 
-        alert("Fichiers supprimés avec succès")
-    } else {
+    if (!response.ok){ 
         setError(new Error(`Erreur ${response.status}: ${response.statusText}`))
     }
 }
