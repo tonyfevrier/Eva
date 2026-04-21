@@ -178,6 +178,8 @@ async function sendExportRequest(format: string, setSendError: Dispatch<SetState
         setSendError(new Error(`Erreur ${response.status}: ${response.statusText}`));
         return;
     }
-    exportFile(response, format, "ResultatsEVA_v2");
+    
+    exportFile(response, "ResultatsEVA_v2." + format);
+    //exportFile(response, format, "ResultatsEVA_v2");
 }
  

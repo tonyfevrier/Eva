@@ -82,6 +82,11 @@ export function EndExperimentationPage(){
         setIsFileModalOpen(false)
         setFileNamesToDelete([]);
     }
+
+    const handleDownloadRegisteredFile = (e:React.MouseEvent<HTMLButtonElement>) => {
+        sendExportRequest(e.currentTarget.value, setError);
+        handleCloseModal();
+    }
     
     return <>  
                 <h2>Ajouter les données de l'expérimentation</h2>
@@ -95,7 +100,7 @@ export function EndExperimentationPage(){
                 <Goto variant="export" label="Vous pouvez marquer l'expérimentation comme terminée. Tout utilisateur pourra télécharger le pdf généré." buttonLabel="Terminer" onClick={handleEnd}/>
                 {isFileModalOpen && 
                     <ModalList title="Ajouter ou supprimer des tests" onClose={handleCloseModal}>
-                        <LinkCheckbox title="Fichiers enregistrés" options={fileNames} onChange={modifyFileNamesToDelete}/>
+                        <LinkCheckbox title={fileNames.length > 0 ? "Fichiers enregistrés": ""} options={fileNames} onChange={modifyFileNamesToDelete} onButtonClick={handleDownloadRegisteredFile}/>
                         <Button onClick={() => handleImportFile()} style={{margin: '.5em'}}>Ajouter un fichier</Button>
                         <Button onClick={handleDeleteFiles} style={{margin: '.5em'}}>Supprimer les fichiers sélectionnés</Button>
                     </ModalList>
@@ -172,7 +177,7 @@ export async function generatePdf(id: string|undefined, setError: Dispatch<SetSt
     });
 
     if (response.ok){
-        exportFile(response, "pdf", "experimentation_summary");
+        exportFile(response, "experimentation_summary.pdf");
     }
 }
 
@@ -239,4 +244,29 @@ async function sendDeleteRequest(fileNames: Array<string>, setError: Dispatch<Se
     } else {
         setError(new Error(`Erreur ${response.status}: ${response.statusText}`))
     }
+}
+
+async function sendExportRequest(fileName: string, setError: Dispatch<SetStateAction<Error|null>>){
+    const formData = new FormData();
+    formData.append("entry", fileName);
+    formData.append("exportType", "pdf");
+    
+    const response = await fetch(`http://localhost:9000/file/export`, {
+            method: "post",
+            headers: {
+                'Accept': 'application/json',
+            },
+            body: formData,
+            credentials: "include"  
+        })
+        .catch(requestError => {
+            setError(requestError);
+            throw requestError;
+        });
+
+    if (!response.ok){
+        setError(new Error(`Erreur ${response.status}: ${response.statusText}`));
+        return;
+    }
+    exportFile(response, fileName);
 }

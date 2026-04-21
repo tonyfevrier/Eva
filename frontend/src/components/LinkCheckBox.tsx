@@ -6,16 +6,16 @@ import { Button } from "./Button"
 type CheckboxProps = {
     title: string,
     onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void,
-    onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void,
+    onButtonClick?: (event: React.MouseEvent<HTMLButtonElement>) => void,
     options: Array<string>,
 } & React.HTMLAttributes<HTMLInputElement>
 
-export function LinkCheckbox({title, options, onChange = () => {}, onClick = () => {}, ...props}:PropsWithChildren<CheckboxProps>){
+export function LinkCheckbox({title, options, onChange = () => {}, onButtonClick = () => {}, ...props}:PropsWithChildren<CheckboxProps>){
     return  <div className={styles.checkbox}>
                 <p>{title}</p>
                 {options.map((option) => (
                     <label key={option}>
-                        <Button onClick={onClick}> {option}</Button>
+                        <Button onClick={onButtonClick} value={option}> {option}</Button>
                         <input type="checkbox"name="keywords" value={option} onChange={onChange} {...props}/>
                     </label>))}
             </div>
