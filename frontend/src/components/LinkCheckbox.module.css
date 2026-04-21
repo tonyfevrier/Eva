@@ -1,0 +1,17 @@
+
+
+.checkbox :first-child {
+    font-weight: 600;
+}
+
+.checkbox > label {
+    margin: 1em 2em;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.checkbox > label > input {
+
+}

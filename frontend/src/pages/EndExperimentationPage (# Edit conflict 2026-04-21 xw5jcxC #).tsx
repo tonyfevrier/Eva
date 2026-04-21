@@ -22,6 +22,7 @@ export function EndExperimentationPage(){
 
         fileInput.onchange = async () => {
             const selectedFile = fileInput.files?.[0];
+
             if (!selectedFile){
                 return;
             }
@@ -56,7 +57,6 @@ export function EndExperimentationPage(){
         /*on change l'importType pour préparer l'import en cas d'ajout d'un fichier,
         on affiche également les fichiers pdf du type de l'import */
         const nextImportType = e.currentTarget.id;
-        console.log(e.currentTarget.id)
         setIsFileModalOpen(true);
         setImportType(nextImportType);
         getRegisteredFileNames(nextImportType, id, setError, setFileNames);
@@ -75,8 +75,8 @@ export function EndExperimentationPage(){
                 {isFileModalOpen && 
                     <ModalList title="Ajouter ou supprimer des tests" onClose={() => {setIsFileModalOpen(false)}}>
                         <LinkCheckbox title="Fichiers enregistrés" options={fileNames}/>
-                        <Button onClick={() => handleImportFile()} style={{margin: '.5em'}}>Ajouter un fichier</Button>
-                        <Button onClick={()=>{}} style={{margin: '.5em'}}>Supprimer les fichiers sélectionnés</Button>
+                        <Button onClick={handleImportFile}>Ajouter un fichier</Button>
+                        <Button onClick={()=>{}}>Supprimer les fichiers sélectionnés</Button>
                     </ModalList>
                 }
            </>
@@ -86,8 +86,6 @@ export function EndExperimentationPage(){
 async function sendImportRequest(file: File, id: string|undefined, setError: Dispatch<SetStateAction<Error|null>>, importType: string){
     const supportedExtensions = importType == "xls" ? "xls, xlsx ou ods" : "pdf";
     const extension = file.name.split(".").pop()?.toLowerCase();
-
-    console.log(importType)
 
     if (!extension || !supportedExtensions.includes(extension)){
         setError(new Error(`Le fichier doit être au format ${supportedExtensions}`));
@@ -100,8 +98,6 @@ async function sendImportRequest(file: File, id: string|undefined, setError: Dis
     if (id !== undefined){
         formData.append("id", id);
     }
-
-    console.log(formData)
 
     const response = await fetch(`http://localhost:9000/file/import`, {
             method: "post",

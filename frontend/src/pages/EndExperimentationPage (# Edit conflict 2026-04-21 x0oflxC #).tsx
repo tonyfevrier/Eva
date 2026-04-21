@@ -15,10 +15,12 @@ export function EndExperimentationPage(){
     const {id} = useParams();
     const [interpretation, setInterpretation] = useState<string>("");
 
-    const handleImportFile = (type: string = importType) => {
+    const handleImportFile = (filetype: string = importType) => {
+        console.log(filetype)
+        console.log(importType)
         const fileInput = document.createElement("input");
         fileInput.type = "file";
-        fileInput.accept = type == "xls" ?".xls,.xlsx,.ods": ".pdf";
+        fileInput.accept = filetype == "xls" ?".xls,.xlsx,.ods": ".pdf";
 
         fileInput.onchange = async () => {
             const selectedFile = fileInput.files?.[0];
@@ -27,7 +29,7 @@ export function EndExperimentationPage(){
             }
 
             setError(null);
-            sendImportRequest(selectedFile, id, setError, type);
+            sendImportRequest(selectedFile, id, setError, filetype);
         }
 
         fileInput.click();

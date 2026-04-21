@@ -55,6 +55,7 @@ public class FileController {
         }
 
         String originalFileName = file.getOriginalFilename();//Récupère le path entier côté client
+        System.out.println(originalFileName);
         if (originalFileName == null || originalFileName.isBlank()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("Missing original file name");

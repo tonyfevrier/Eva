@@ -1,20 +1,22 @@
 import type { PropsWithChildren } from "react"
-import styles from "./Input.module.css"
+import styles from "./LinkCheckbox.module.css"
+import { Button } from "./Button"
 
 // Type pouvant contenir les attributs usuels de input et 3 aux autres attributs
 type CheckboxProps = {
     title: string,
     onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void,
+    onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void,
     options: Array<string>,
 } & React.HTMLAttributes<HTMLInputElement>
 
-export function Checkbox({title, options, onChange = () => {}, ...props}:PropsWithChildren<CheckboxProps>){
-    return  <div className={styles.formField}>
+export function LinkCheckbox({title, options, onChange = () => {}, onClick = () => {}, ...props}:PropsWithChildren<CheckboxProps>){
+    return  <div className={styles.checkbox}>
                 <p>{title}</p>
                 {options.map((option) => (
-                    <label key={option} style={{display: 'block'}}>
+                    <label key={option}>
+                        <Button onClick={onClick}> {option}</Button>
                         <input type="checkbox"name="keywords" value={option} onChange={onChange} {...props}/>
-                        {option}
                     </label>))}
             </div>
 }
