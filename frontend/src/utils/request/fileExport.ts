@@ -1,6 +1,5 @@
-export async function exportFile(response:Response, fileName: string){//format: string|FormDataEntryValue|null, name: string){
+export async function exportFile(response:Response, fileName: string){
     const blob = await response.blob();
-    //const fileName = name + "." + format;
 
     const objectUrl = window.URL.createObjectURL(blob);
     const link = document.createElement("a");

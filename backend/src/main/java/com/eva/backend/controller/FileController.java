@@ -21,7 +21,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.eva.backend.records.DownloadContent;
 import com.eva.backend.service.FileService;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
 

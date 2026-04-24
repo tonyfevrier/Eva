@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.eva.backend.service.DataExtractionService;
-import com.eva.backend.service.PdfGenerationService;
 import com.eva.backend.service.PdfGenerationServiceViaHtml;
 
 import org.springframework.web.bind.annotation.PathVariable;

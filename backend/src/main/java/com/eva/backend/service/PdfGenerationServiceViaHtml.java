@@ -25,6 +25,7 @@ public class PdfGenerationServiceViaHtml {
     }
 
     private String renderTemplate(Map<String, Map<String, Object>> experimentationData) {
+        /* Permet de passer des variables au html */
         Context context = new Context();
         context.setVariable("experimentationData", experimentationData);
         return templateEngine.process("experimentation-pdf", context);
