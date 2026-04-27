@@ -9,17 +9,14 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.http.ResponseCookie;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 
 import com.eva.backend.model.User;
 import com.eva.backend.model.UserAdditionalData;
 import com.eva.backend.repository.UserRepository;
 
 import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
 
 import com.eva.backend.records.CookieEssentials;
 import com.eva.backend.records.TwoCookies;

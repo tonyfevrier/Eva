@@ -1,4 +1,4 @@
-package com.eva.backend;
+package com.eva.backend.controller;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;

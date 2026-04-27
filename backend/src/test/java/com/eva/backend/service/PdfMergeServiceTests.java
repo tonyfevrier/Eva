@@ -1,4 +1,4 @@
-package com.eva.backend;
+package com.eva.backend.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -16,7 +16,6 @@ import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.text.PDFTextStripper;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import com.eva.backend.service.PdfMergeService;
 
@@ -30,11 +29,29 @@ public class PdfMergeServiceTests {
 	@BeforeEach
 	void setup() {
 		pdfMergeService = new PdfMergeService();
-		ReflectionTestUtils.setField(pdfMergeService, "pdfDir", tempDir.toString());
 	}
 
 	@Test
-	void shouldMergeMultipleStoredPdfsAndSaveFile() throws Exception {
+	void shouldMergeTwoPdfByteArraysInMemory() throws Exception {
+		byte[] firstPdf = createTestPdfBytes("Document A");
+		byte[] secondPdf = createTestPdfBytes("Document B");
+
+		byte[] mergedBytes = pdfMergeService.merge(firstPdf, secondPdf);
+
+		assertThat(mergedBytes).isNotNull();
+		assertThat(mergedBytes.length).isGreaterThan(0);
+		assertThat(new String(mergedBytes, 0, 4)).isEqualTo("%PDF");
+
+		try (PDDocument document = PDDocument.load(mergedBytes)) {
+			assertThat(document.getNumberOfPages()).isEqualTo(2);
+			String text = new PDFTextStripper().getText(document);
+			assertThat(text).contains("Document A");
+			assertThat(text).contains("Document B");
+		}
+	}
+
+	@Test
+	void shouldMergeMultipleStoredPdfsInMemory() throws Exception {
 		Path sourceDirectory = tempDir.resolve("source");
 		Files.createDirectories(sourceDirectory);
 
@@ -42,16 +59,10 @@ public class PdfMergeServiceTests {
 		createTestPdfFile(sourceDirectory, "doc2.pdf", "Document 2");
 		List<String> pdfList = Arrays.asList("doc1.pdf", "doc2.pdf");
 
-		var mergedFile = pdfMergeService.merge(sourceDirectory, pdfList, "merged");
+		byte[] mergedBytes = pdfMergeService.mergeFilesFromDirectory(sourceDirectory, pdfList);
 
-		// Vérifier que le fichier a été créé
-		assertThat(mergedFile).isNotNull();
-		assertThat(mergedFile.exists()).isTrue();
-		assertThat(mergedFile.getName()).endsWith(".pdf");
-		assertThat(mergedFile.length()).isGreaterThan(0);
-
-		// Vérifier que le fichier contient le contenu des deux PDFs
-		byte[] mergedBytes = Files.readAllBytes(mergedFile.toPath());
+		assertThat(mergedBytes).isNotNull();
+		assertThat(mergedBytes.length).isGreaterThan(0);
 		assertThat(new String(mergedBytes, 0, 4)).isEqualTo("%PDF");
 
 		try (PDDocument document = PDDocument.load(mergedBytes)) {
@@ -62,7 +73,7 @@ public class PdfMergeServiceTests {
 		}
 	}
 
-	private void createTestPdfFile(Path directory, String fileName, String content) throws Exception {
+	private byte[] createTestPdfBytes(String content) throws Exception {
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
 		try (PDDocument document = new PDDocument()) {
@@ -80,7 +91,10 @@ public class PdfMergeServiceTests {
 			document.save(outputStream);
 		}
 
-		byte[] pdfBytes = outputStream.toByteArray();
-		Files.write(directory.resolve(fileName), pdfBytes);
+		return outputStream.toByteArray();
+	}
+
+	private void createTestPdfFile(Path directory, String fileName, String content) throws Exception {
+		Files.write(directory.resolve(fileName), createTestPdfBytes(content));
 	}
 }

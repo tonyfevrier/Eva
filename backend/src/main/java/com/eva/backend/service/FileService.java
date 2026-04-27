@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
@@ -129,5 +130,10 @@ public class FileService {
                         .toList();
             return experimentationFiles;
         }
+    }
+
+    public void registerFile(String directory, String outputFileName, byte[] content) throws IOException {
+        Path filePath = writeFilePath(outputFileName, directory);
+        Files.write(filePath, content, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
     }
 }

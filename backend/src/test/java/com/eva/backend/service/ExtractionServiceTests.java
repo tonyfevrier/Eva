@@ -1,9 +1,8 @@
-package com.eva.backend;
+package com.eva.backend.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDate;
-import java.util.Arrays;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
@@ -12,7 +11,6 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 
-import com.eva.backend.model.Evaluations;
 import com.eva.backend.model.Institution;
 import com.eva.backend.model.User;
 import com.eva.backend.service.DataExtractionService;

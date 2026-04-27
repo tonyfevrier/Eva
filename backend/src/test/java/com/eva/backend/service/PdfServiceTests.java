@@ -1,4 +1,4 @@
-package com.eva.backend;
+package com.eva.backend.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

@@ -1,4 +1,4 @@
-package com.eva.backend;
+package com.eva.backend.controller;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
