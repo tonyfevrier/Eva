@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -23,6 +24,9 @@ import java.util.Map;
 @RestController
 @RequestMapping("/pdf")
 public class PdfController {
+    @Value("${app.generated-pdf-dir}")
+    private String generatedPdfDir;
+
     @Value("${app.pdf-dir}")
     private String pdfDir;
 
@@ -39,7 +43,7 @@ public class PdfController {
     private FileService fileService;
 
     @GetMapping("/generate/{id}")
-    public ResponseEntity<?> generatePdf(@PathVariable Long id) throws IOException {
+    public ResponseEntity<byte[]> generatePdf(@PathVariable Long id) throws IOException {
         /* On crée la première page de données, on la merge aux fichiers tests et questionnaires importés par l'utilisateur. */
         Map<String, Map<String, Object>> data = dataExtractor.extractExperimentationData(id);
         byte[] experimentationDataByte = pdfService.createPdf(data);
@@ -50,10 +54,10 @@ public class PdfController {
         
         byte[] pdfByte = mergeService.merge(experimentationDataByte, testsByte);
         
-        String generatedFileName = "experimentation_summary" + id + ".pdf";
-        fileService.registerFile(pdfDir, generatedFileName, pdfByte);
-        return ResponseEntity.ok(Map.of("fileName", generatedFileName, 
-                                        "content", pdfByte));
+        String generatedFileName = "experimentation_summary_" + id + ".pdf";
+        
+        fileService.registerFile(generatedPdfDir, generatedFileName, pdfByte);
+        return ResponseEntity.ok(pdfByte); 
     }
     
 }

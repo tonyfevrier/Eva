@@ -5,11 +5,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.io.ByteArrayOutputStream;
-import java.util.Base64;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -28,8 +26,6 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.eva.backend.service.DataExtractionService;
 import com.eva.backend.service.FileService;
 import com.eva.backend.service.PdfGenerationServiceViaHtml;
@@ -74,15 +70,11 @@ class PdfControllerTests {
 
 		MvcResult mvcResult = mockMvc.perform(get("/pdf/generate/{id}", experimentationId))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.fileName").value("experimentation_summary42.pdf"))
 				.andReturn();
 
-        // Vérifier qu'un pdf est enregistré et qu'il contient la même chose que le contenu envoyé par la réponse
-		String responseContent = mvcResult.getResponse().getContentAsString();
-		Map<String, Object> body = new ObjectMapper().readValue(responseContent, new TypeReference<Map<String, Object>>() {
-		});
-		byte[] generatedPdf = Base64.getDecoder().decode((String) body.get("content"));
-		Path savedFile = tempDir.resolve("experimentation_summary42.pdf");
+		// Vérifier qu'un pdf est enregistré et que son contenu est identique à la réponse binaire
+		byte[] generatedPdf = mvcResult.getResponse().getContentAsByteArray();
+		Path savedFile = tempDir.resolve("experimentation_summary_42.pdf");
 
 		assertThat(generatedPdf).isNotEmpty();
 		assertThat(new String(generatedPdf, 0, 4)).isEqualTo("%PDF");
