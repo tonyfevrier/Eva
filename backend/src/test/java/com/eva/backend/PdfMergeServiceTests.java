@@ -16,9 +16,7 @@ import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.text.PDFTextStripper;
-import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.eva.backend.service.PdfMergeService;
 
@@ -36,12 +34,15 @@ public class PdfMergeServiceTests {
 	}
 
 	@Test
-	void shouldMergeMultiplePdfsAndSaveFile() throws Exception {
-		MultipartFile pdf1 = createTestPdf("Document 1");
-		MultipartFile pdf2 = createTestPdf("Document 2");
-		List<MultipartFile> pdfList = Arrays.asList(pdf1, pdf2);
+	void shouldMergeMultipleStoredPdfsAndSaveFile() throws Exception {
+		Path sourceDirectory = tempDir.resolve("source");
+		Files.createDirectories(sourceDirectory);
 
-		var mergedFile = pdfMergeService.merge(pdfList, "merged");
+		createTestPdfFile(sourceDirectory, "doc1.pdf", "Document 1");
+		createTestPdfFile(sourceDirectory, "doc2.pdf", "Document 2");
+		List<String> pdfList = Arrays.asList("doc1.pdf", "doc2.pdf");
+
+		var mergedFile = pdfMergeService.merge(sourceDirectory, pdfList, "merged");
 
 		// Vérifier que le fichier a été créé
 		assertThat(mergedFile).isNotNull();
@@ -54,13 +55,14 @@ public class PdfMergeServiceTests {
 		assertThat(new String(mergedBytes, 0, 4)).isEqualTo("%PDF");
 
 		try (PDDocument document = PDDocument.load(mergedBytes)) {
+			assertThat(document.getNumberOfPages()).isEqualTo(2);
 			String text = new PDFTextStripper().getText(document);
 			assertThat(text).contains("Document 1");
 			assertThat(text).contains("Document 2");
 		}
 	}
 
-	private MultipartFile createTestPdf(String content) throws Exception {
+	private void createTestPdfFile(Path directory, String fileName, String content) throws Exception {
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
 		try (PDDocument document = new PDDocument()) {
@@ -79,6 +81,6 @@ public class PdfMergeServiceTests {
 		}
 
 		byte[] pdfBytes = outputStream.toByteArray();
-		return new MockMultipartFile("file", "test.pdf", "application/pdf", pdfBytes);
+		Files.write(directory.resolve(fileName), pdfBytes);
 	}
 }

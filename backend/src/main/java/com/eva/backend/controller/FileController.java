@@ -84,7 +84,7 @@ public class FileController {
             return ResponseEntity.ok(Map.of("fileNames", List.of()));
         }
 
-        List<String> fileNames = fileService.getFileNames(testsDirectory, importType, id);
+        List<String> fileNames = fileService.getExperimentationFileNamesByType(testsDirectory, importType, id);
         return ResponseEntity.ok(Map.of("fileNames", fileNames));
     }
 

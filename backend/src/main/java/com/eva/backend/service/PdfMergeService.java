@@ -19,7 +19,7 @@ public class PdfMergeService {
     private String pdfDir;
     
 
-    public File merge(List<MultipartFile> files, String outputFileName) {
+    /*public File merge(List<MultipartFile> files, String outputFileName) {
         PDFMergerUtility merger = new PDFMergerUtility();
         Path outputDir = Path.of(pdfDir);
         String normalizedOutputName = normalizeFileName(outputFileName, ".pdf");
@@ -33,6 +33,35 @@ public class PdfMergeService {
                     continue;
                 }
                 merger.addSource(file.getInputStream());
+            }
+
+            merger.setDestinationFileName(outputPath.toString());
+            merger.mergeDocuments(MemoryUsageSetting.setupMainMemoryOnly());
+
+            return outputPath.toFile();
+        } catch (IOException e) {
+            throw new IllegalStateException("Erreur lors de la fusion des fichiers PDF.", e);
+        }
+    }*/
+
+    public File merge(Path sourceDirectory, List<String> fileNames, String outputFileName) {
+        PDFMergerUtility merger = new PDFMergerUtility();
+        Path outputDir = Path.of(pdfDir);
+        String normalizedOutputName = normalizeFileName(outputFileName, ".pdf");
+        Path outputPath = outputDir.resolve(normalizedOutputName);
+
+        try {
+            Files.createDirectories(outputDir);
+
+            for (String fileName : fileNames) {
+                if (fileName == null || fileName.isBlank()) {
+                    continue;
+                }
+                Path safeFilePath = sourceDirectory.resolve(Path.of(fileName).getFileName()).normalize();
+                if (!safeFilePath.startsWith(sourceDirectory.normalize())) {
+                    throw new IllegalArgumentException("Nom de fichier invalide : " + fileName);
+                }
+                merger.addSource(safeFilePath.toFile());
             }
 
             merger.setDestinationFileName(outputPath.toString());

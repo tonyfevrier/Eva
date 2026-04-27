@@ -10,8 +10,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import org.springframework.http.MediaType;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -85,7 +83,8 @@ public class FileService {
         return filePath;
     }
 
-    public List<String> getFileNames(Path directory, String importType, Long id) throws IOException {
+    public List<String> getExperimentationFileNamesByType(Path directory, String importType, Long id) throws IOException {
+        /* importType permet de choisir les fichiers à renvoyer (tests.pdf ou questionnaires.pdf) */
         try (Stream<Path> files = Files.list(directory)) {
             List<String> fileNames = files
                         .filter(Files::isRegularFile)
@@ -117,6 +116,18 @@ public class FileService {
             String safeFileName = Paths.get(fileName).getFileName().toString();
             Path targetFile = testsDirectory.resolve(safeFileName).normalize();
             Files.deleteIfExists(targetFile);
+        }
+    }
+
+    public List<String> getExperimentationFileNames(Path directory, Long id) throws IOException {
+        try (Stream<Path> files = Files.list(directory)) {
+            List<String> experimentationFiles = files
+                        .filter(Files::isRegularFile)
+                        .map(path -> path.getFileName().toString())
+                        .filter(name -> fileIdEqualsExperimentationId(name, id))
+                        .sorted()
+                        .toList();
+            return experimentationFiles;
         }
     }
 }
