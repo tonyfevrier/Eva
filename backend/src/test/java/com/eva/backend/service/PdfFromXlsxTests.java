@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
@@ -36,9 +38,9 @@ public class PdfFromXlsxTests {
 	}
 
 	@Test
-	void shouldConvertOnlyRequestedTabIntoPdf() throws Exception {
+	void shouldConvertOnlyRequestedTabsIntoPdf() throws Exception {
 		Path xlsxFile = createXlsxFile();
-		byte[] pdfBytes = pdfFromXlsx.convertTabInPdf("test.xlsx", "TargetTab");
+		byte[] pdfBytes = pdfFromXlsx.convertTabsInPdf("test.xlsx", List.of("TargetTab1", "TargetTab2"));
 
 		assertThat(pdfBytes).isNotNull();
 		assertThat(pdfBytes.length).isGreaterThan(0);
@@ -46,7 +48,8 @@ public class PdfFromXlsxTests {
 
 		try (PDDocument document = PDDocument.load(pdfBytes)) {
 			String text = new PDFTextStripper().getText(document);
-			assertThat(text).contains("CONTENU_CIBLE");
+			assertThat(text).contains("CONTENU_CIBLE_1");
+			assertThat(text).contains("CONTENU_CIBLE_2");
 			assertThat(text).doesNotContain("NE_DOIT_PAS_APPARAITRE");
 		}
 
@@ -61,9 +64,13 @@ public class PdfFromXlsxTests {
 			Row ignoredRow = ignoredSheet.createRow(0);
 			ignoredRow.createCell(0).setCellValue("NE_DOIT_PAS_APPARAITRE");
 
-			Sheet targetSheet = workbook.createSheet("TargetTab");
-			Row targetRow = targetSheet.createRow(0);
-			targetRow.createCell(0).setCellValue("CONTENU_CIBLE");
+			Sheet targetSheet1 = workbook.createSheet("TargetTab1");
+			Row targetRow1 = targetSheet1.createRow(0);
+			targetRow1.createCell(0).setCellValue("CONTENU_CIBLE_1");
+
+			Sheet targetSheet2 = workbook.createSheet("TargetTab2");
+			Row targetRow2 = targetSheet2.createRow(0);
+			targetRow2.createCell(0).setCellValue("CONTENU_CIBLE_2");
 
 			workbook.write(outputStream);
 		}
@@ -77,7 +84,11 @@ public class PdfFromXlsxTests {
 			try (Workbook workbook = WorkbookFactory.create(Files.newInputStream(inputToConvert));
 				 ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 				 PDDocument document = new PDDocument()) {
-				String value = workbook.getSheetAt(0).getRow(0).getCell(0).getStringCellValue();
+				List<String> values = new ArrayList<>();
+				for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
+					values.add(workbook.getSheetAt(i).getRow(0).getCell(0).getStringCellValue());
+				}
+				String value = String.join(" ", values);
 
 				PDPage page = new PDPage();
 				document.addPage(page);

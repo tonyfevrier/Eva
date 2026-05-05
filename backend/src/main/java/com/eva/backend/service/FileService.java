@@ -11,6 +11,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -135,5 +136,25 @@ public class FileService {
     public void registerFile(String directory, String outputFileName, byte[] content) throws IOException {
         Path filePath = writeFilePath(outputFileName, directory);
         Files.write(filePath, content, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+    }
+
+    public String findXlsFileByExperimentationId(Path directory, Long id) throws IOException {
+        String expectedPrefix = id + "_";
+
+        try (Stream<Path> files = Files.list(directory)) {
+            return files
+                    .filter(Files::isRegularFile)
+                    .map(path -> path.getFileName().toString())
+                    .filter(name -> name.startsWith(expectedPrefix))
+                    .filter(this::isSpreadsheetFile)
+                    .sorted()
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("Aucun fichier tableur trouve pour l'experimentation id=" + id));
+        }
+    }
+
+    private boolean isSpreadsheetFile(String fileName) {
+        String lowerName = fileName.toLowerCase();
+        return lowerName.endsWith(".xls") || lowerName.endsWith(".xlsx") || lowerName.endsWith(".ods");
     }
 }

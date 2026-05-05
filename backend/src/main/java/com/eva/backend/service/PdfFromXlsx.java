@@ -6,6 +6,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 import org.apache.poi.ss.usermodel.Workbook;
@@ -31,7 +33,7 @@ public class PdfFromXlsx {
 
     private LocalOfficeManager officeManager;
 
-    public byte[] convertTabInPdf(String fileName, String tabName) {
+    public byte[] convertTabsInPdf(String fileName, List<String> tabNames) {
         Path sourceDirectory = Path.of(xlsDirectory).normalize();
         Path safeFilePath = sourceDirectory.resolve(Path.of(fileName).getFileName()).normalize();
         if (!safeFilePath.startsWith(sourceDirectory)) {
@@ -49,7 +51,7 @@ public class PdfFromXlsx {
         Path inputToConvert = null;
 
         try {
-            inputToConvert = buildWorkbookWithSingleTab(safeFilePath, tabName, extension);
+            inputToConvert = buildWorkbookWithSelectedTabs(safeFilePath, tabNames, extension);
             return convertInput(inputToConvert, extension);
         } catch (IOException | OfficeException e) {
             throw new IllegalStateException("Erreur lors de la conversion du fichier tableur en PDF.", e);
@@ -58,28 +60,38 @@ public class PdfFromXlsx {
         }
     }
 
-    private Path buildWorkbookWithSingleTab(Path originalFilePath, String tabName, String extension) throws IOException {
+    private Path buildWorkbookWithSelectedTabs(Path originalFilePath, List<String> tabNames, String extension) throws IOException {
         try (InputStream inputStream = Files.newInputStream(originalFilePath);
              Workbook workbook = WorkbookFactory.create(inputStream)) {
-            keepOnlyOneTab(workbook, tabName);
+            keepOnlySelectedTabs(workbook, tabNames);
             return writeTabInTemporaryFile(workbook, extension);
         }
     }
 
-    private void keepOnlyOneTab(Workbook workbook, String tabName){
-        int targetSheetIndex = workbook.getSheetIndex(tabName);
-        if (targetSheetIndex < 0) {
-            throw new IllegalArgumentException("Onglet introuvable : " + tabName);
-        }
-
+    private void keepOnlySelectedTabs(Workbook workbook, List<String> tabNames){
+        List<Integer> targetTabsIndexes = getTabsIndexes(workbook, tabNames);
+        
         for (int i = workbook.getNumberOfSheets() - 1; i >= 0; i--) {
-            if (i != targetSheetIndex) {
+            if (!targetTabsIndexes.contains(i)) {
                 workbook.removeSheetAt(i);
             }
         }
 
         workbook.setActiveSheet(0);
         workbook.setSelectedTab(0);
+    }
+
+    private List<Integer> getTabsIndexes(Workbook workbook, List<String> tabNames){
+        List<Integer> targetTabIndexes = new ArrayList<>();
+
+        for (String tabName: tabNames){
+            int targetTabIndex = workbook.getSheetIndex(tabName);
+            if (targetTabIndex < 0) {
+                throw new IllegalArgumentException("Onglet introuvable : " + tabName);
+            }
+            targetTabIndexes.add(targetTabIndex);
+        }
+        return targetTabIndexes;
     }
 
     private Path writeTabInTemporaryFile(Workbook workbook, String extension) throws IOException{

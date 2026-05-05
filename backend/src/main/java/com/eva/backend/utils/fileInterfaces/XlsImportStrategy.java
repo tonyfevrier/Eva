@@ -43,13 +43,12 @@ public class XlsImportStrategy implements FileImportStrategy {
         PedagogicalContext context = experimentation.getPedagogicalContext();
 
         String protocol = experimentation.getProtocol().split(":")[0];
-        String date = LocalDate.now().toString();
         String institution = experimentation.getInstitution().getName();
         String lastName = user.getLastname();
         String firstName = user.getFirstname();
         String studyField = context.getStudyField(); 
 
-        return protocol + "_" + date + "_" + institution + "_" + lastName + "_" + firstName + "_" + studyField + "." + extension;
+        return id + "_" + protocol + "_" + institution + "_" + lastName + "_" + firstName + "_" + studyField + "." + extension;
     }
 
     @Override
