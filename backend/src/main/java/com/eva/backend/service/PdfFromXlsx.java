@@ -91,7 +91,7 @@ public class PdfFromXlsx {
         return tempWorkbook;
     }
 
-    private byte[] convertInput(Path inputToConvert, String extension) throws OfficeException, IOException{
+    protected byte[] convertInput(Path inputToConvert, String extension) throws OfficeException, IOException{
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
                 DocumentConverter converter = LocalConverter.make(officeManager);
                 converter.convert(inputToConvert.toFile())

@@ -48,6 +48,7 @@ class PdfControllerTests {
 
 		pdfController = new PdfController();
 		ReflectionTestUtils.setField(pdfController, "pdfDir", tempDir.toString());
+		ReflectionTestUtils.setField(pdfController, "generatedPdfDir", tempDir.toString());
 		ReflectionTestUtils.setField(pdfController, "dataExtractor", dataExtractionService);
 		ReflectionTestUtils.setField(pdfController, "pdfService", pdfGenerationService);
 		ReflectionTestUtils.setField(pdfController, "mergeService", new PdfMergeService());
