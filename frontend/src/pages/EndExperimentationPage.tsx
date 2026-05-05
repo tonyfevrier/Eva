@@ -87,7 +87,7 @@ export function EndExperimentationPage(){
         sendExportRequest(e.currentTarget.value, setError);
         handleCloseModal();
     }
-    
+
     return <>  
                 <h2>Ajouter les données de l'expérimentation</h2>
                 <Goto id="xls" variant="export" label="Importer le fichier de données brutes" buttonLabel="Importer" onClick={handleImportXls}/>

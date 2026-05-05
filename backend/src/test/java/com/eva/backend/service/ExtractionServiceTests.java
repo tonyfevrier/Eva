@@ -13,7 +13,6 @@ import org.springframework.test.context.ActiveProfiles;
 
 import com.eva.backend.model.Institution;
 import com.eva.backend.model.User;
-import com.eva.backend.service.DataExtractionService;
 import com.eva.backend.utils.JpaDataCreation;
 
 @DataJpaTest
