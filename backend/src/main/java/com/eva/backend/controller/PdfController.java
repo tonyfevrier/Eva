@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.eva.backend.service.DataExtractionService;
 import com.eva.backend.service.FileService;
-import com.eva.backend.service.PdfFromXlsx;
+import com.eva.backend.service.PdfFromSpreadSheet;
 import com.eva.backend.service.PdfGenerationServiceViaHtml;
 import com.eva.backend.service.PdfMergeService;
 
@@ -49,7 +49,7 @@ public class PdfController {
     private FileService fileService;
 
     @Autowired
-    private PdfFromXlsx pdfXlsxService;
+    private PdfFromSpreadSheet pdfXlsxService;
 
     @GetMapping("/generate/{id}")
     public ResponseEntity<byte[]> generatePdf(@PathVariable Long id) throws IOException {
@@ -62,7 +62,7 @@ public class PdfController {
             Path path = Paths.get(pdfDir).toAbsolutePath().normalize();
             List<String> fileNames = fileService.getExperimentationFileNames(path, id);
             byte[] testsByte = mergeService.mergeFilesFromDirectory(path, fileNames);
-        
+            
             byte[] dataTestsByte = mergeService.merge(experimentationDataByte, testsByte);
 
             Path xlsDirectory = Paths.get(xlsDataDir).toAbsolutePath().normalize();

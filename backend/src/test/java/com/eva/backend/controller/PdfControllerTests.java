@@ -28,6 +28,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import com.eva.backend.service.DataExtractionService;
 import com.eva.backend.service.FileService;
+import com.eva.backend.service.PdfFromSpreadSheet;
 import com.eva.backend.service.PdfGenerationServiceViaHtml;
 import com.eva.backend.service.PdfMergeService;
 
@@ -35,24 +36,31 @@ class PdfControllerTests {
 
 	private DataExtractionService dataExtractionService;
 	private PdfGenerationServiceViaHtml pdfGenerationService;
+	private PdfFromSpreadSheet pdfFromXlsx;
 	private PdfController pdfController;
 	private MockMvc mockMvc;
 
 	@TempDir
 	Path tempDir;
 
+	@TempDir
+	Path xlsDataDir;
+
 	@BeforeEach
 	void setUp() {
 		dataExtractionService = mock(DataExtractionService.class);
 		pdfGenerationService = mock(PdfGenerationServiceViaHtml.class);
+		pdfFromXlsx = mock(PdfFromSpreadSheet.class);
 
 		pdfController = new PdfController();
 		ReflectionTestUtils.setField(pdfController, "pdfDir", tempDir.toString());
 		ReflectionTestUtils.setField(pdfController, "generatedPdfDir", tempDir.toString());
+		ReflectionTestUtils.setField(pdfController, "xlsDataDir", xlsDataDir.toString());
 		ReflectionTestUtils.setField(pdfController, "dataExtractor", dataExtractionService);
 		ReflectionTestUtils.setField(pdfController, "pdfService", pdfGenerationService);
 		ReflectionTestUtils.setField(pdfController, "mergeService", new PdfMergeService());
 		ReflectionTestUtils.setField(pdfController, "fileService", new FileService(List.of(), List.of()));
+		ReflectionTestUtils.setField(pdfController, "pdfXlsxService", pdfFromXlsx);
 		mockMvc = MockMvcBuilders.standaloneSetup(pdfController).build();
 	}
 
@@ -61,13 +69,18 @@ class PdfControllerTests {
 		Long experimentationId = 42L;
 		String experimentationText = "Données de l'expérimentation du contrôleur";
 		String mergedFileText = "Document de test merge";
+		String xlsxTabsText = "Contenu des onglets XLSX";
+		List<String> tabsToGet = List.of("Scores bruts 40", "Données descriptives groupe",
+				"Probabilités de réussite", "Évolutions des P. de réussite");
 		Map<String, Map<String, Object>> extractedData = Map.of(
 				"Informations générales", Map.of("institution", "Institution Test", "contact", "contact@test.fr"));
 
 		when(dataExtractionService.extractExperimentationData(experimentationId)).thenReturn(extractedData);
 		when(pdfGenerationService.createPdf(extractedData)).thenReturn(createPdfBytes(experimentationText));
+		when(pdfFromXlsx.convertTabsInPdf("42_resultats.xlsx", tabsToGet)).thenReturn(createPdfBytes(xlsxTabsText));
 
 		Files.write(tempDir.resolve("tests_id42_1.pdf"), createPdfBytes(mergedFileText));
+		Files.write(xlsDataDir.resolve("42_resultats.xlsx"), "xlsx placeholder".getBytes());
 
 		MvcResult mvcResult = mockMvc.perform(get("/pdf/generate/{id}", experimentationId))
 				.andExpect(status().isOk())
@@ -84,15 +97,17 @@ class PdfControllerTests {
 
         // Vérification la présence de contenus spécifiques
 		try (PDDocument document = PDDocument.load(generatedPdf)) {
-			assertThat(document.getNumberOfPages()).isEqualTo(2);
+			assertThat(document.getNumberOfPages()).isEqualTo(3);
 			String text = new PDFTextStripper().getText(document);
 			assertThat(text).contains(experimentationText);
 			assertThat(text).contains(mergedFileText);
+			assertThat(text).contains(xlsxTabsText);
 		}
 
         // Vérifie que ces fonctions ont bien été appelés via les mocks
 		verify(dataExtractionService).extractExperimentationData(experimentationId);
 		verify(pdfGenerationService).createPdf(extractedData);
+		verify(pdfFromXlsx).convertTabsInPdf("42_resultats.xlsx", tabsToGet);
 	}
 
 	private byte[] createPdfBytes(String content) throws Exception {

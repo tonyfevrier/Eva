@@ -17,6 +17,8 @@ import org.jodconverter.core.document.DefaultDocumentFormatRegistry;
 import org.jodconverter.core.office.OfficeException;
 import org.jodconverter.local.LocalConverter;
 import org.jodconverter.local.office.LocalOfficeManager;
+import org.odftoolkit.simple.SpreadsheetDocument;
+import org.odftoolkit.simple.table.Table;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -24,7 +26,7 @@ import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 
 @Service
-public class PdfFromXlsx {
+public class PdfFromSpreadSheet {
     @Value("${app.xls-data-dir}")
     private String xlsDirectory;
 
@@ -51,13 +53,22 @@ public class PdfFromXlsx {
         Path inputToConvert = null;
 
         try {
-            inputToConvert = buildWorkbookWithSelectedTabs(safeFilePath, tabNames, extension);
+            inputToConvert = buildSpreadsheetWithSelectedTabs(safeFilePath, tabNames, extension);
             return convertInput(inputToConvert, extension);
         } catch (IOException | OfficeException e) {
             throw new IllegalStateException("Erreur lors de la conversion du fichier tableur en PDF.", e);
         } finally {
-            deleteTemporaryFile(inputToConvert);
+            if (inputToConvert != null) {
+                deleteTemporaryFile(inputToConvert);
+            }
         }
+    }
+
+    private Path buildSpreadsheetWithSelectedTabs(Path originalFilePath, List<String> tabNames, String extension) throws IOException {
+        if ("ods".equals(extension)) {
+            return buildOdsWithSelectedTabs(originalFilePath, tabNames);
+        }
+        return buildWorkbookWithSelectedTabs(originalFilePath, tabNames, extension);
     }
 
     private Path buildWorkbookWithSelectedTabs(Path originalFilePath, List<String> tabNames, String extension) throws IOException {
@@ -65,6 +76,21 @@ public class PdfFromXlsx {
              Workbook workbook = WorkbookFactory.create(inputStream)) {
             keepOnlySelectedTabs(workbook, tabNames);
             return writeTabInTemporaryFile(workbook, extension);
+        }
+    }
+
+    private Path buildOdsWithSelectedTabs(Path originalFilePath, List<String> tabNames) throws IOException {
+        Path tempOdsFile = Files.createTempFile("eva-sheet-", ".ods");
+
+        try {
+            SpreadsheetDocument document = SpreadsheetDocument.loadDocument(originalFilePath.toFile());
+            keepOnlySelectedTabs(document, tabNames);
+            document.save(tempOdsFile.toFile());
+            document.close();
+            return tempOdsFile;
+        } catch (Exception e) {
+            Files.deleteIfExists(tempOdsFile);
+            throw new IOException("Erreur lors du traitement du fichier ODS.", e);
         }
     }
 
@@ -81,6 +107,16 @@ public class PdfFromXlsx {
         workbook.setSelectedTab(0);
     }
 
+    private void keepOnlySelectedTabs(SpreadsheetDocument document, List<String> tabNames) {
+        List<Integer> targetTabsIndexes = getTabsIndexes(document, tabNames);
+
+        for (int i = document.getSheetCount() - 1; i >= 0; i--) {
+            if (!targetTabsIndexes.contains(i)) {
+                document.removeSheet(i);
+            }
+        }
+    }
+
     private List<Integer> getTabsIndexes(Workbook workbook, List<String> tabNames){
         List<Integer> targetTabIndexes = new ArrayList<>();
 
@@ -92,6 +128,30 @@ public class PdfFromXlsx {
             targetTabIndexes.add(targetTabIndex);
         }
         return targetTabIndexes;
+    }
+
+    private List<Integer> getTabsIndexes(SpreadsheetDocument document, List<String> tabNames) {
+        List<Integer> targetTabIndexes = new ArrayList<>();
+
+        for (String tabName : tabNames) {
+            int targetTabIndex = getSheetIndex(document, tabName);
+            if (targetTabIndex < 0) {
+                throw new IllegalArgumentException("Onglet introuvable : " + tabName);
+            }
+            targetTabIndexes.add(targetTabIndex);
+        }
+
+        return targetTabIndexes;
+    }
+
+    private int getSheetIndex(SpreadsheetDocument document, String tabName) {
+        for (int i = 0; i < document.getSheetCount(); i++) {
+            Table table = document.getSheetByIndex(i);
+            if (table != null && tabName.equals(table.getTableName())) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     private Path writeTabInTemporaryFile(Workbook workbook, String extension) throws IOException{

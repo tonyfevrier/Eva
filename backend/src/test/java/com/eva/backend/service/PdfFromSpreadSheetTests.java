@@ -23,17 +23,19 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.odftoolkit.simple.SpreadsheetDocument;
+import org.odftoolkit.simple.table.Table;
 import org.springframework.test.util.ReflectionTestUtils;
 
-public class PdfFromXlsxTests {
-	private FakeConverterPdfFromXlsx pdfFromXlsx;
+public class PdfFromSpreadSheetTests {
+	private FakeConverterPdfFromSpreadSheet pdfFromXlsx;
 
 	@TempDir
 	Path tempDir;
 
 	@BeforeEach
 	void setUp() {
-		pdfFromXlsx = new FakeConverterPdfFromXlsx();
+		pdfFromXlsx = new FakeConverterPdfFromSpreadSheet();
 		ReflectionTestUtils.setField(pdfFromXlsx, "xlsDirectory", tempDir.toString());
 	}
 
@@ -54,6 +56,40 @@ public class PdfFromXlsxTests {
 		}
 
 		assertThat(Files.exists(xlsxFile)).isTrue();
+	}
+
+	@Test
+	void shouldConvertOdsWithoutTryingToFilterTabsWithPoi() throws Exception {
+		Path odsFile = createOdsFile();
+
+		byte[] pdfBytes = pdfFromXlsx.convertTabsInPdf("test.ods", List.of("TargetTab1", "TargetTab2"));
+
+		assertThat(pdfBytes).isNotNull();
+		assertThat(pdfBytes.length).isGreaterThan(0);
+		assertThat(new String(pdfBytes, 0, 4)).isEqualTo("%PDF");
+
+		try (PDDocument document = PDDocument.load(pdfBytes)) {
+			String text = new PDFTextStripper().getText(document);
+			assertThat(text).contains("TargetTab1");
+			assertThat(text).contains("TargetTab2");
+			assertThat(text).doesNotContain("IgnoredTab");
+		}
+
+		assertThat(Files.exists(odsFile)).isTrue();
+	}
+
+	private Path createOdsFile() throws Exception {
+		Path odsFile = tempDir.resolve("test.ods");
+		SpreadsheetDocument document = SpreadsheetDocument.newSpreadsheetDocument();
+		try {
+			document.getSheetByIndex(0).setTableName("IgnoredTab");
+			document.appendSheet("TargetTab1");
+			document.appendSheet("TargetTab2");
+			document.save(odsFile.toFile());
+			return odsFile;
+		} finally {
+			document.close();
+		}
 	}
 
     private Path createXlsxFile() throws IOException{
@@ -77,11 +113,57 @@ public class PdfFromXlsxTests {
         return xlsxFile;
     }
 
-	private static class FakeConverterPdfFromXlsx extends PdfFromXlsx {
+	private static class FakeConverterPdfFromSpreadSheet extends PdfFromSpreadSheet {
         /* Mock de la fonction convertInput pour éviter de dépendre d'un Libre office local */
 		@Override
 		protected byte[] convertInput(Path inputToConvert, String extension) throws java.io.IOException {
-			try (Workbook workbook = WorkbookFactory.create(Files.newInputStream(inputToConvert));
+			if ("ods".equals(extension)) {
+				return createPdfBytesFromOds(inputToConvert);
+			}
+            return createPdfBytesFromXlsx(inputToConvert);
+
+			
+		}
+
+		private byte[] createPdfBytesFromOds(Path inputToConvert) throws java.io.IOException {
+			String content;
+			try {
+				SpreadsheetDocument document = SpreadsheetDocument.loadDocument(inputToConvert.toFile());
+				try {
+					List<String> sheetNames = new ArrayList<>();
+					for (int i = 0; i < document.getSheetCount(); i++) {
+						Table table = document.getSheetByIndex(i);
+						if (table != null) {
+							sheetNames.add(table.getTableName());
+						}
+					}
+					content = String.join(" ", sheetNames);
+				} finally {
+					document.close();
+				}
+			} catch (Exception e) {
+				throw new IOException("Impossible de lire le fichier ODS de test", e);
+			}
+
+			try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+				 PDDocument document = new PDDocument()) {
+				PDPage page = new PDPage();
+				document.addPage(page);
+				try (PDPageContentStream contentStream = new PDPageContentStream(document, page)) {
+					contentStream.beginText();
+					contentStream.setFont(PDType1Font.HELVETICA, 12);
+					contentStream.newLineAtOffset(100, 700);
+					contentStream.showText(content);
+					contentStream.endText();
+				}
+
+				document.save(outputStream);
+				return outputStream.toByteArray();
+			}
+		}
+
+        private byte[] createPdfBytesFromXlsx(Path inputToConvert) throws IOException{
+            try (Workbook workbook = WorkbookFactory.create(Files.newInputStream(inputToConvert));
 				 ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 				 PDDocument document = new PDDocument()) {
 				List<String> values = new ArrayList<>();
@@ -103,6 +185,6 @@ public class PdfFromXlsxTests {
 				document.save(outputStream);
 				return outputStream.toByteArray();
 			}
-		}
+        }
 	}
 }
