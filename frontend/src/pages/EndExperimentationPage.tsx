@@ -6,6 +6,7 @@ import { Button } from "../components/Button";
 import { exportFile } from "../utils/request/fileExport";
 import { ModalList } from "../components/ModalList";
 import { LinkCheckbox } from "../components/LinkCheckBox";
+import { Spinner } from "../components/Spinner";
 
 export function EndExperimentationPage(){
     const [isFileModalOpen, setIsFileModalOpen] = useState<boolean>(false);
@@ -13,6 +14,7 @@ export function EndExperimentationPage(){
     const [fileNames, setFileNames] = useState<Array<string>>([]);
     const [fileNamesToDelete, setFileNamesToDelete] = useState<Array<string>>([]);
     const [error, setError] = useState<Error|null>(null);
+    const [loading, setLoading] = useState<boolean>(false);
     const {id} = useParams();
     const [interpretation, setInterpretation] = useState<string>("");
 
@@ -47,7 +49,8 @@ export function EndExperimentationPage(){
     }
 
     const handlePdf = () => {
-        generatePdf(id, setError);
+        setLoading(true); 
+        generatePdf(id, setError, setLoading);
     }
 
     const handleEnd = () => {
@@ -105,6 +108,7 @@ export function EndExperimentationPage(){
                         <Button onClick={handleDeleteFiles} style={{margin: '.5em'}}>Supprimer les fichiers sélectionnés</Button>
                     </ModalList>
                 }
+                {loading && <Spinner/>}
            </>
 }
 
@@ -165,7 +169,7 @@ async function sendInterpretationRequest(id: string|undefined, body: string, set
     }
 }
 
-export async function generatePdf(id: string|undefined, setError: Dispatch<SetStateAction<Error|null>>){
+export async function generatePdf(id: string|undefined, setError: Dispatch<SetStateAction<Error|null>>, setLoading: Dispatch<SetStateAction<boolean>>){
     const response = await fetch(`http://localhost:9000/pdf/generate/${id}`, {
         headers: {
             'Accept': 'application/json'
@@ -173,11 +177,13 @@ export async function generatePdf(id: string|undefined, setError: Dispatch<SetSt
         method: "get",
     }).catch(requestError => {
         setError(requestError);
+        setLoading(false);
         throw requestError
     });
 
     if (response.ok){
         exportFile(response, `experimentation_summary.pdf`);
+        setLoading(false);
     }
 }
 
