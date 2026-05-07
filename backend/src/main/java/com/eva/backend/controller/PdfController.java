@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.eva.backend.records.DataForHtml;
 import com.eva.backend.service.DataExtractionService;
 import com.eva.backend.service.FileService;
 import com.eva.backend.service.PdfFromSpreadSheet;
@@ -55,7 +56,8 @@ public class PdfController {
     public ResponseEntity<byte[]> generatePdf(@PathVariable Long id) throws IOException {
         /* On crée la première page de données, on la merge aux fichiers tests et questionnaires importés par l'utilisateur et au fichier xls. */
         Map<String, Map<String, Object>> data = dataExtractor.extractExperimentationData(id);
-        byte[] experimentationDataByte = pdfService.createPdf(data);
+        DataForHtml dataForHtml = new DataForHtml("experimentation-pdf", "experimentationData", data);
+        byte[] experimentationDataByte = pdfService.createPdf(dataForHtml);
         
         try {
 

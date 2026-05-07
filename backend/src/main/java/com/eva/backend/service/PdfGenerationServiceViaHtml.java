@@ -2,12 +2,12 @@ package com.eva.backend.service;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.Map;
 
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
+import com.eva.backend.records.DataForHtml;
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 
 @Service
@@ -19,16 +19,16 @@ public class PdfGenerationServiceViaHtml {
         this.templateEngine = templateEngine;
     }
 
-    public byte[] createPdf(Map<String, Map<String, Object>> experimentationData) throws IOException {
-        String html = renderTemplate(experimentationData);
+    public byte[] createPdf(DataForHtml data) throws IOException {
+        String html = renderTemplate(data);
         return renderHtmlToPdf(html);
     }
 
-    private String renderTemplate(Map<String, Map<String, Object>> experimentationData) {
+    private String renderTemplate(DataForHtml data) {
         /* Permet de passer des variables au html */
         Context context = new Context();
-        context.setVariable("experimentationData", experimentationData);
-        return templateEngine.process("experimentation-pdf", context);
+        context.setVariable(data.variableName(), data.variable());
+        return templateEngine.process(data.templateName(), context);
     }
 
     private byte[] renderHtmlToPdf(String html) throws IOException {

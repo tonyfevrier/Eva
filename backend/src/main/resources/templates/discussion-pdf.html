@@ -47,30 +47,12 @@
     </style>
 </head>
 <body>
-    <h1>Données de l'expérimentation</h1>
+    <h1>Interprétation des résultats</h1>
 
-    <div th:each="category : ${experimentationData.entrySet()}" class="category">
-        <h2 th:text="${category.key}">Catégorie</h2>
-
-        <div th:each="item : ${category.value.entrySet()}" class="entry">
-            <!-- Si la valeur est une Map, afficher ses sous-entrées -->
-            <div th:if="${item.value instanceof T(java.util.Map)}">
-                <strong th:text="${item.key}">clé</strong>
-                <div style="padding-left: 20px;">
-                    <div th:each="subItem : ${item.value.entrySet()}" style="margin-bottom: 5px;">
-                        <span th:text="${subItem.key}">sous-clé</span>
-                        :
-                        <span th:text="${subItem.value}">sous-valeur</span>
-                    </div>
-                </div>
-            </div>
-            <!-- Sinon, afficher simplement la clé-valeur -->
-            <div th:unless="${item.value instanceof T(java.util.Map)}">
-                <span th:text="${item.key}">clé</span>
+    <div th:each="category : ${interpretationData.entrySet()}" class="category">             
+                <span th:text="${category.key}">clé</span>
                 :
-                <span th:text="${item.value}">valeur</span>
-            </div>
-        </div>
+                <span th:text="${category.value}">valeur</span>
     </div>
 </body>
 </html>

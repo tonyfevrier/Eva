@@ -81,4 +81,11 @@ public class DataExtractionService {
         }
         return evalMap;
     }
+
+     public Map<String, String> extractInterpretationData(Long id){
+        Experimentation experimentation = experimentationRepository.findById(id).orElseThrow();
+        Map<String, String> data = new LinkedHashMap<>();
+        data.put("interpretation", experimentation.getInterpretation());
+        return data;
+    }
 }

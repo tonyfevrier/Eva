@@ -1,6 +1,7 @@
 package com.eva.backend.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -26,6 +27,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import com.eva.backend.records.DataForHtml;
 import com.eva.backend.service.DataExtractionService;
 import com.eva.backend.service.FileService;
 import com.eva.backend.service.PdfFromSpreadSheet;
@@ -77,7 +79,7 @@ class PdfControllerTests {
 		byte[] lastFivePagesPdf = createPdfBytes(xlsxTabsText);
 
 		when(dataExtractionService.extractExperimentationData(experimentationId)).thenReturn(extractedData);
-		when(pdfGenerationService.createPdf(extractedData)).thenReturn(createPdfBytes(experimentationText));
+		when(pdfGenerationService.createPdf(any(DataForHtml.class))).thenReturn(createPdfBytes(experimentationText));
 		when(pdfFromXlsx.convertTabsInPdf("42_resultats.xlsx")).thenReturn(convertedXlsxPdf);
 		when(pdfFromXlsx.keepOnlyLastSheets(convertedXlsxPdf, 5)).thenReturn(lastFivePagesPdf);
 
@@ -108,7 +110,7 @@ class PdfControllerTests {
 
         // Vérifie que ces fonctions ont bien été appelés via les mocks
 		verify(dataExtractionService).extractExperimentationData(experimentationId);
-		verify(pdfGenerationService).createPdf(extractedData);
+		verify(pdfGenerationService).createPdf(any(DataForHtml.class));
 		verify(pdfFromXlsx).convertTabsInPdf("42_resultats.xlsx");
 		verify(pdfFromXlsx).keepOnlyLastSheets(convertedXlsxPdf, 5);
 	}

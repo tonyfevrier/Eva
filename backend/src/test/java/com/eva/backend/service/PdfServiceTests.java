@@ -24,6 +24,7 @@ import org.thymeleaf.spring6.templateresolver.SpringResourceTemplateResolver;
 
 import com.eva.backend.model.Institution;
 import com.eva.backend.model.User;
+import com.eva.backend.records.DataForHtml;
 import com.eva.backend.utils.JpaDataCreation;
 
 @DataJpaTest
@@ -49,7 +50,8 @@ public class PdfServiceTests {
 		Long experimentationId = dataCreator.createAnExperimentation(user, institution);
 
 		Map<String, Map<String, Object>> experimentationData = dataExtractionService.extractExperimentationData(experimentationId);
-		byte[] pdfBytes = pdfGenerationService.createPdf(experimentationData);
+		DataForHtml dataForHtml = new DataForHtml("experimentation-pdf", "experimentationData", experimentationData);
+		byte[] pdfBytes = pdfGenerationService.createPdf(dataForHtml);
 
 		Path generatedPdf = tempDir.resolve("experimentation.pdf");
 		Files.write(generatedPdf, pdfBytes);
