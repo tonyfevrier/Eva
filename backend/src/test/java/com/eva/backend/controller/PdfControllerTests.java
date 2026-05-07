@@ -1,8 +1,10 @@
 package com.eva.backend.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -13,6 +15,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+
+import org.mockito.ArgumentMatchers;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
@@ -70,16 +74,24 @@ class PdfControllerTests {
 	void shouldLaunchGetRequestGenerateSaveAndReturnMergedPdf() throws Exception {
 		Long experimentationId = 42L;
 		String experimentationText = "Données de l'expérimentation du contrôleur";
+		String interpretationText = "Données d'interprétation du contrôleur";
 		String mergedFileText = "Document de test merge";
 		String xlsxTabsText = "Contenu des onglets XLSX";
 		Map<String, Map<String, Object>> extractedData = Map.of(
 				"Informations générales", Map.of("institution", "Institution Test", "contact", "contact@test.fr"));
+		Map<String, String> interpretationData = Map.of("résultat", "Analyse positive", "commentaire", "Très bon");
 
 		byte[] convertedXlsxPdf = createPdfBytes("PDF XLSX complet");
 		byte[] lastFivePagesPdf = createPdfBytes(xlsxTabsText);
 
 		when(dataExtractionService.extractExperimentationData(experimentationId)).thenReturn(extractedData);
-		when(pdfGenerationService.createPdf(any(DataForHtml.class))).thenReturn(createPdfBytes(experimentationText));
+		when(dataExtractionService.extractInterpretationData(experimentationId)).thenReturn(interpretationData);
+		// Mock les deux appels à createPdf : experimentation puis interpretation
+		byte[] experimentationPdf = createPdfBytes(experimentationText);
+		byte[] interpretationPdf = createPdfBytes(interpretationText);
+		when(pdfGenerationService.createPdf(any(DataForHtml.class)))
+			.thenReturn(experimentationPdf)
+			.thenReturn(interpretationPdf);
 		when(pdfFromXlsx.convertTabsInPdf("42_resultats.xlsx")).thenReturn(convertedXlsxPdf);
 		when(pdfFromXlsx.keepOnlyLastSheets(convertedXlsxPdf, 5)).thenReturn(lastFivePagesPdf);
 
@@ -101,16 +113,20 @@ class PdfControllerTests {
 
         // Vérification la présence de contenus spécifiques
 		try (PDDocument document = PDDocument.load(generatedPdf)) {
-			assertThat(document.getNumberOfPages()).isEqualTo(3);
+			// 4 pages : experimentation + tests + xlsx + interpretation
+			assertThat(document.getNumberOfPages()).isEqualTo(4);
 			String text = new PDFTextStripper().getText(document);
 			assertThat(text).contains(experimentationText);
 			assertThat(text).contains(mergedFileText);
 			assertThat(text).contains(xlsxTabsText);
+			// Vérifier que la nouvelle page d'interprétation a bien été créée et mergée
+			assertThat(text).contains(interpretationText);
 		}
 
         // Vérifie que ces fonctions ont bien été appelés via les mocks
 		verify(dataExtractionService).extractExperimentationData(experimentationId);
-		verify(pdfGenerationService).createPdf(any(DataForHtml.class));
+		verify(dataExtractionService).extractInterpretationData(experimentationId);
+		verify(pdfGenerationService, times(2)).createPdf(any(DataForHtml.class));
 		verify(pdfFromXlsx).convertTabsInPdf("42_resultats.xlsx");
 		verify(pdfFromXlsx).keepOnlyLastSheets(convertedXlsxPdf, 5);
 	}

@@ -55,9 +55,13 @@ public class PdfController {
     @GetMapping("/generate/{id}")
     public ResponseEntity<byte[]> generatePdf(@PathVariable Long id) throws IOException {
         /* On crée la première page de données, on la merge aux fichiers tests et questionnaires importés par l'utilisateur et au fichier xls. */
-        Map<String, Map<String, Object>> data = dataExtractor.extractExperimentationData(id);
-        DataForHtml dataForHtml = new DataForHtml("experimentation-pdf", "experimentationData", data);
-        byte[] experimentationDataByte = pdfService.createPdf(dataForHtml);
+        Map<String, Map<String, Object>> experimentationData = dataExtractor.extractExperimentationData(id);
+        DataForHtml experimentationForHtml = new DataForHtml("experimentation-pdf", "experimentationData", experimentationData);
+        byte[] experimentationDataByte = pdfService.createPdf(experimentationForHtml);
+        
+        Map<String, String> interpretationData = dataExtractor.extractInterpretationData(id);
+        DataForHtml interpretationForHtml = new DataForHtml("interpretation-pdf", "interpretationData", interpretationData);
+        byte[] interpretationDataByte = pdfService.createPdf(interpretationForHtml);
         
         try {
 
@@ -65,15 +69,12 @@ public class PdfController {
             List<String> fileNames = fileService.getExperimentationFileNames(path, id);
             byte[] testsByte = mergeService.mergeFilesFromDirectory(path, fileNames);
             
-            //byte[] dataTestsByte = mergeService.merge(experimentationDataByte, testsByte);
-
             Path xlsDirectory = Paths.get(xlsDataDir).toAbsolutePath().normalize();
             String xlsFileName = fileService.findXlsFileByExperimentationId(xlsDirectory, id);
             byte[] convertedByte = pdfXlsxService.convertTabsInPdf(xlsFileName);
             byte[] tabsByte = pdfXlsxService.keepOnlyLastSheets(convertedByte, 5);
-            //byte[] pdfByte = mergeService.merge(dataTestsByte, tabsByte);
             
-            List<byte[]> pdfToMerge = List.of(experimentationDataByte, testsByte, tabsByte);
+            List<byte[]> pdfToMerge = List.of(experimentationDataByte, testsByte, tabsByte, interpretationDataByte);
             byte[] pdfByte = mergeService.mergeMultipleFiles(pdfToMerge);
             String generatedFileName = "experimentation_summary_" + id + ".pdf";
             fileService.registerFile(generatedPdfDir, generatedFileName, pdfByte);

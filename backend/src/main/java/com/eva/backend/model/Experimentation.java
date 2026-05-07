@@ -55,6 +55,7 @@ public class Experimentation {
 
     private String dataPath;
 
+    @Column(length=5000)
     private String interpretation;
 
     @Builder.Default
