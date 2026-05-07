@@ -1,7 +1,6 @@
 package com.eva.backend.controller;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -13,7 +12,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.LocalDate;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -23,7 +21,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
@@ -142,6 +139,9 @@ public class FileTests {
 		when(experimentationRepository.findById(experimentationId)).thenReturn(Optional.of(experimentation));
 
 		String expectedFileName = experimentationId + "_Protocole" + "_InstitutionTest_Doe_John_Math.xlsx";
+		Path importDir = Path.of("target", "test-imports");
+		Path existingFile = importDir.resolve(expectedFileName);
+		Files.write(existingFile, "old-content".getBytes(StandardCharsets.UTF_8));
 
 		MockMultipartFile file = new MockMultipartFile(
 				"file",
@@ -180,6 +180,9 @@ public class FileTests {
 	void importFileShouldUploadPdfTestFileFromClient() throws Exception {
 		String experimentationId = "1";
 		String expectedFileName = "test_id1_1.pdf";
+		Path importDir = Path.of("target", "test-imports");
+		Path existingSpreadsheetFile = importDir.resolve("1_previous.xlsx");
+		Files.write(existingSpreadsheetFile, XLSX_FILE_CONTENT);
 
 		MockMultipartFile file = new MockMultipartFile(
 				"file",
@@ -199,12 +202,16 @@ public class FileTests {
 		
 		byte[] savedBytes = Files.readAllBytes(savedFile);
 		org.junit.jupiter.api.Assertions.assertArrayEquals(PDF_FILE_CONTENT, savedBytes);
+		org.junit.jupiter.api.Assertions.assertFalse(Files.exists(existingSpreadsheetFile));
 	} 
     
 	@Test
 	void importFileShouldUploadPdfQuestionnaireFileFromClient() throws Exception {
 		String experimentationId = "1";
 		String expectedFileName = "questionnaire_id1_1.pdf";
+		Path importDir = Path.of("target", "test-imports");
+		Path existingSpreadsheetFile = importDir.resolve("1_previous.xlsx");
+		Files.write(existingSpreadsheetFile, XLSX_FILE_CONTENT);
 
 		MockMultipartFile file = new MockMultipartFile(
 				"file",
@@ -224,6 +231,7 @@ public class FileTests {
 		
 		byte[] savedBytes = Files.readAllBytes(savedFile);
 		org.junit.jupiter.api.Assertions.assertArrayEquals(PDF_FILE_CONTENT, savedBytes);
+		org.junit.jupiter.api.Assertions.assertFalse(Files.exists(existingSpreadsheetFile));
 	} 
 
 	@Test

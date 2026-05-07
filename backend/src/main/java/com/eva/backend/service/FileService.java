@@ -54,7 +54,8 @@ public class FileService {
     }
 
     private byte[] getExportFileContent(String filename, String exportDir) throws IOException{
-        Path filePath = writeFilePath(filename, exportDir);
+        Path baseDir = getBaseDir(exportDir);
+        Path filePath = writeFilePath(filename, baseDir);
         return Files.readAllBytes(filePath);
     }
 
@@ -71,16 +72,37 @@ public class FileService {
                                                       .filter(s -> s.supports(importType))
                                                       .findFirst()
                                                       .orElseThrow();
-
+        Path baseDir = getBaseDir(strategy.getImportDir());
+        deleteExistingExperimentationFile(baseDir, id);
         String importedFileName = strategy.createImportedFileName(id, extension);
-        Path filePath = writeFilePath(importedFileName, strategy.getImportDir());
-        strategy.copy(file, filePath);
+        Path importedFilePath = writeFilePath(importedFileName, baseDir);
+        strategy.copy(file, importedFilePath);
     }
 
-    private Path writeFilePath(String filename, String directory) throws IOException{
-        /* Récupère le nom du dossier et du fichier inclus et les assemble, crée éventuellement le dossier si inexistant */
+    private Path getBaseDir(String directory) throws IOException{
         Path baseDir = Paths.get(directory).toAbsolutePath().normalize();
         Files.createDirectories(baseDir);
+        return baseDir;
+    }
+
+    private void deleteExistingExperimentationFile(Path baseDir, Long id) throws IOException{
+        String expectedPrefix = id + "_";
+
+        try (Stream<Path> files = Files.list(baseDir)) {
+            Path fileToDelete = files
+                            .filter(Files::isRegularFile)
+                            .filter(path -> path.getFileName().toString().startsWith(expectedPrefix))
+                            .findFirst()
+                            .orElse(null);
+
+            if (fileToDelete != null) {
+                Files.deleteIfExists(fileToDelete);
+            }
+        } 
+    }
+
+    private Path writeFilePath(String filename, Path baseDir) throws IOException{
+        /* Récupère le nom du dossier et du fichier inclus et les assemble, crée éventuellement le dossier si inexistant */
         Path filePath = baseDir.resolve(filename).normalize();//nettoyer le path des ../ avec normalize et resolve concatène le dossier au nom de fichier        
         return filePath;
     }
@@ -134,7 +156,8 @@ public class FileService {
     }
 
     public void registerFile(String directory, String outputFileName, byte[] content) throws IOException {
-        Path filePath = writeFilePath(outputFileName, directory);
+        Path baseDir = getBaseDir(directory);
+        Path filePath = writeFilePath(outputFileName, baseDir);
         Files.write(filePath, content, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
     }
 

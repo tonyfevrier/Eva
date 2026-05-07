@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.time.LocalDate;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,7 +35,7 @@ public class XlsImportStrategy implements FileImportStrategy {
     
     @Override
     public String createImportedFileName(Long id, String extension) {
-        //Nom du fichier de la forme : Variante_Annee_institution_nom_prenom_discipline.format
+        //Nom du fichier de la forme : id_Variante_Annee_institution_nom_prenom_discipline.format
 
         Experimentation experimentation = experimentationRepository.findById(id).orElseThrow();
         User user = experimentation.getUser();
