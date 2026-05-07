@@ -70,14 +70,16 @@ class PdfControllerTests {
 		String experimentationText = "Données de l'expérimentation du contrôleur";
 		String mergedFileText = "Document de test merge";
 		String xlsxTabsText = "Contenu des onglets XLSX";
-		List<String> tabsToGet = List.of("Scores bruts 40", "Données descriptives groupe",
-				"Probabilités de réussite", "Évolutions des P. de réussite");
 		Map<String, Map<String, Object>> extractedData = Map.of(
 				"Informations générales", Map.of("institution", "Institution Test", "contact", "contact@test.fr"));
 
+		byte[] convertedXlsxPdf = createPdfBytes("PDF XLSX complet");
+		byte[] lastFivePagesPdf = createPdfBytes(xlsxTabsText);
+
 		when(dataExtractionService.extractExperimentationData(experimentationId)).thenReturn(extractedData);
 		when(pdfGenerationService.createPdf(extractedData)).thenReturn(createPdfBytes(experimentationText));
-		when(pdfFromXlsx.convertTabsInPdf("42_resultats.xlsx", tabsToGet)).thenReturn(createPdfBytes(xlsxTabsText));
+		when(pdfFromXlsx.convertTabsInPdf("42_resultats.xlsx")).thenReturn(convertedXlsxPdf);
+		when(pdfFromXlsx.keepOnlyLastSheets(convertedXlsxPdf, 5)).thenReturn(lastFivePagesPdf);
 
 		Files.write(tempDir.resolve("tests_id42_1.pdf"), createPdfBytes(mergedFileText));
 		Files.write(xlsDataDir.resolve("42_resultats.xlsx"), "xlsx placeholder".getBytes());
@@ -107,7 +109,8 @@ class PdfControllerTests {
         // Vérifie que ces fonctions ont bien été appelés via les mocks
 		verify(dataExtractionService).extractExperimentationData(experimentationId);
 		verify(pdfGenerationService).createPdf(extractedData);
-		verify(pdfFromXlsx).convertTabsInPdf("42_resultats.xlsx", tabsToGet);
+		verify(pdfFromXlsx).convertTabsInPdf("42_resultats.xlsx");
+		verify(pdfFromXlsx).keepOnlyLastSheets(convertedXlsxPdf, 5);
 	}
 
 	private byte[] createPdfBytes(String content) throws Exception {

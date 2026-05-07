@@ -67,10 +67,9 @@ public class PdfController {
 
             Path xlsDirectory = Paths.get(xlsDataDir).toAbsolutePath().normalize();
             String xlsFileName = fileService.findXlsFileByExperimentationId(xlsDirectory, id);
-            List<String> tabsToGet = List.of("Scores bruts 40", "Données descriptives groupe",
-                                            "Probabilités de réussite", "Évolutions des P. de réussite");
-            byte[] xlsTabsByte = pdfXlsxService.convertTabsInPdf(xlsFileName, tabsToGet);
-            byte[] pdfByte = mergeService.merge(dataTestsByte, xlsTabsByte);
+            byte[] convertedByte = pdfXlsxService.convertTabsInPdf(xlsFileName);
+            byte[] tabsByte = pdfXlsxService.keepOnlyLastSheets(convertedByte, 5);
+            byte[] pdfByte = mergeService.merge(dataTestsByte, tabsByte);
             
             String generatedFileName = "experimentation_summary_" + id + ".pdf";
             

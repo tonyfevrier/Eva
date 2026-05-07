@@ -27,7 +27,7 @@ import org.odftoolkit.simple.SpreadsheetDocument;
 import org.odftoolkit.simple.table.Table;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import com.eva.backend.utils.spreadSheetInterfaces.SpreadSheetSample;
+import com.eva.backend.utils.spreadSheetInterfaces.SpreadSheetRender;
 
 public class PdfFromSpreadSheetTests {
     private FakeConverterPdfFromSpreadSheet pdfFromSpreadSheet;
@@ -42,9 +42,9 @@ public class PdfFromSpreadSheetTests {
     }
 
     @Test
-    void shouldConvertOnlyRequestedTabsIntoPdf() throws Exception {
+    void shouldConvertWholeXlsxIntoPdf() throws Exception {
         Path xlsxFile = createXlsxFile();
-        byte[] pdfBytes = pdfFromSpreadSheet.convertTabsInPdf("test.xlsx", List.of("TargetTab1", "TargetTab2"));
+        byte[] pdfBytes = pdfFromSpreadSheet.convertTabsInPdf("test.xlsx");
 
         assertThat(pdfBytes).isNotNull();
         assertThat(pdfBytes.length).isGreaterThan(0);
@@ -52,9 +52,9 @@ public class PdfFromSpreadSheetTests {
 
         try (PDDocument document = PDDocument.load(pdfBytes)) {
             String text = new PDFTextStripper().getText(document);
+            assertThat(text).contains("NE_DOIT_PAS_APPARAITRE");
             assertThat(text).contains("CONTENU_CIBLE_1");
             assertThat(text).contains("CONTENU_CIBLE_2");
-            assertThat(text).doesNotContain("NE_DOIT_PAS_APPARAITRE");
         }
 
         assertThat(Files.exists(xlsxFile)).isTrue();
@@ -64,7 +64,7 @@ public class PdfFromSpreadSheetTests {
     void shouldConvertOdsWithoutTryingToFilterTabsWithPoi() throws Exception {
         Path odsFile = createOdsFile();
 
-        byte[] pdfBytes = pdfFromSpreadSheet.convertTabsInPdf("test.ods", List.of("TargetTab1", "TargetTab2"));
+        byte[] pdfBytes = pdfFromSpreadSheet.convertTabsInPdf("test.ods");
 
         assertThat(pdfBytes).isNotNull();
         assertThat(pdfBytes.length).isGreaterThan(0);
@@ -72,12 +72,30 @@ public class PdfFromSpreadSheetTests {
 
         try (PDDocument document = PDDocument.load(pdfBytes)) {
             String text = new PDFTextStripper().getText(document);
+            assertThat(text).contains("IgnoredTab");
             assertThat(text).contains("TargetTab1");
             assertThat(text).contains("TargetTab2");
-            assertThat(text).doesNotContain("IgnoredTab");
         }
 
         assertThat(Files.exists(odsFile)).isTrue();
+    }
+
+    @Test
+    void shouldKeepOnlyLastPdfPages() throws Exception {
+        byte[] sourcePdf = createMultiPagePdf("PAGE_1", "PAGE_2", "PAGE_3", "PAGE_4");
+
+        byte[] trimmedPdf = pdfFromSpreadSheet.keepOnlyLastSheets(sourcePdf, 2);
+
+        assertThat(trimmedPdf).isNotNull();
+        assertThat(trimmedPdf.length).isGreaterThan(0);
+        try (PDDocument document = PDDocument.load(trimmedPdf)) {
+            assertThat(document.getNumberOfPages()).isEqualTo(2);
+            String text = new PDFTextStripper().getText(document);
+            assertThat(text).contains("PAGE_3");
+            assertThat(text).contains("PAGE_4");
+            assertThat(text).doesNotContain("PAGE_1");
+            assertThat(text).doesNotContain("PAGE_2");
+        }
     }
 
     private Path createOdsFile() throws Exception {
@@ -190,32 +208,17 @@ public class PdfFromSpreadSheetTests {
             }
         }
 
-        private static final class XlsxSpreadSheetSampleForTest implements SpreadSheetSample {
+        private static final class XlsxSpreadSheetSampleForTest implements SpreadSheetRender {
             @Override
             public boolean supports(String extension) {
                 return "xlsx".equals(extension) || "xls".equals(extension);
             }
 
             @Override
-            public Path buildWorkbookWithSelectedTabs(Path originalFilePath, List<String> tabNames) throws IOException {
+            public Path buildWorkbook(Path originalFilePath) throws IOException {
                 Path tempWorkbook = Files.createTempFile("eva-sheet-test-", ".xlsx");
                 try (Workbook workbook = WorkbookFactory.create(Files.newInputStream(originalFilePath));
                      OutputStream outputStream = Files.newOutputStream(tempWorkbook)) {
-                    List<Integer> targetTabIndexes = new ArrayList<>();
-                    for (String tabName : tabNames) {
-                        int index = workbook.getSheetIndex(tabName);
-                        if (index < 0) {
-                            throw new IllegalArgumentException("Onglet introuvable : " + tabName);
-                        }
-                        targetTabIndexes.add(index);
-                    }
-
-                    for (int i = workbook.getNumberOfSheets() - 1; i >= 0; i--) {
-                        if (!targetTabIndexes.contains(i)) {
-                            workbook.removeSheetAt(i);
-                        }
-                    }
-
                     workbook.write(outputStream);
                     return tempWorkbook;
                 } catch (Exception e) {
@@ -228,42 +231,18 @@ public class PdfFromSpreadSheetTests {
             }
         }
 
-        private static final class OdsSpreadSheetSampleForTest implements SpreadSheetSample {
+        private static final class OdsSpreadSheetSampleForTest implements SpreadSheetRender {
             @Override
             public boolean supports(String extension) {
                 return "ods".equals(extension);
             }
 
             @Override
-            public Path buildWorkbookWithSelectedTabs(Path originalFilePath, List<String> tabNames) throws IOException {
+            public Path buildWorkbook(Path originalFilePath) throws IOException {
                 Path tempOds = Files.createTempFile("eva-sheet-test-", ".ods");
                 SpreadsheetDocument document = null;
                 try {
                     document = SpreadsheetDocument.loadDocument(originalFilePath.toFile());
-
-                    List<Integer> targetTabIndexes = new ArrayList<>();
-                    for (String tabName : tabNames) {
-                        int index = -1;
-                        for (int i = 0; i < document.getSheetCount(); i++) {
-                            Table table = document.getSheetByIndex(i);
-                            if (table != null && tabName.equals(table.getTableName())) {
-                                index = i;
-                                break;
-                            }
-                        }
-
-                        if (index < 0) {
-                            throw new IllegalArgumentException("Onglet introuvable : " + tabName);
-                        }
-                        targetTabIndexes.add(index);
-                    }
-
-                    for (int i = document.getSheetCount() - 1; i >= 0; i--) {
-                        if (!targetTabIndexes.contains(i)) {
-                            document.removeSheet(i);
-                        }
-                    }
-
                     document.save(tempOds.toFile());
                     return tempOds;
                 } catch (Exception e) {
@@ -278,6 +257,25 @@ public class PdfFromSpreadSheetTests {
                     }
                 }
             }
+        }
+    }
+
+    private byte[] createMultiPagePdf(String... pageTexts) throws IOException {
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+             PDDocument document = new PDDocument()) {
+            for (String pageText : pageTexts) {
+                PDPage page = new PDPage();
+                document.addPage(page);
+                try (PDPageContentStream contentStream = new PDPageContentStream(document, page)) {
+                    contentStream.beginText();
+                    contentStream.setFont(PDType1Font.HELVETICA, 12);
+                    contentStream.newLineAtOffset(100, 700);
+                    contentStream.showText(pageText);
+                    contentStream.endText();
+                }
+            }
+            document.save(outputStream);
+            return outputStream.toByteArray();
         }
     }
 }

@@ -1,17 +1,14 @@
 package com.eva.backend.service;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.apache.pdfbox.pdmodel.PDDocument;
 import org.jodconverter.core.DocumentConverter;
 import org.jodconverter.core.document.DefaultDocumentFormatRegistry;
 import org.jodconverter.core.office.OfficeException;
@@ -20,7 +17,7 @@ import org.jodconverter.local.office.LocalOfficeManager;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.eva.backend.utils.spreadSheetInterfaces.SpreadSheetSample;
+import com.eva.backend.utils.spreadSheetInterfaces.SpreadSheetRender;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
@@ -35,13 +32,32 @@ public class PdfFromSpreadSheet {
 
     private LocalOfficeManager officeManager;
 
-    private final List<SpreadSheetSample> sampleStrategies;
+    private final List<SpreadSheetRender> strategies;
 
-    public PdfFromSpreadSheet(List<SpreadSheetSample> sampleStrategies){
-        this.sampleStrategies = sampleStrategies;
+    public PdfFromSpreadSheet(List<SpreadSheetRender> strategies){
+        this.strategies = strategies;
     }
 
-    public byte[] convertTabsInPdf(String fileName, List<String> tabNames) {
+    public byte[] keepOnlyLastSheets(byte[] pdfContent, Integer numberOfPagesToKeep) throws IOException {
+        try (ByteArrayInputStream inputStream = new ByteArrayInputStream(pdfContent);
+            PDDocument document = PDDocument.load(inputStream)) {
+            
+            int totalPages = document.getNumberOfPages();
+            int pagesToKeep = Math.min(numberOfPagesToKeep, totalPages);
+            int startPageIndex = totalPages - pagesToKeep;
+            
+            for (int i = 0; i < startPageIndex; i++) {
+                document.removePage(0); // On retire toujours la page 0 puisque les autres remontent
+            }
+            
+            try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+                document.save(outputStream);
+                return outputStream.toByteArray();
+            }
+        }
+    }
+
+    public byte[] convertTabsInPdf(String fileName) {
         Path sourceDirectory = Path.of(xlsDirectory).normalize();
         Path safeFilePath = sourceDirectory.resolve(Path.of(fileName).getFileName()).normalize();
         if (!safeFilePath.startsWith(sourceDirectory)) {
@@ -52,25 +68,24 @@ public class PdfFromSpreadSheet {
         }
 
         String extension = getExtension(safeFilePath.getFileName().toString());
-        SpreadSheetSample sampleStrategy = sampleStrategies.stream()
+        SpreadSheetRender strategy = strategies.stream()
                                                 .filter(s -> s.supports(extension))
                                                 .findFirst()
                                                 .orElseThrow();
 
-        Path sampledWorkbookPath = null;
+        Path workbookPath = null;
 
         try {
-            sampledWorkbookPath = sampleStrategy.buildWorkbookWithSelectedTabs(safeFilePath, tabNames);
-            return convert(sampledWorkbookPath, extension);
+            workbookPath = strategy.buildWorkbook(safeFilePath);
+            return convert(workbookPath, extension);
         } catch (IOException | OfficeException e) {
             throw new IllegalStateException("Erreur lors de la conversion du fichier tableur en PDF.", e);
         } finally {
-            if (sampledWorkbookPath != null) {
-                deleteTemporaryFile(sampledWorkbookPath);
+            if (workbookPath != null) {
+                deleteTemporaryFile(workbookPath);
             }
         }
     }
-
     protected byte[] convert(Path workbookPath, String extension) throws OfficeException, IOException{
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
                 DocumentConverter converter = LocalConverter.make(officeManager);
