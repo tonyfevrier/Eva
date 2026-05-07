@@ -35,7 +35,7 @@ public class PdfMergeServiceTests {
 		byte[] firstPdf = createTestPdfBytes("Document A");
 		byte[] secondPdf = createTestPdfBytes("Document B");
 
-		byte[] mergedBytes = pdfMergeService.merge(firstPdf, secondPdf);
+		byte[] mergedBytes = pdfMergeService.mergeMultipleFiles(Arrays.asList(firstPdf, secondPdf));
 
 		assertThat(mergedBytes).isNotNull();
 		assertThat(mergedBytes.length).isGreaterThan(0);

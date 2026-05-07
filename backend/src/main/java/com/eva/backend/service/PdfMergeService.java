@@ -13,7 +13,15 @@ import org.springframework.stereotype.Service;
 @Service
 public class PdfMergeService {
 
-    public byte[] merge(byte[] firstPdfContent, byte[] secondPdfContent) {
+    public byte[] mergeMultipleFiles(List<byte[]> filesByte){
+        byte[] mergedByte = filesByte.get(0);
+        for (int i=1; i < filesByte.size(); i++){
+            mergedByte = merge(mergedByte, filesByte.get(i));
+        }
+        return mergedByte;
+    }
+
+    private byte[] merge(byte[] firstPdfContent, byte[] secondPdfContent) {
         PDFMergerUtility merger = new PDFMergerUtility();
 
         if (firstPdfContent == null || firstPdfContent.length == 0) {

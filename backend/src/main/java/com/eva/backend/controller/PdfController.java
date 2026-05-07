@@ -63,16 +63,17 @@ public class PdfController {
             List<String> fileNames = fileService.getExperimentationFileNames(path, id);
             byte[] testsByte = mergeService.mergeFilesFromDirectory(path, fileNames);
             
-            byte[] dataTestsByte = mergeService.merge(experimentationDataByte, testsByte);
+            //byte[] dataTestsByte = mergeService.merge(experimentationDataByte, testsByte);
 
             Path xlsDirectory = Paths.get(xlsDataDir).toAbsolutePath().normalize();
             String xlsFileName = fileService.findXlsFileByExperimentationId(xlsDirectory, id);
             byte[] convertedByte = pdfXlsxService.convertTabsInPdf(xlsFileName);
             byte[] tabsByte = pdfXlsxService.keepOnlyLastSheets(convertedByte, 5);
-            byte[] pdfByte = mergeService.merge(dataTestsByte, tabsByte);
+            //byte[] pdfByte = mergeService.merge(dataTestsByte, tabsByte);
             
+            List<byte[]> pdfToMerge = List.of(experimentationDataByte, testsByte, tabsByte);
+            byte[] pdfByte = mergeService.mergeMultipleFiles(pdfToMerge);
             String generatedFileName = "experimentation_summary_" + id + ".pdf";
-            
             fileService.registerFile(generatedPdfDir, generatedFileName, pdfByte);
             return ResponseEntity.ok(pdfByte);
 
