@@ -20,7 +20,7 @@ public class PdfMergeService {
             throw new IllegalArgumentException("Le premier contenu PDF est vide.");
         }
         if (secondPdfContent == null || secondPdfContent.length == 0) {
-            throw new IllegalArgumentException("Le second contenu PDF est vide.");
+            throw new IllegalArgumentException("Le second contenu PDF est vide. Pour générer le pdf, il faut avoir ajouté au moins un fichier test ou un questionnaire");
         }
 
         try (ByteArrayInputStream firstInput = new ByteArrayInputStream(firstPdfContent);

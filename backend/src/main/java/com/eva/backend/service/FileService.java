@@ -172,7 +172,7 @@ public class FileService {
                     .filter(this::isSpreadsheetFile)
                     .sorted()
                     .findFirst()
-                    .orElseThrow(() -> new IllegalArgumentException("Aucun fichier tableur trouve pour l'experimentation id=" + id));
+                    .orElseThrow(() -> new IllegalArgumentException("Vous ne pouvez générer le pdf tant que vous n'avez pas réimporté le tableur contenant vos données"));
         }
     }
 

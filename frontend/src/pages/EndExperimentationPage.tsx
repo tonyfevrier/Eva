@@ -183,8 +183,11 @@ export async function generatePdf(id: string|undefined, setError: Dispatch<SetSt
 
     if (response.ok){
         exportFile(response, `experimentation_summary.pdf`);
-        setLoading(false);
+    } else {
+        const errorMessage = await response.text();
+        alert(errorMessage);
     }
+    setLoading(false);
 }
 
 async function endExperimentation(id: string|undefined, setError: Dispatch<SetStateAction<Error|null>>){
