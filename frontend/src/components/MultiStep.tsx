@@ -37,8 +37,8 @@ export function MultiStep({clickableSteps, children, onLastClick}:MultiProps){
                     return null;
                 })}
                 <div>
-                    <Button onClick={()=>setStep(c=>c-1)} disabled={step===1}>Précédent</Button>
-                    <Button onClick={handleNextStepClick} disabled={!clickableSteps.get(clickableStepsKeys[step-1])}>{isOnTheLastStep?"Sauver l'expérimentation":"Suivant"}</Button>
+                    <Button style={{"margin" : "1em"}} onClick={()=>setStep(c=>c-1)} disabled={step===1}>Précédent</Button>
+                    <Button style={{"margin" : "1em"}} onClick={handleNextStepClick} disabled={!clickableSteps.get(clickableStepsKeys[step-1])}>{isOnTheLastStep?"Sauver l'expérimentation":"Suivant"}</Button>
                 </div>
             </>
 }

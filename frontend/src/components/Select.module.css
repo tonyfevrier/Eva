@@ -9,10 +9,26 @@
     padding: 0.5em 1em;
 }
 
+.formField > p {
+    text-align: left;
+}
+
 .formField > select {
     background-color: white;
+    max-width: 60%;
 }
 
 .formField > select > option:hover {
     background-color: green;
+}
+
+
+@media screen and (max-width: 560px) {
+    .formField {
+        display: block;
+    }
+
+    .formField > p {
+        text-align: center;
+    }
 }

@@ -49,7 +49,7 @@ export function PasswordChangePage(){
                 <form onSubmit={handleSavePassword}>
                     <Input title="Veuillez entrer un nouveau mot de passe" type="password" name="password" value={passwords.password} onChange={handleFormChange}/>
                     <Input title="Veuillez entrer une seconde fois le mot de passe" type="password" name="passwordCopy" value={passwords.passwordCopy} onChange={handleFormChange}/>
-                    <Button>Enregistrer le mot de passe</Button>
+                    <Button style={{"margin": "1em"}}>Enregistrer le mot de passe</Button>
                 </form>
                 {fetchError?.message && <p>{fetchError?.message}</p> }
            </>

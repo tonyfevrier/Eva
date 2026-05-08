@@ -22,6 +22,7 @@ export function ExperimentationSummaryPage(){
     const [sendError, setSendError] = useState<Error|null>(null);
     const [printModal, setPrintModal] = useState<boolean>(false);
     const [printExportModal, setPrintExportModal] = useState<boolean>(false);
+    const [loadingPdf, setLoading] = useState<boolean>(false);
     const navigate = useNavigate();
 
     if (loading){
@@ -54,21 +55,22 @@ export function ExperimentationSummaryPage(){
         }
 
         const handlePdf = () => {
-            generatePdf(id, setSendError);
+            setLoading(true);
+            generatePdf(id, setSendError, setLoading);
         }
 
         return <>
-                    <h1>Récapitulatif de l'expérimentation</h1>
+                    <h2 className={styles.h2}>Récapitulatif de l'expérimentation</h2>
                     {ownerAcceptsContact && 
                     <>
                         <h4>Contact</h4>
                         <Infos title="Pour plus d'informations, vous pouvez écrire au courriel suivant" info={data.contactMail}></Infos>
                     </>}
-                    {!data.inProgress && <Goto label="L'expérimentation est terminée, vous pouvez récupérer son contexte et ses résultats au format pdf" buttonLabel="Générez le pdf" onClick={handlePdf}/>}
-                    <h4>Mots clés</h4>
+                    {!data.inProgress && <Goto variant="export" label="L'expérimentation est terminée, vous pouvez récupérer son contexte et ses résultats au format pdf" buttonLabel="Générez le pdf" onClick={handlePdf}/>}
+                    <h4 className={styles.h4}>Mots clés</h4>
                     {keywords !== "" && <Infos title="Mots-clés" info={keywords}/>}
                     {data.personalKeywords !== "" && <Infos title="Mots-clés personnalisés" info={data.personalKeywords}/>}
-                    <h4>Contexte pédagogique</h4>
+                    <h4 className={styles.h4}>Contexte pédagogique</h4>
                     <Infos title="Nom de l'institution" info={data?.affiliation?.name}/> 
                     <Infos title="Titre de l'enseignement" info={data.pedagogicalContext.teachingTitle}/> 
                     <Infos title="Domaine d'étude" info={data.pedagogicalContext.studyField}/> 
@@ -85,7 +87,7 @@ export function ExperimentationSummaryPage(){
                     <Infos title="Fréquence des cours" info={data.pedagogicalContext.classesFrequencies}/> 
                     <Infos title="Dates des cours" info={data.pedagogicalContext.classesDates}/> 
                     <div>
-                        <h4>Données d'évaluations</h4>
+                        <h4 className={styles.h4}>Données d'évaluations</h4>
                         <Infos title="Protocole" info={data.protocol}/>
                         <Infos title="Accepte le partage de données de l'expérimentation" info={data.isSharingData?"oui":"non"}/>
                         {authenticatedUserOwnsExpe && 
@@ -127,6 +129,7 @@ export function ExperimentationSummaryPage(){
                         </ModalList>}
                     {printModal && <Modal title="Suppression de l'expérimentation" postTitle="Confirmation de fermeture" postContent="Confirmez-vous la suppression de votre expérimentation?" onClose={handleToggleModal} onSave={handleDeleteConfirm}/>}
                     {sendError?.message && <p>{sendError?.message}</p>}
+                    {loadingPdf && <Spinner/>}
                </>
     }
 } 

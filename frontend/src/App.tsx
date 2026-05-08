@@ -4,7 +4,6 @@ import { HomePage } from './pages/HomePage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { PrivateRoute } from './components/PrivateRoute';
-import { TestPage } from './pages/TestPage';
 import { NavBar } from './components/NavBar';
 import { useTheme } from './hooks/useTheme';
 import { useHandleAuth } from './hooks/useHandleAuth';
@@ -63,10 +62,6 @@ const routes: RouteObject[] = [
         path : "/application",
         element : <AuthenticatedLayout/>,
         children : [
-            {
-              index : true,
-              element : <TestPage/>,
-            },
             {
               path : "profile",
               element : <ProfilePage/>,

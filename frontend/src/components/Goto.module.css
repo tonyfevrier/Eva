@@ -10,5 +10,24 @@
 .export{
     display: flex;
     justify-content: space-between;
+    align-items: center;
     margin: 1em;
+}
+
+.export p {
+    margin:0 1em 0 0;
+}
+
+.export :last-child {
+    margin: 1em;
+}
+
+@media screen and (max-width: 560px) {
+    .container, .export {
+        display: block;
+    }    
+
+    .container > * {
+        padding: 0;
+    }
 }

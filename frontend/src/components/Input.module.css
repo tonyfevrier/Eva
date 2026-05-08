@@ -9,7 +9,25 @@
     padding: 0.5em 1em;
 }
 
+.formField > p {
+    text-align: left;
+}
+
 .container > p {
     font-size: 0.8em;
     color: red;
+}
+
+@media screen and (max-width: 560px) {
+    .formField {
+        display: block;
+    }
+
+    .formField > p {
+        text-align: center;
+    }
+
+    .formField > input {
+        margin: auto;
+    }
 }

@@ -160,7 +160,7 @@ export function ProfilePage(){
     }
 
     return <>
-                <h1> Infos utilisateurs</h1>
+                <h2 className={styles.h2}> Infos utilisateurs</h2>
                 <h4  className={styles.blockTitle}>Coordonnées</h4>
                 <form onSubmit={handleSaveInfos}>
                     <Input title="Mail" name="mail" value={state.formData.mail} onChange={handleFormChange} disabled={true}/>

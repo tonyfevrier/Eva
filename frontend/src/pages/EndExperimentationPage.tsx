@@ -7,6 +7,7 @@ import { exportFile } from "../utils/request/fileExport";
 import { ModalList } from "../components/ModalList";
 import { LinkCheckbox } from "../components/LinkCheckBox";
 import { Spinner } from "../components/Spinner";
+import styles from "./EndExperimentationPage.module.css";
 
 export function EndExperimentationPage(){
     const [isFileModalOpen, setIsFileModalOpen] = useState<boolean>(false);
@@ -93,12 +94,14 @@ export function EndExperimentationPage(){
 
     return <>  
                 <h2>Ajouter les données de l'expérimentation</h2>
+                <h4 className={styles.h4}>Import des tests administrés</h4>
+                <Goto id="test" variant="export" label="Importez au format pdf les tests administrés aux étudiants." buttonLabel="Importer" onClick={handleDisplayFileModal}/>
+                <Goto id="questionnaire" variant="export" label="Importez au format pdf les questionnaires de recherche administrés aux étudiants." buttonLabel="Importer" onClick={handleDisplayFileModal}/>
+                <h4 className={styles.h4}>Import des résultats de l'expérimentation</h4>
                 <Goto id="xls" variant="export" label="Importer le fichier de données brutes" buttonLabel="Importer" onClick={handleImportXls}/>
                 <Textarea title="Dans cet encart, vous pouvez interpréter vos données." value={interpretation} onChange={(e) => setInterpretation(e.target.value)}></Textarea>
                 <Button onClick={handleInterpretation}>Soumettre l'interprétation des données</Button>
-                <Goto id="test" variant="export" label="Importez au format pdf les tests administrés aux étudiants." buttonLabel="Importer" onClick={handleDisplayFileModal}/>
-                <Goto id="questionnaire" variant="export" label="Importez au format pdf les questionnaires de recherche administrés aux étudiants." buttonLabel="Importer" onClick={handleDisplayFileModal}/>
-                {error?.message && <p>{error?.message}</p>}
+                <h4 className={styles.h4}>Génération du récapitulatif complet de l'expérimentation</h4>
                 <Goto variant="export" label="Vous pouvez générer le pdf récapitulant votre expérimentation avec ou sans interprétation de données." buttonLabel="Générer le pdf" onClick={handlePdf}/>
                 <Goto variant="export" label="Vous pouvez marquer l'expérimentation comme terminée. Tout utilisateur pourra télécharger le pdf généré." buttonLabel="Terminer" onClick={handleEnd}/>
                 {isFileModalOpen && 
@@ -109,6 +112,7 @@ export function EndExperimentationPage(){
                     </ModalList>
                 }
                 {loading && <Spinner/>}
+                {error?.message && <p>{error?.message}</p>}
            </>
 }
 

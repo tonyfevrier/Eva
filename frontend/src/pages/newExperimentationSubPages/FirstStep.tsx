@@ -39,10 +39,10 @@ export function FirstStep({state, setState, handleClickOnCloud}:FirstStepState){
                     <div className={styles.container}>
                         <p>Choisissez votre affiliation</p>
                         {state.affiliation.name !== "" && <p className={styles.institution}>{state.affiliation.name}</p>}
-                        <Button onClick={() => setIsModalOpen(true)}> {state.affiliation.name !== ""?"Modifiez votre choix":"Cliquez pour choisir"}</Button>
+                        <Button className={styles.button} onClick={() => setIsModalOpen(true)}> {state.affiliation.name !== ""?"Modifiez votre choix":"Cliquez pour choisir"}</Button>
                     </div>  
                     {isModalOpen && <ModalFilteredSelector title="Choisissez votre affiliation" items={data["institutions"]} onClick={handleChooseAffiliation} setIsModalOpen={setIsModalOpen}/>}
-                    <Goto href="/application/institution" label="Si vous n'avez pas trouvé votre établissement" buttonLabel="Créez-le ici"/>
+                    <Goto variant="export" href="/application/institution" label="Si vous n'avez pas trouvé votre établissement" buttonLabel="Créez un établissement"/>
                     <Cloud title="Choisissez éventuellement des mots clés" options={state.keywords} onClick={handleClickOnCloud}/>
                     <Input title="Autres mots clés personnalisés" value={state.personalKeywords} onChange={e => {setState({...state, personalKeywords: e.target.value})}}/>
                     <Textarea title="Ancienne pédagogie" variant="withErrorMsg" value={state.oldPedagogy} onChange={e => {setState({...state, oldPedagogy: e.target.value})}}/>

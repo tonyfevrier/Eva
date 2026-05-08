@@ -23,7 +23,7 @@ export function RecoveryPage(){
     if (!mailSent ){
         return  <form action="" onSubmit={handleSubmit}>
                     <Input title="Veuillez entrer votre email" placeholder="email" name="email" value={mailValue} onChange={handleChange} type="text" disabled={false}/>
-                    <Button>Envoyer un mail à l'adresse indiquée</Button>
+                    <Button style={{"margin": "1em"}}>Envoyer un mail à l'adresse indiquée</Button>
                     {fetchError?.message && <p>{fetchError?.message}</p> }
                 </form>
     }
