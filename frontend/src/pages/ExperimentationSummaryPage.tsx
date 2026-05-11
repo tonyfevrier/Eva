@@ -8,7 +8,9 @@ import { useState, type Dispatch, type SetStateAction } from "react";
 import { Modal } from "../components/Modal";
 import { ModalList } from "../components/ModalList";
 import { Goto } from "../components/Goto";
- 
+import { exportFile } from "../utils/request/fileExport";
+import { generatePdf } from "./EndExperimentationPage";
+
 type BodyData = {
     format: string
 }
@@ -20,6 +22,7 @@ export function ExperimentationSummaryPage(){
     const [sendError, setSendError] = useState<Error|null>(null);
     const [printModal, setPrintModal] = useState<boolean>(false);
     const [printExportModal, setPrintExportModal] = useState<boolean>(false);
+    const [loadingPdf, setLoading] = useState<boolean>(false);
     const navigate = useNavigate();
 
     if (loading){
@@ -48,39 +51,26 @@ export function ExperimentationSummaryPage(){
         }
 
         const handleExport = (format: string) => {
-            sendExportRequest({format}, setSendError, setPrintExportModal);
+            sendExportRequest(format, setSendError, setPrintExportModal);
         }
 
-        const handleImport = () => {
-            const fileInput = document.createElement("input");
-            fileInput.type = "file";
-            fileInput.accept = ".xls,.xlsx,.ods";
-
-            fileInput.onchange = async () => {
-                const selectedFile = fileInput.files?.[0];
-
-                if (!selectedFile){
-                    return;
-                }
-
-                setSendError(null);
-                sendImportRequest(selectedFile, id, setSendError);
-            }
-
-            fileInput.click();
+        const handlePdf = () => {
+            setLoading(true);
+            generatePdf(id, setSendError, setLoading);
         }
 
         return <>
-                    <h1>Récapitulatif de l'expérimentation</h1>
+                    <h2 className={styles.h2}>Récapitulatif de l'expérimentation</h2>
                     {ownerAcceptsContact && 
                     <>
                         <h4>Contact</h4>
                         <Infos title="Pour plus d'informations, vous pouvez écrire au courriel suivant" info={data.contactMail}></Infos>
                     </>}
-                    <h4>Mots clés</h4>
+                    {!data.inProgress && <Goto variant="export" label="L'expérimentation est terminée, vous pouvez récupérer son contexte et ses résultats au format pdf" buttonLabel="Générez le pdf" onClick={handlePdf}/>}
+                    <h4 className={styles.h4}>Mots clés</h4>
                     {keywords !== "" && <Infos title="Mots-clés" info={keywords}/>}
                     {data.personalKeywords !== "" && <Infos title="Mots-clés personnalisés" info={data.personalKeywords}/>}
-                    <h4>Contexte pédagogique</h4>
+                    <h4 className={styles.h4}>Contexte pédagogique</h4>
                     <Infos title="Nom de l'institution" info={data?.affiliation?.name}/> 
                     <Infos title="Titre de l'enseignement" info={data.pedagogicalContext.teachingTitle}/> 
                     <Infos title="Domaine d'étude" info={data.pedagogicalContext.studyField}/> 
@@ -97,14 +87,14 @@ export function ExperimentationSummaryPage(){
                     <Infos title="Fréquence des cours" info={data.pedagogicalContext.classesFrequencies}/> 
                     <Infos title="Dates des cours" info={data.pedagogicalContext.classesDates}/> 
                     <div>
-                        <h4>Données d'évaluations</h4>
+                        <h4 className={styles.h4}>Données d'évaluations</h4>
                         <Infos title="Protocole" info={data.protocol}/>
                         <Infos title="Accepte le partage de données de l'expérimentation" info={data.isSharingData?"oui":"non"}/>
                         {authenticatedUserOwnsExpe && 
                         <>
                             <div className={styles.btnContainer} >
                                 <Button onClick={()=> setPrintExportModal(true)}>Exporter le modèle de tableur</Button>
-                                <Button onClick={handleImport}>Réimporter le tableur rempli</Button>
+                                <Button href={`/application/endExpe/${id}`}>Ajouter les données de l'expérimentation</Button>
                             </div>
                         </>}
                         <div>
@@ -139,6 +129,7 @@ export function ExperimentationSummaryPage(){
                         </ModalList>}
                     {printModal && <Modal title="Suppression de l'expérimentation" postTitle="Confirmation de fermeture" postContent="Confirmez-vous la suppression de votre expérimentation?" onClose={handleToggleModal} onSave={handleDeleteConfirm}/>}
                     {sendError?.message && <p>{sendError?.message}</p>}
+                    {loadingPdf && <Spinner/>}
                </>
     }
 } 
@@ -166,14 +157,17 @@ async function sendDeleteRequest(id: string|undefined, setSendError: Dispatch<Se
     }
 }
 
-async function sendExportRequest(body: BodyData, setSendError: Dispatch<SetStateAction<Error|null>>, setPrintExportModal: Dispatch<SetStateAction<boolean>>){
+async function sendExportRequest(format: string, setSendError: Dispatch<SetStateAction<Error|null>>, setPrintExportModal: Dispatch<SetStateAction<boolean>>){
+    const formData = new FormData();
+    formData.append("entry", format);
+    formData.append("exportType", "format");
+    
     const response = await fetch(`http://localhost:9000/file/export`, {
             method: "post",
             headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/octet-stream',
+                'Accept': 'application/json',
             },
-            body:JSON.stringify(body),
+            body: formData,
             credentials: "include"  
         })
         .catch(requestError => {
@@ -187,55 +181,7 @@ async function sendExportRequest(body: BodyData, setSendError: Dispatch<SetState
         setSendError(new Error(`Erreur ${response.status}: ${response.statusText}`));
         return;
     }
-    exportFile(response, body.format);
+    
+    exportFile(response, "ResultatsEVA_v2." + format);
 }
-
-async function exportFile(response:Response, format: string){
-    const blob = await response.blob();
-    const fileName = `ResultatsEVA_v2.${format}`;
-
-    const objectUrl = window.URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = objectUrl;
-    link.download = fileName;
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    window.URL.revokeObjectURL(objectUrl);
-}
-
-async function sendImportRequest(file: File, id: string|undefined, setSendError: Dispatch<SetStateAction<Error|null>>){
-    const supportedExtensions = ["xls", "xlsx", "ods"];
-    const extension = file.name.split(".").pop()?.toLowerCase();
-
-    if (!extension || !supportedExtensions.includes(extension)){
-        setSendError(new Error("Le fichier doit être au format .xls, .xlsx ou .ods"));
-        return;
-    }
-
-    const formData = new FormData();
-    formData.append("file", file);
-    if (id !== undefined){
-        formData.append("id", id);
-    }
-
-    const response = await fetch(`http://localhost:9000/file/import`, {
-            method: "post",
-            headers: {
-                'Accept': 'application/json',
-            },
-            body: formData,
-            credentials: "include"
-        })
-        .catch(requestError => {
-            setSendError(requestError);
-            throw requestError;
-        });
-
-    if (response.ok){
-        alert("Fichier envoyé avec succès!");
-    } else {
-        setSendError(new Error(`Erreur ${response.status}: ${response.statusText}`));
-    }
-}
-
+ 

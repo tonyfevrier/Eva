@@ -1,4 +1,16 @@
 .container{
     display: flex;
+    flex-wrap: wrap;
+}
+
+.h4 {
+    margin: 1em 0;
+}
+
+@media screen and (max-width: 560px) {
+    .container {
+        display: block;
+    }    
+ 
 }
  

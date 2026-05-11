@@ -108,7 +108,7 @@ export function InstitutionProfilePage(){
 
 
     return <>
-                <h1>Profil de l'établissement</h1>
+                <h2 style={{'margin': '1em'}}>Profil de l'établissement</h2>
 
                 <form onSubmit={handleSaveInfos}>
                     <Input title="Nom de l'établissement" name="name" type="text" value={state.formData.name} onChange={(e)=>{dispatch({type: 'UPDATE_FIELD', field: 'name', value: e.target.value})}} disabled={!state.isEditing} required/>

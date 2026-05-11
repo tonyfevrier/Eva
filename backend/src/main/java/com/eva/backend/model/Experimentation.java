@@ -10,6 +10,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -54,4 +55,10 @@ public class Experimentation {
     private Boolean isSharingData;
 
     private String dataPath;
+
+    @OneToMany(mappedBy = "experimentation")
+    private List<Interpretation> interpretations;
+
+    @Builder.Default
+    private Boolean inProgress = true;
 }

@@ -15,7 +15,7 @@ export function RegisterConfirmationPage(){
     if (!registrationConfirmed){
         return <> 
             <p>Veuillez confirmer la création du compte</p>
-            <Button onClick={handleClick}>Confirmer</Button>
+            <Button style={{"margin": "1em"}} onClick={handleClick}>Confirmer</Button>
             {error?.message && <p>{error?.message}</p>}
         </>
     }

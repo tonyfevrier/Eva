@@ -1,4 +1,4 @@
-package com.eva.backend;
+package com.eva.backend.controller;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -68,7 +68,7 @@ public class SendingMailTests {
 
     @Test
     public void testRegisterSendsVerificationMail() throws Exception {
-        String userJson = registerAUser();
+        registerAUser();
         verify(mailSender, times(1)).send(any(MimeMessage.class));
     }
 

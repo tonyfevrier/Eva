@@ -10,7 +10,7 @@ type StepState = {
 
 export function ThirdStep({state, setState}:StepState){
     return <div>
-                <p>Veuillez entrer quelques précisions sur votre contexte pédagogique</p>
+                <h4 style={{"margin" : "1em 0"}}>Veuillez entrer quelques précisions sur votre contexte pédagogique</h4>
                 <Input title="Discipline enseignée" variant="withErrorMsg" value={state.studyField} onChange={e => {setState({...state, studyField: e.target.value})}}/>
                 <Input title="Intitulé ou thème de l'enseignement" variant="withErrorMsg" value={state.teachingTitle} onChange={e => {setState({...state, teachingTitle: e.target.value})}}/>
                 <Textarea title="Connaissances et/ou compétences à acquérir par les apprenants" variant="withErrorMsg" value={state.knowledges} onChange={e => {setState({...state, knowledges: e.target.value})}}/>

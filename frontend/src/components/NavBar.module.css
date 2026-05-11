@@ -43,3 +43,10 @@
 .default > button {
     color: #646cff;
 }
+
+@media screen and (max-width: 560px) {
+    .navbar {
+        display: block;
+    }   
+    
+}

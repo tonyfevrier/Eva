@@ -55,7 +55,12 @@ public class Institution {
     @Column(nullable = false)
     private String socialStatus;
     
+    @Column(length=1000)
     private String institutionSpecifities;    
+
+    @Column(length=1000)
     private String studentsSpecificities;
+    
+    @Column(length=1000)
     private String teachersSpecificities;
 }

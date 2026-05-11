@@ -4,7 +4,7 @@
     align-items: flex-start;
     padding: 1em;
     padding-bottom: 3em;
-    width: 33%;
+    width: 350px;
     margin:0;
 }
 
@@ -111,4 +111,10 @@
 .notice {
     font-style: italic;
     margin: 1em 0;
+}
+
+@media screen and (max-width: 560px) {
+    .container {
+        margin: auto;
+    }    
 }

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Données de l'expérimentation</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 20mm;
+        }
+        html, body {
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            font-size: 18px;
+            margin-bottom: 30px;
+            font-weight: bold;
+        }
+        h2 {
+            font-size: 14px;
+            font-weight: bold;
+            margin-top: 15px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+        }
+        .entry {
+            font-size: 12px;
+            margin-bottom: 8px;
+            padding-left: 10px;
+        }
+        .category {
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+        .category:last-child {
+            break-after: auto;
+            page-break-after: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Interprétation des résultats</h1>
+
+    <div th:each="entry : ${interpretationData.entrySet()}" class="category">
+        <p>
+            <span>Personne qui interprète</span>
+            :
+            <span th:text="${entry.value.name}">Nom</span>
+        </p>
+        <p>
+            <span>Interprétation</span>
+            :
+            <span th:text="${entry.value.content}">Contenu</span>
+        </p>
+</div>
+</body>
+</html>

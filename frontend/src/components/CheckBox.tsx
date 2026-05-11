@@ -5,7 +5,7 @@ import styles from "./Input.module.css"
 type CheckboxProps = {
     title: string,
     onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void,
-    options: Array<string>
+    options: Array<string>,
 } & React.HTMLAttributes<HTMLInputElement>
 
 export function Checkbox({title, options, onChange = () => {}, ...props}:PropsWithChildren<CheckboxProps>){

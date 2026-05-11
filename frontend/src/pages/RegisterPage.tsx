@@ -40,7 +40,7 @@ export function RegisterPage(){
     
     if (!registrationSent ){
         return <>
-                <h1> Inscription </h1>
+                <h2 style={{'margin': '1em'}}> Inscription </h2>
                 <Form ref={registerForm} mapping={inputToStateMapping} sendingState={sendingState} onSubmit={handleClick}></Form>
                 <Goto href="/login" label="Vous souhaitez vous connecter?"/>
            </>;

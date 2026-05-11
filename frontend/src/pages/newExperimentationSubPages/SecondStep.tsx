@@ -24,7 +24,7 @@ export function SecondStep({state, setState}:StepState){
     };
 
     return <div>
-                <h2>Pour évaluer votre pratique, nous vous donnons le choix entre les protocoles suivants</h2>
+                <h4 className={styles.h4}>Pour évaluer votre pratique, nous vous donnons le choix entre les protocoles suivants</h4>
                 
                 <div className={styles.container}>
                     {variantData.map((variant, index) => <PostButton key={index} title={variant.title} text={variant.text} notices={variant.notices} onClick={chooseVariant} protocol={state.protocol}/>)}

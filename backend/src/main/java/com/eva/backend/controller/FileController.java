@@ -1,6 +1,7 @@
 package com.eva.backend.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -10,16 +11,17 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.eva.backend.records.DownloadContent;
 import com.eva.backend.service.FileService;
+import org.springframework.web.bind.annotation.PathVariable;
+
 
 
 @RestController
@@ -29,20 +31,22 @@ public class FileController {
     @Autowired
     private FileService fileService;
 
+    @Value("${app.pdf-dir}")
+    private String pdfDir;
+
     @PostMapping("/export")
-    public ResponseEntity<byte[]> exportFile(@RequestBody Map<String, String> body) throws IOException {
-        String format = body.get("format");
-        if (format == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Missing 'format' in request body".getBytes());
+    public ResponseEntity<byte[]> exportFile(String entry, String exportType) throws IOException {
+        if (entry == null || exportType == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Missing request body".getBytes());
         }
 
-        DownloadContent content = fileService.prepareContentForDownload(format);        
+        DownloadContent content = fileService.prepareContentForDownload(exportType, entry);        
         return ResponseEntity.ok().headers(content.headers()).body(content.fileBytes());
     }
     
 
     @PostMapping("/import")
-    public ResponseEntity<String> importFile(@RequestParam("file") MultipartFile file, Long id) throws IOException {
+    public ResponseEntity<String> importFile(@RequestParam("file") MultipartFile file, Long id, String importType) throws IOException {
         if (file == null || file.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("Missing uploaded file");
@@ -56,15 +60,49 @@ public class FileController {
 
         String safeFileName = Paths.get(originalFileName).getFileName().toString();//supprimer les dossiers dans le nom pr ne garder que le nom du fichier
         String extension = fileService.getFileExtension(safeFileName);
-        if (!"xls".equals(extension) && !"xlsx".equals(extension) && !"ods".equals(extension)) {
+        List<String> authorizedExtensions = List.of("xls", "xlsx", "ods", "pdf");
+        if (!authorizedExtensions.contains(extension)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Unsupported file extension. Allowed: xls, xlsx, ods");
+                    .body("Unsupported file extension.");
         }
 
-        fileService.registerImportedFile(file, id, extension);
+        fileService.registerImportedFile(importType, file, id, extension);
         return ResponseEntity.ok("File uploaded successfully");
     }
 
-    
-    
+    @PostMapping("/getFileNames/{id}")
+    public ResponseEntity<?> getPdfFileNames(String importType, @PathVariable Long id) throws IOException {
+        if (importType == null || importType.isBlank()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", "Missing importType"));
+        }
+
+        Path testsDirectory = Paths.get(pdfDir).toAbsolutePath().normalize();
+
+        if (!Files.isDirectory(testsDirectory)) {
+            return ResponseEntity.ok(Map.of("fileNames", List.of()));
+        }
+
+        List<String> fileNames = fileService.getExperimentationFileNamesByType(testsDirectory, importType, id);
+        return ResponseEntity.ok(Map.of("fileNames", fileNames));
+    }
+
+    @PostMapping("/delete") 
+    public ResponseEntity<?> deleteFiles(@RequestParam("fileNames") List<String> fileNames) throws IOException {
+        if (fileNames == null || fileNames.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", "Missing fileNames"));
+        }
+        Path testsDirectory = Paths.get(pdfDir).toAbsolutePath().normalize();
+
+        if (!Files.isDirectory(testsDirectory)) {
+            return ResponseEntity.ok(Map.of("fileNames", List.of()));
+        }
+
+        fileService.deleteFiles(testsDirectory, fileNames);
+
+        return ResponseEntity.ok("Files are deleted");
+    }
+
 }
+

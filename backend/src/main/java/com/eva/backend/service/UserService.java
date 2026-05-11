@@ -9,17 +9,14 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.http.ResponseCookie;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 
 import com.eva.backend.model.User;
 import com.eva.backend.model.UserAdditionalData;
 import com.eva.backend.repository.UserRepository;
 
 import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
 
 import com.eva.backend.records.CookieEssentials;
 import com.eva.backend.records.TwoCookies;
@@ -93,6 +90,24 @@ public class UserService {
     public User findByToken(String token){
         String username = jwtService.extractUsername(token);
         return userRepository.findByMail(username);
+    }
+
+    /**
+     * Tente de lire un token JWT de manière sécurisée (sans lever d'exception si invalide).
+     * Retourne null si le token est vide, expiré, ou sa signature ne correspond pas.
+     * Utile pour les routes publiques qui acceptent un utilisateur authentifié optionnel.
+     */
+    public User findByTokenSafely(String token){
+        if (token == null || token.isEmpty()) {
+            return null;
+        }
+        try {
+            String username = jwtService.extractUsername(token);
+            return userRepository.findByMail(username);
+        } catch (Exception e) {
+            // Token invalide, expiré, ou signature ne correspond pas
+            return null;
+        }
     }
 
     public User findByMail(String mail){ 

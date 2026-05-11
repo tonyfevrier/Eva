@@ -8,12 +8,30 @@
     padding: 0.5em 1em;
 }
 
+.formField > p {
+    /*max-width: 50%;*/
+    text-align: left;
+}
+
 .formField > textarea {
-    width: 60%;
+    min-width: 40%;
     resize: none;
 }
 
 .container > p {
     font-size: 0.8em;
     color: red;
+}
+
+
+@media screen and (max-width: 560px) {
+    .formField {
+        display: block;
+    }
+
+    .formField > p {
+        width: fit-content;   
+        margin: auto;  
+        text-align: center;
+    }       
 }

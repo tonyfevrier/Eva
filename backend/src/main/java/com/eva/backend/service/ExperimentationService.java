@@ -30,6 +30,10 @@ public class ExperimentationService {
         return experimentationRepository.findAll();
     }
 
+    public Experimentation findByIdWithInterpretations(Long id){
+        return experimentationRepository.findByIdWithInterpretations(id);
+    }
+
     public void deleteById(Long id){
         experimentationRepository.deleteById(id);
     }

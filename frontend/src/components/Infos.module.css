@@ -3,3 +3,24 @@
     align-items: center;
     justify-content: space-between;
 } 
+.container > * {
+    margin: 1em;
+}
+
+.container :first-child {
+    text-align: left;
+}
+
+.container :last-child {
+    color: blue;
+}
+
+@media screen and (max-width: 560px) {
+    .container {
+        display: block;
+    }
+
+    .container :first-child {
+        text-align: center;
+    }
+}

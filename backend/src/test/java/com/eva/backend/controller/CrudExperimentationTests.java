@@ -1,9 +1,10 @@
-package com.eva.backend;
+package com.eva.backend.controller;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -28,6 +29,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.eva.backend.model.Experimentation;
 import com.eva.backend.model.Institution;
+import com.eva.backend.model.Interpretation;
 import com.eva.backend.model.Evaluations;
 import com.eva.backend.model.PedagogicalContext;
 import com.eva.backend.model.User;
@@ -174,6 +176,7 @@ public class CrudExperimentationTests {
                         .andExpect(jsonPath("$.affiliation.id").value(institution.getId()))
                         .andExpect(jsonPath("$.affiliation.name").value("Institution Initiale"))
                         .andExpect(jsonPath("$.isSharingData").value(true))
+                        .andExpect(jsonPath("$.inProgress").value(true))
                         .andExpect(jsonPath("$.pedagogicalContext.learningDifficulty").value("Difficulté d'apprentissage en mathématiques"))
                         .andExpect(jsonPath("$.pedagogicalContext.studyField").value("Mathématiques"))
                         .andExpect(jsonPath("$.pedagogicalContext.teachingTitle").value("Algèbre et géométrie"))
@@ -311,7 +314,7 @@ public class CrudExperimentationTests {
                         .andExpect(jsonPath("$[0].teachingTitle").value("Mécanique et énergie"))
                         .andExpect(jsonPath("$[0].studyField").value("Physique"))
                         .andExpect(jsonPath("$[0].yearOfStudy").value("4ème B"))
-                        .andExpect(jsonPath("$[0].inProgress").value(false))
+                        .andExpect(jsonPath("$[0].inProgress").value(true))
                         .andExpect(jsonPath("$[1].protocol").doesNotExist())
                         .andExpect(jsonPath("$[1].isSharingData").doesNotExist())
                         .andExpect(jsonPath("$[1].pedagogicalContext.learningDifficulty").doesNotExist());
@@ -613,6 +616,51 @@ public class CrudExperimentationTests {
                         .andExpect(jsonPath("$.message").value("Vous n'êtes pas autorisé à supprimer cette expérimentation"));
         
         assertThat(experimentationRepository.findById(1L)).isPresent();
+    }
+
+    @Test
+    public void testAddInterpretation() throws Exception {
+        createAnExperimentation();
+
+        String interpretationJson = """
+                {
+                                        "content": "Les resultats montrent une meilleure participation en classe."
+                }
+                """;
+
+        mockMvc.perform(post("/expe/interpret/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(interpretationJson)
+                        .cookie(new jakarta.servlet.http.Cookie("jwt", jwtCookie)))
+                        .andExpect(status().isOk())
+                        .andExpect(content().string("L'interprétation a bien été sauvegardée"));
+
+        Experimentation experimentation = experimentationRepository.findByIdWithInterpretations(1L);
+        assertThat(experimentation.getInterpretations()).hasSize(1);
+
+        Interpretation savedInterpretation = experimentation.getInterpretations().get(0);
+        assertThat(savedInterpretation.getContent()).isEqualTo("Les resultats montrent une meilleure participation en classe.");
+        assertThat(savedInterpretation.getExperimentation()).isNotNull();
+        assertThat(savedInterpretation.getExperimentation().getId()).isEqualTo(experimentation.getId());
+        assertThat(savedInterpretation.getUser()).isNotNull();
+        assertThat(savedInterpretation.getUser().getId()).isEqualTo(experimentation.getUser().getId());
+        assertThat(savedInterpretation.getUser().getMail()).isEqualTo("marie.tremblay@mail.com");
+    }
+
+    @Test
+    public void testEndExperimentation() throws Exception {
+        createAnExperimentation();
+
+        Experimentation experimentationBefore = experimentationRepository.findById(1L).orElseThrow();
+        assertThat(experimentationBefore.getInProgress()).isTrue();
+
+        mockMvc.perform(get("/expe/endExpe/1")
+               .cookie(new jakarta.servlet.http.Cookie("jwt", jwtCookie)))
+               .andExpect(status().isOk())
+               .andExpect(content().string("L'expérimentation est bien marquée comme terminée"));
+
+        Experimentation experimentationAfter = experimentationRepository.findById(1L).orElseThrow();
+        assertThat(experimentationAfter.getInProgress()).isFalse();
     }
 
     private Institution createInstitution(){
