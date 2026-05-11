@@ -72,6 +72,9 @@ public class User implements UserDetails {
     )
     private List<Institution> institutions;
 
+    @OneToMany(mappedBy = "user")
+    private List<Interpretation> interpretations;
+
     @Override
     public String getUsername(){
         return mail;

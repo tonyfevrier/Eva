@@ -49,10 +49,17 @@
 <body>
     <h1>Interprétation des résultats</h1>
 
-    <div th:each="category : ${interpretationData.entrySet()}" class="category">             
-                <span th:text="${category.key}">clé</span>
-                :
-                <span th:text="${category.value}">valeur</span>
-    </div>
+    <div th:each="entry : ${interpretationData.entrySet()}" class="category">
+        <p>
+            <span>Personne qui interprète</span>
+            :
+            <span th:text="${entry.value.name}">Nom</span>
+        </p>
+        <p>
+            <span>Interprétation</span>
+            :
+            <span th:text="${entry.value.content}">Contenu</span>
+        </p>
+</div>
 </body>
 </html>

@@ -68,7 +68,7 @@ public class SendingMailTests {
 
     @Test
     public void testRegisterSendsVerificationMail() throws Exception {
-        String userJson = registerAUser();
+        registerAUser();
         verify(mailSender, times(1)).send(any(MimeMessage.class));
     }
 

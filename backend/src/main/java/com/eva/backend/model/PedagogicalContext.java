@@ -17,10 +17,10 @@ import lombok.NoArgsConstructor;
 @Embeddable
 public class PedagogicalContext {
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 1000)
     private String learningDifficulty;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 1000)
     private String learningDifficultyOrigin;
 
     @Column(nullable = false)
@@ -29,34 +29,34 @@ public class PedagogicalContext {
     @Column(nullable = false)
     private String teachingTitle;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 1000)
     private String knowledges;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 1000)
     private String prerequisite;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 1000)
     private String organisationParticularities;
     
-    @Column(nullable = false)
+    @Column(nullable = false, length = 1000)
     private String classesFrequencies;
     
-    @Column(nullable = false)
+    @Column(nullable = false, length = 1000)
     private String classesDates;
 
     @Column(nullable = false)
     private String yearOfStudy;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 1000)
     private String studentsSpecificities;
 
     @Column(nullable = false)
     private String studentsNumber;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 1000)
     private String oldPedagogy;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 1000)
     private String newPedagogy;
 
     @Embedded

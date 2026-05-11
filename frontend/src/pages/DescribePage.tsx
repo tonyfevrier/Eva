@@ -45,14 +45,14 @@ export function DescribePage(){
     }
 
     return <>
-                <h1>Te décrire</h1>
+                <h2>Te décrire</h2>
                 <p> Votre inscription a bien été réalisée. 
                     Il vous reste quelques informations de profils à compléter avant de pouvoir accéder à l'application.
                 </p>
                 <form onSubmit={handleSubmit}>
                     <Input title="Etes-vous d'accord pour que votre localisation d'établissement apparaisse sur une carte?" name="card-accept" type="checkbox" onChange={() => setFormData({...formData, acceptMap: !formData.acceptMap})}/>
                     <Input title="Etes-vous d'accord pour que d'autres enseignants puissent vous contacter par email? Si oui vous pourrez rentrer votre numéro de téléphone" name="card-accept" type="checkbox" onChange={() => setFormData({...formData, acceptContact: !formData.acceptContact})}/>
-                    <p>Les champs qui suivent sont facultatifs</p>
+                    <h4 style={{"marginTop": "2em"}}>Les champs qui suivent sont facultatifs</h4>
                     <Select title="Genre" value={formData.gender} onChange={(e)=>{setFormData({...formData, gender: e.target.value})}}>
                         <option value="">Choisissez une des options suivantes</option>
                         <option value="Femme">Femme</option>

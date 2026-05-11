@@ -1,11 +1,9 @@
 package com.eva.backend.controller;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +20,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.eva.backend.model.Institution;
 import com.eva.backend.model.User;
 import com.eva.backend.model.UserAdditionalData;
-import com.eva.backend.service.ConfirmationMailService;
 import com.eva.backend.service.UserService;
 import com.eva.backend.records.CookieEssentials;
 import com.eva.backend.records.TwoCookies;

@@ -29,6 +29,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.eva.backend.model.Experimentation;
 import com.eva.backend.model.Institution;
+import com.eva.backend.model.Interpretation;
 import com.eva.backend.model.Evaluations;
 import com.eva.backend.model.PedagogicalContext;
 import com.eva.backend.model.User;
@@ -623,7 +624,7 @@ public class CrudExperimentationTests {
 
         String interpretationJson = """
                 {
-                    "interpretation": "Les resultats montrent une meilleure participation en classe."
+                                        "content": "Les resultats montrent une meilleure participation en classe."
                 }
                 """;
 
@@ -634,8 +635,16 @@ public class CrudExperimentationTests {
                         .andExpect(status().isOk())
                         .andExpect(content().string("L'interprétation a bien été sauvegardée"));
 
-        Experimentation experimentation = experimentationRepository.findById(1L).orElseThrow();
-        assertThat(experimentation.getInterpretation()).isEqualTo("Les resultats montrent une meilleure participation en classe.");
+        Experimentation experimentation = experimentationRepository.findByIdWithInterpretations(1L);
+        assertThat(experimentation.getInterpretations()).hasSize(1);
+
+        Interpretation savedInterpretation = experimentation.getInterpretations().get(0);
+        assertThat(savedInterpretation.getContent()).isEqualTo("Les resultats montrent une meilleure participation en classe.");
+        assertThat(savedInterpretation.getExperimentation()).isNotNull();
+        assertThat(savedInterpretation.getExperimentation().getId()).isEqualTo(experimentation.getId());
+        assertThat(savedInterpretation.getUser()).isNotNull();
+        assertThat(savedInterpretation.getUser().getId()).isEqualTo(experimentation.getUser().getId());
+        assertThat(savedInterpretation.getUser().getMail()).isEqualTo("marie.tremblay@mail.com");
     }
 
     @Test

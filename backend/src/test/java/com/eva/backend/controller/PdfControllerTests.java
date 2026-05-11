@@ -1,7 +1,6 @@
 package com.eva.backend.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -15,8 +14,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
-
-import org.mockito.ArgumentMatchers;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
@@ -79,13 +76,14 @@ class PdfControllerTests {
 		String xlsxTabsText = "Contenu des onglets XLSX";
 		Map<String, Map<String, Object>> extractedData = Map.of(
 				"Informations générales", Map.of("institution", "Institution Test", "contact", "contact@test.fr"));
-		Map<String, String> interpretationData = Map.of("résultat", "Analyse positive", "commentaire", "Très bon");
+		Map<String, Object> interpretationData = Map.of(
+				"1", Map.of("content", "Analyse positive", "name", "Marie Tremblay"));
 
 		byte[] convertedXlsxPdf = createPdfBytes("PDF XLSX complet");
 		byte[] lastFivePagesPdf = createPdfBytes(xlsxTabsText);
 
 		when(dataExtractionService.extractExperimentationData(experimentationId)).thenReturn(extractedData);
-		when(dataExtractionService.extractInterpretationData(experimentationId)).thenReturn(interpretationData);
+		when(dataExtractionService.extractInterpretationsData(experimentationId)).thenReturn(interpretationData);
 		// Mock les deux appels à createPdf : experimentation puis interpretation
 		byte[] experimentationPdf = createPdfBytes(experimentationText);
 		byte[] interpretationPdf = createPdfBytes(interpretationText);
@@ -125,7 +123,7 @@ class PdfControllerTests {
 
         // Vérifie que ces fonctions ont bien été appelés via les mocks
 		verify(dataExtractionService).extractExperimentationData(experimentationId);
-		verify(dataExtractionService).extractInterpretationData(experimentationId);
+		verify(dataExtractionService).extractInterpretationsData(experimentationId);
 		verify(pdfGenerationService, times(2)).createPdf(any(DataForHtml.class));
 		verify(pdfFromXlsx).convertTabsInPdf("42_resultats.xlsx");
 		verify(pdfFromXlsx).keepOnlyLastSheets(convertedXlsxPdf, 5);

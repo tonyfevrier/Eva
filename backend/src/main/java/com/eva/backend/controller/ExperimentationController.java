@@ -13,12 +13,15 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.eva.backend.model.Experimentation;
 import com.eva.backend.model.Institution;
+import com.eva.backend.model.Interpretation;
 import com.eva.backend.model.User;
 import com.eva.backend.records.ExperimentationRequest;
 import com.eva.backend.service.ExperimentationService;
 import com.eva.backend.service.InstitutionService;
 import com.eva.backend.service.UserService;
+import com.eva.backend.service.InterpretationService;
 
+import jakarta.persistence.Entity;
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -43,6 +46,9 @@ public class ExperimentationController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private InterpretationService interpretationService;
 
     @Autowired
     private RequestUtils requestUtils;
@@ -195,9 +201,16 @@ public class ExperimentationController {
     }
 
     @PostMapping("/interpret/{id}")
-    private ResponseEntity<?> addInterpretation(@PathVariable Long id, @RequestBody Map<String, String> body){
-        Experimentation experimentation = experimentationService.findById(id).orElseThrow();
-        experimentation.setInterpretation(body.get("interpretation"));
+    private ResponseEntity<?> addInterpretation(@RequestBody Interpretation interpretation,  @PathVariable Long id){
+        /*récupérer les interprétations et y ajouter le nouvel objet, on a le User dans l'expé*/
+        Experimentation experimentation = experimentationService.findByIdWithInterpretations(id);
+        User user = experimentation.getUser();
+        List<Interpretation> interpretations = experimentation.getInterpretations();
+        interpretation.setUser(user);
+        interpretation.setExperimentation(experimentation);
+        interpretationService.save(interpretation);
+        interpretations.add(interpretation);
+        experimentation.setInterpretations(interpretations);
         experimentationService.save(experimentation);
         return ResponseEntity.ok("L'interprétation a bien été sauvegardée");
     }

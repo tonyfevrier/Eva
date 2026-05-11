@@ -2,12 +2,14 @@ package com.eva.backend.service;
 
 import java.util.Map;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.eva.backend.model.Experimentation;
 import com.eva.backend.model.Institution;
+import com.eva.backend.model.Interpretation;
 import com.eva.backend.model.PedagogicalContext;
 import com.eva.backend.model.User;
 import com.eva.backend.model.Evaluations;
@@ -37,7 +39,7 @@ public class DataExtractionService {
         
         // Catégories
         Map<String, Object> categories = new LinkedHashMap<>();
-        categories.put("Mots-clés", "".join(", ",experimentation.getKeywords()));
+        categories.put("Mots-clés", String.join(", ",experimentation.getKeywords()));
         categories.put("Mots-clés personnels", experimentation.getPersonalKeywords() != null ? experimentation.getPersonalKeywords() : "");
         data.put("Catégories", categories);
         
@@ -82,10 +84,23 @@ public class DataExtractionService {
         return evalMap;
     }
 
-     public Map<String, String> extractInterpretationData(Long id){
-        Experimentation experimentation = experimentationRepository.findById(id).orElseThrow();
-        Map<String, String> data = new LinkedHashMap<>();
-        data.put("interpretation", experimentation.getInterpretation());
+     public Map<String, Object> extractInterpretationsData(Long id){
+        Experimentation experimentation = experimentationRepository.findByIdWithInterpretations(id);
+        Map<String, Object> data = new LinkedHashMap<>();
+        List<Interpretation> interpretations = experimentation.getInterpretations();
+        for (Interpretation interpretation : interpretations){
+            Map<String, Object> interpretationData = extractInterpretationData(interpretation);
+            data.put(interpretation.getId().toString(), interpretationData);
+        }
         return data;
+    }
+
+    private Map<String, Object> extractInterpretationData(Interpretation interpretation){
+        Map<String, Object> interpretationData = new LinkedHashMap<>();
+        interpretationData.put("content", interpretation.getContent());
+        User user = interpretation.getUser();
+        String name = user.getFirstname() + " " + user.getLastname();
+        interpretationData.put("name", name);
+        return interpretationData;
     }
 }

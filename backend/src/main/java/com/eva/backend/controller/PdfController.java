@@ -59,7 +59,7 @@ public class PdfController {
         DataForHtml experimentationForHtml = new DataForHtml("experimentation-pdf", "experimentationData", experimentationData);
         byte[] experimentationDataByte = pdfService.createPdf(experimentationForHtml);
         
-        Map<String, String> interpretationData = dataExtractor.extractInterpretationData(id);
+        Map<String, Object> interpretationData = dataExtractor.extractInterpretationsData(id);
         DataForHtml interpretationForHtml = new DataForHtml("interpretation-pdf", "interpretationData", interpretationData);
         byte[] interpretationDataByte = pdfService.createPdf(interpretationForHtml);
         
