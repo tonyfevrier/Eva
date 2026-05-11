@@ -18,12 +18,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 
 @RestController
 @RequestMapping("/pdf")
@@ -71,7 +69,7 @@ public class PdfController {
             
             Path xlsDirectory = Paths.get(xlsDataDir).toAbsolutePath().normalize();
             String xlsFileName = fileService.findXlsFileByExperimentationId(xlsDirectory, id);
-            byte[] convertedByte = pdfXlsxService.convertTabsInPdf(xlsFileName);
+            byte[] convertedByte = pdfXlsxService.convertTabsInPdf(xlsDirectory, xlsFileName);
             byte[] tabsByte = pdfXlsxService.keepOnlyLastSheets(convertedByte, 5);
             
             List<byte[]> pdfToMerge = List.of(experimentationDataByte, testsByte, tabsByte, interpretationDataByte);

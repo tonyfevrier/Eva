@@ -22,7 +22,11 @@ import com.eva.backend.utils.fileInterfaces.FileImportStrategy;
 @Service
 public class FileService {
 
-    /* Les service sont chargés dès le début et pas à chaque requête.
+    /* 
+    Classe qui gère l'import, l'export, la suppression, la recherche de 
+    fichiers dans un dossier donné
+
+    Les services sont chargés dès le début et pas à chaque requête.
     Il n'est donc pas conseillé d'importer une classe fille d'une classe abstraite
     à chaque requête. On importe toutes les classes filles dès le début (ici les stratégies)
     et la requête indiquera quelle stratégie on choisit.*/

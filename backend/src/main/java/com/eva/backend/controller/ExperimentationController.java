@@ -1,6 +1,5 @@
 package com.eva.backend.controller;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -21,7 +20,6 @@ import com.eva.backend.service.InstitutionService;
 import com.eva.backend.service.UserService;
 import com.eva.backend.service.InterpretationService;
 
-import jakarta.persistence.Entity;
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.web.bind.annotation.DeleteMapping;

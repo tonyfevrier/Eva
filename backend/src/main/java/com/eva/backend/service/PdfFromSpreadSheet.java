@@ -24,8 +24,6 @@ import jakarta.annotation.PreDestroy;
 
 @Service
 public class PdfFromSpreadSheet {
-    @Value("${app.xls-data-dir}")
-    private String xlsDirectory;
 
     @Value("${app.libreoffice.home:}")
     private String libreOfficeHome;
@@ -57,8 +55,7 @@ public class PdfFromSpreadSheet {
         }
     }
 
-    public byte[] convertTabsInPdf(String fileName) {
-        Path sourceDirectory = Path.of(xlsDirectory).normalize();
+    public byte[] convertTabsInPdf(Path sourceDirectory, String fileName) {
         Path safeFilePath = sourceDirectory.resolve(Path.of(fileName).getFileName()).normalize();
         if (!safeFilePath.startsWith(sourceDirectory)) {
             throw new IllegalArgumentException("Nom de fichier invalide : " + fileName);

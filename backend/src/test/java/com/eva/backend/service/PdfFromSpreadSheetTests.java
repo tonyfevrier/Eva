@@ -25,7 +25,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.odftoolkit.simple.SpreadsheetDocument;
 import org.odftoolkit.simple.table.Table;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import com.eva.backend.utils.spreadSheetInterfaces.SpreadSheetRender;
 
@@ -34,17 +33,17 @@ public class PdfFromSpreadSheetTests {
 
     @TempDir
     Path tempDir;
+    
 
     @BeforeEach
     void setUp() {
         pdfFromSpreadSheet = new FakeConverterPdfFromSpreadSheet();
-        ReflectionTestUtils.setField(pdfFromSpreadSheet, "xlsDirectory", tempDir.toString());
     }
 
     @Test
     void shouldConvertWholeXlsxIntoPdf() throws Exception {
         Path xlsxFile = createXlsxFile();
-        byte[] pdfBytes = pdfFromSpreadSheet.convertTabsInPdf("test.xlsx");
+        byte[] pdfBytes = pdfFromSpreadSheet.convertTabsInPdf(tempDir, "test.xlsx");
 
         assertThat(pdfBytes).isNotNull();
         assertThat(pdfBytes.length).isGreaterThan(0);
@@ -64,7 +63,7 @@ public class PdfFromSpreadSheetTests {
     void shouldConvertOdsWithoutTryingToFilterTabsWithPoi() throws Exception {
         Path odsFile = createOdsFile();
 
-        byte[] pdfBytes = pdfFromSpreadSheet.convertTabsInPdf("test.ods");
+        byte[] pdfBytes = pdfFromSpreadSheet.convertTabsInPdf(tempDir, "test.ods");
 
         assertThat(pdfBytes).isNotNull();
         assertThat(pdfBytes.length).isGreaterThan(0);

@@ -90,7 +90,7 @@ class PdfControllerTests {
 		when(pdfGenerationService.createPdf(any(DataForHtml.class)))
 			.thenReturn(experimentationPdf)
 			.thenReturn(interpretationPdf);
-		when(pdfFromXlsx.convertTabsInPdf("42_resultats.xlsx")).thenReturn(convertedXlsxPdf);
+		when(pdfFromXlsx.convertTabsInPdf(xlsDataDir, "42_resultats.xlsx")).thenReturn(convertedXlsxPdf);
 		when(pdfFromXlsx.keepOnlyLastSheets(convertedXlsxPdf, 5)).thenReturn(lastFivePagesPdf);
 
 		Files.write(tempDir.resolve("tests_id42_1.pdf"), createPdfBytes(mergedFileText));
@@ -125,7 +125,7 @@ class PdfControllerTests {
 		verify(dataExtractionService).extractExperimentationData(experimentationId);
 		verify(dataExtractionService).extractInterpretationsData(experimentationId);
 		verify(pdfGenerationService, times(2)).createPdf(any(DataForHtml.class));
-		verify(pdfFromXlsx).convertTabsInPdf("42_resultats.xlsx");
+		verify(pdfFromXlsx).convertTabsInPdf(xlsDataDir, "42_resultats.xlsx");
 		verify(pdfFromXlsx).keepOnlyLastSheets(convertedXlsxPdf, 5);
 	}
 
