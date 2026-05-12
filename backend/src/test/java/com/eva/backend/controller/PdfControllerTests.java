@@ -14,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
@@ -29,7 +30,9 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import com.eva.backend.records.DataForHtml;
+import com.eva.backend.model.Experimentation;
 import com.eva.backend.service.DataExtractionService;
+import com.eva.backend.service.ExperimentationService;
 import com.eva.backend.service.FileService;
 import com.eva.backend.service.PdfFromSpreadSheet;
 import com.eva.backend.service.PdfGenerationServiceViaHtml;
@@ -38,6 +41,7 @@ import com.eva.backend.service.PdfMergeService;
 class PdfControllerTests {
 
 	private DataExtractionService dataExtractionService;
+	private ExperimentationService experimentationService;
 	private PdfGenerationServiceViaHtml pdfGenerationService;
 	private PdfFromSpreadSheet pdfFromXlsx;
 	private PdfController pdfController;
@@ -52,6 +56,7 @@ class PdfControllerTests {
 	@BeforeEach
 	void setUp() {
 		dataExtractionService = mock(DataExtractionService.class);
+		experimentationService = mock(ExperimentationService.class);
 		pdfGenerationService = mock(PdfGenerationServiceViaHtml.class);
 		pdfFromXlsx = mock(PdfFromSpreadSheet.class);
 
@@ -60,6 +65,7 @@ class PdfControllerTests {
 		ReflectionTestUtils.setField(pdfController, "generatedPdfDir", tempDir.toString());
 		ReflectionTestUtils.setField(pdfController, "xlsDataDir", xlsDataDir.toString());
 		ReflectionTestUtils.setField(pdfController, "dataExtractor", dataExtractionService);
+		ReflectionTestUtils.setField(pdfController, "experimentationService", experimentationService);
 		ReflectionTestUtils.setField(pdfController, "pdfService", pdfGenerationService);
 		ReflectionTestUtils.setField(pdfController, "mergeService", new PdfMergeService());
 		ReflectionTestUtils.setField(pdfController, "fileService", new FileService(List.of(), List.of()));
@@ -81,9 +87,11 @@ class PdfControllerTests {
 
 		byte[] convertedXlsxPdf = createPdfBytes("PDF XLSX complet");
 		byte[] lastFivePagesPdf = createPdfBytes(xlsxTabsText);
+		Experimentation experimentation = new Experimentation();
 
 		when(dataExtractionService.extractExperimentationData(experimentationId)).thenReturn(extractedData);
 		when(dataExtractionService.extractInterpretationsData(experimentationId)).thenReturn(interpretationData);
+		when(experimentationService.findById(experimentationId)).thenReturn(Optional.of(experimentation));
 		// Mock les deux appels à createPdf : experimentation puis interpretation
 		byte[] experimentationPdf = createPdfBytes(experimentationText);
 		byte[] interpretationPdf = createPdfBytes(interpretationText);
@@ -108,6 +116,7 @@ class PdfControllerTests {
 		assertThat(new String(generatedPdf, 0, 4)).isEqualTo("%PDF");
 		assertThat(savedFile).exists();
 		assertThat(Files.readAllBytes(savedFile)).isEqualTo(generatedPdf);
+		assertThat(experimentation.getDataPath()).isEqualTo(savedFile.toString());
 
         // Vérification la présence de contenus spécifiques
 		try (PDDocument document = PDDocument.load(generatedPdf)) {
@@ -127,6 +136,7 @@ class PdfControllerTests {
 		verify(pdfGenerationService, times(2)).createPdf(any(DataForHtml.class));
 		verify(pdfFromXlsx).convertTabsInPdf(xlsDataDir, "42_resultats.xlsx");
 		verify(pdfFromXlsx).keepOnlyLastSheets(convertedXlsxPdf, 5);
+		verify(experimentationService).save(experimentation);
 	}
 
 	private byte[] createPdfBytes(String content) throws Exception {
