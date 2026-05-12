@@ -92,6 +92,7 @@ public class DataExtractionService {
             Map<String, Object> interpretationData = extractInterpretationData(interpretation);
             data.put(interpretation.getId().toString(), interpretationData);
         }
+        data.put("expeWorked", experimentation.getExpeWorked()? "Les résultats sont significatifs" :"Les résultats ne sont pas significatifs");
         return data;
     }
 

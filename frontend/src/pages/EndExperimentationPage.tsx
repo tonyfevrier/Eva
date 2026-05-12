@@ -9,17 +9,21 @@ import { LinkCheckbox } from "../components/LinkCheckBox";
 import { Spinner } from "../components/Spinner";
 import styles from "./EndExperimentationPage.module.css";
 import { Input } from "../components/Input";
+import { useFetch } from "../hooks/useFetch";
+
+
 
 export function EndExperimentationPage(){
     const [isFileModalOpen, setIsFileModalOpen] = useState<boolean>(false);
     const [importType, setImportType] = useState<string>("xls");
     const [fileNames, setFileNames] = useState<Array<string>>([]);
     const [fileNamesToDelete, setFileNamesToDelete] = useState<Array<string>>([]);
-    const [error, setError] = useState<Error|null>(null);
-    const [loading, setLoading] = useState<boolean>(false);
+    const [requestError, setRequestError] = useState<Error|null>(null);
+    const [loadingPdf, setLoading] = useState<boolean>(false);
     const [expeWorked, setExpeWorked] = useState<boolean>(false);
     const {id} = useParams();
     const [interpretation, setInterpretation] = useState<string>("");
+    const {data} = useFetch<Record<string, any>>(`http://localhost:9000/expe/get/${id}`);
 
     const handleImportFile = (type: string = importType) => {
         const fileInput = document.createElement("input");
@@ -32,8 +36,8 @@ export function EndExperimentationPage(){
                 return;
             }
 
-            setError(null);
-            sendImportRequest(selectedFile, id, setError, type);
+            setRequestError(null);
+            sendImportRequest(selectedFile, id, setRequestError, type);
             setIsFileModalOpen(false);
         }
 
@@ -49,16 +53,16 @@ export function EndExperimentationPage(){
     const handleInterpretation = () => {
         const body = JSON.stringify({"interpretation": {"content": interpretation},
                                      "expeWorked": expeWorked});
-        sendInterpretationRequest(id, body, setError, setInterpretation);
+        sendInterpretationRequest(id, body, setRequestError, setInterpretation);
     }
 
     const handlePdf = () => {
         setLoading(true); 
-        generatePdf(id, setError, setLoading);
+        generatePdf(id, setRequestError, setLoading);
     }
 
     const handleEnd = () => {
-        endExperimentation(id, setError);
+        endExperimentation(id, setRequestError);
     }
 
     const handleDisplayFileModal = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -66,7 +70,7 @@ export function EndExperimentationPage(){
         on affiche également les fichiers pdf du type de l'import */
         const nextImportType = e.currentTarget.id;
         setImportType(nextImportType);
-        getRegisteredFileNames(nextImportType, id, setError, setFileNames, setIsFileModalOpen);
+        getRegisteredFileNames(nextImportType, id, setRequestError, setFileNames, setIsFileModalOpen);
     }
 
     const modifyFileNamesToDelete = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -81,7 +85,7 @@ export function EndExperimentationPage(){
     }
 
     const handleDeleteFiles = () => {
-        sendDeleteRequest(fileNamesToDelete, setError);
+        sendDeleteRequest(fileNamesToDelete, setRequestError);
         handleCloseModal();
     }
 
@@ -91,7 +95,7 @@ export function EndExperimentationPage(){
     }
 
     const handleDownloadRegisteredFile = (e:React.MouseEvent<HTMLButtonElement>) => {
-        sendExportRequest(e.currentTarget.value, setError);
+        sendExportRequest(e.currentTarget.value, setRequestError);
         handleCloseModal();
     }
 
@@ -107,7 +111,7 @@ export function EndExperimentationPage(){
                 <Button onClick={handleInterpretation}>Soumettre les résultats</Button>
                 <h4 className={styles.h4}>Génération du récapitulatif complet de l'expérimentation</h4>
                 <Goto variant="export" label="Vous pouvez générer le pdf récapitulant votre expérimentation avec ou sans interprétation de données." buttonLabel="Générer le pdf" onClick={handlePdf}/>
-                <Goto variant="export" label="Vous pouvez marquer l'expérimentation comme terminée. Tout utilisateur pourra télécharger le pdf généré." buttonLabel="Terminer" onClick={handleEnd}/>
+                {data?.inProgress && <Goto variant="export" label="Vous pouvez marquer l'expérimentation comme terminée. Tout utilisateur pourra télécharger le pdf généré." buttonLabel="Terminer" onClick={handleEnd}/>}
                 {isFileModalOpen && 
                     <ModalList title="Ajouter ou supprimer des tests" onClose={handleCloseModal}>
                         <LinkCheckbox title={fileNames.length > 0 ? "Fichiers enregistrés": ""} options={fileNames} onChange={modifyFileNamesToDelete} onButtonClick={handleDownloadRegisteredFile}/>
@@ -115,8 +119,8 @@ export function EndExperimentationPage(){
                         <Button onClick={handleDeleteFiles} style={{margin: '.5em'}}>Supprimer les fichiers sélectionnés</Button>
                     </ModalList>
                 }
-                {loading && <Spinner/>}
-                {error?.message && <p>{error?.message}</p>}
+                {loadingPdf && <Spinner/>}
+                {requestError?.message && <p>{requestError?.message}</p>}
            </>
 }
 
