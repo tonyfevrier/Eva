@@ -47,7 +47,8 @@ export function EndExperimentationPage(){
     }
 
     const handleInterpretation = () => {
-        const body = JSON.stringify({"content": interpretation, "expeWorked": expeWorked});
+        const body = JSON.stringify({"interpretation": {"content": interpretation},
+                                     "expeWorked": expeWorked});
         sendInterpretationRequest(id, body, setError, setInterpretation);
     }
 

@@ -624,7 +624,10 @@ public class CrudExperimentationTests {
 
         String interpretationJson = """
                 {
-                                        "content": "Les resultats montrent une meilleure participation en classe."
+                        "interpretation": {
+                                "content": "Les resultats montrent une meilleure participation en classe."
+                        },
+                        "expeWorked": true
                 }
                 """;
 
@@ -637,6 +640,7 @@ public class CrudExperimentationTests {
 
         Experimentation experimentation = experimentationRepository.findByIdWithInterpretations(1L);
         assertThat(experimentation.getInterpretations()).hasSize(1);
+        assertThat(experimentation.getExpeWorked()).isTrue();
 
         Interpretation savedInterpretation = experimentation.getInterpretations().get(0);
         assertThat(savedInterpretation.getContent()).isEqualTo("Les resultats montrent une meilleure participation en classe.");

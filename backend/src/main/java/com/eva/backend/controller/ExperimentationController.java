@@ -14,6 +14,7 @@ import com.eva.backend.model.Experimentation;
 import com.eva.backend.model.Institution;
 import com.eva.backend.model.Interpretation;
 import com.eva.backend.model.User;
+import com.eva.backend.records.AddInterpretationRequest;
 import com.eva.backend.records.ExperimentationRequest;
 import com.eva.backend.service.ExperimentationService;
 import com.eva.backend.service.InstitutionService;
@@ -199,16 +200,18 @@ public class ExperimentationController {
     }
 
     @PostMapping("/interpret/{id}")
-    private ResponseEntity<?> addInterpretation(@RequestBody Interpretation interpretation,  @PathVariable Long id){
+    private ResponseEntity<?> addInterpretation(@RequestBody AddInterpretationRequest request,  @PathVariable Long id){
         /*récupérer les interprétations et y ajouter le nouvel objet, on a le User dans l'expé*/
         Experimentation experimentation = experimentationService.findByIdWithInterpretations(id);
         User user = experimentation.getUser();
         List<Interpretation> interpretations = experimentation.getInterpretations();
+        Interpretation interpretation = request.interpretation();
         interpretation.setUser(user);
         interpretation.setExperimentation(experimentation);
         interpretationService.save(interpretation);
         interpretations.add(interpretation);
         experimentation.setInterpretations(interpretations);
+        experimentation.setExpeWorked(request.expeWorked());
         experimentationService.save(experimentation);
         return ResponseEntity.ok("L'interprétation a bien été sauvegardée");
     }
