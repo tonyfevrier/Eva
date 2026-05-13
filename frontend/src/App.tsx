@@ -1,5 +1,5 @@
 import './App.css'
-import { createBrowserRouter, Outlet, RouterProvider, type RouteObject } from 'react-router-dom';
+import { createBrowserRouter, Outlet, RouterProvider, useNavigate, type RouteObject } from 'react-router-dom';
 import { HomePage } from './pages/HomePage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
@@ -105,7 +105,11 @@ function App() {
 
 function Layout(){
   const {isAuthenticated, logout, isProfileCompleted} = useTheme();
-  const handleClick = async () => {logout()}
+  const navigate = useNavigate();
+  const handleClick = async () => {
+      logout();
+      navigate("/");
+  }
   const isAnAuthenticatedCompletedProfileUser = isAuthenticated && isProfileCompleted;
   return <>
           <NavBar>
