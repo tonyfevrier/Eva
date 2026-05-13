@@ -19,7 +19,6 @@ import org.springframework.stereotype.Service;
 
 import com.eva.backend.utils.spreadSheetInterfaces.SpreadSheetRender;
 
-import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 
 @Service
@@ -27,6 +26,9 @@ public class PdfFromSpreadSheet {
 
     @Value("${app.libreoffice.home:}")
     private String libreOfficeHome;
+
+    @Value("${app.libreoffice.enabled:true}")
+    private boolean libreOfficeEnabled;
 
     private LocalOfficeManager officeManager;
 
@@ -84,6 +86,8 @@ public class PdfFromSpreadSheet {
         }
     }
     protected byte[] convert(Path workbookPath, String extension) throws OfficeException, IOException{
+        ensureOfficeManagerStarted();
+
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
                 DocumentConverter converter = LocalConverter.make(officeManager);
                 converter.convert(workbookPath.toFile())
@@ -113,9 +117,17 @@ public class PdfFromSpreadSheet {
         return fileName.substring(lastDot + 1).toLowerCase(Locale.ROOT);
     }
 
-    @PostConstruct
-    void startOfficeManager() {
-        /* Démarrer libre office à l'initialisation spring afin de pouvoir plus tard faire la conversion pdf des onglets */
+    private synchronized void ensureOfficeManagerStarted() throws OfficeException {
+        if (officeManager != null) {
+            return;
+        }
+
+        if (!libreOfficeEnabled) {
+            throw new IllegalStateException(
+                    "La conversion LibreOffice est desactivee (app.libreoffice.enabled=false)."
+                            + " Activez cette propriete pour les tests qui en ont besoin.");
+        }
+
         try {
             LocalOfficeManager.Builder builder = LocalOfficeManager.builder();
             if (libreOfficeHome != null && !libreOfficeHome.isBlank()) {
