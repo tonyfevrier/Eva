@@ -76,4 +76,6 @@ config/local.properties
 *.log
 
 docs
-eva fichiers
+files/data
+files/tests
+files/generation
