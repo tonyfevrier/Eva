@@ -17,7 +17,7 @@ export function ExperimentationPostButton({data}:ExpeData){
                     <p>{data.institutionName}</p>
                     <p>{data.yearOfStudy}</p>
                 </div>
-                <p>{data.teachingTitle}</p>
+                <p>{data.studyField}</p>
                 <div className={styles.footer}>
                     {data.keywords.map(word => <p key={word}>{word}</p>)}
                     {data.personalKeywords !== "" && <p className={styles.personalKeywords}>{data.personalKeywords}</p>}

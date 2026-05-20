@@ -2,7 +2,7 @@ import type { Data } from "../pages/ExperimentationListPage"
 import styles from "./Database.module.css"
 import { useNavigate } from "react-router-dom"
 
-export function Database({experimentations}:{experimentations: Array<Data>}){
+export function Database({experimentations}:{experimentations: Array<Data|undefined>}){
     const navigate = useNavigate();
 
     return <table className={styles.table}>
@@ -19,11 +19,11 @@ export function Database({experimentations}:{experimentations: Array<Data>}){
                     </tr>
                 </thead>
                 <tbody>
-                    {experimentations.map(expe => (
+                    {experimentations.map(expe => (expe !== undefined &&
                         <tr className={styles.tableLines} key={expe.id} onClick={() => navigate(`/experimentationSummary/${expe.id}`)} style={{cursor: 'pointer'}}>
                             <td>{expe.id}</td>
                             <td>Mots clés à gérer</td>
-                            <td>{expe.teachingTitle}</td>
+                            <td>{expe.studyField}</td>
                             <td>{expe.yearOfStudy}</td>
                             <td>{expe.newPedagogy}</td>
                             <td>{expe.inProgress ? "En cours" : "Terminée"}</td>
