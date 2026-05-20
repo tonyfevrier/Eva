@@ -1,16 +1,7 @@
 import { Button } from "./Button";
 import styles from "./ExperimentationPostButton.module.css";
+import { type Data} from "../pages/ExperimentationListPage";
 
-export type Data = {
-    id: string,
-    institutionName: string,
-    yearOfStudy: string,
-    teachingTitle: string,
-    keywords: Array<string>,
-    personalKeywords: string,
-    inProgress: boolean,
-    studyField: string
-}
 
 type ExpeData = {
     data: Data
