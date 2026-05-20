@@ -341,6 +341,9 @@ public class CrudExperimentationTests {
                         .andExpect(jsonPath("$[0].teachingTitle").value("Algèbre et géométrie"))
                         .andExpect(jsonPath("$[0].studyField").value("Mathématiques"))
                         .andExpect(jsonPath("$[0].yearOfStudy").value("5ème A"))
+                        .andExpect(jsonPath("$[0].yearOfStudy").value("5ème A"))
+                        .andExpect(jsonPath("$[0].expeWorked").value("En attente"))
+                        .andExpect(jsonPath("$[0].newPedagogy").value("Apprentissage par projet"))
                         .andExpect(jsonPath("$[0].inProgress").value(true));
     }
 

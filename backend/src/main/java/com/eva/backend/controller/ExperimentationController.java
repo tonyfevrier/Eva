@@ -130,6 +130,10 @@ public class ExperimentationController {
         List<Map<String, Object>> experimentationsList = experimentationService.findExperimentations().stream()
             .sorted((e1, e2) -> e2.getId().compareTo(e1.getId()))
             .map(expe -> {
+                String expeWorked = "En attente";
+                if (expe.getExpeWorked() != null){
+                    expeWorked = expe.getExpeWorked()? "Oui": "Non";
+                };
                 return Map.of(
                     "id", (Object) expe.getId(),
                     "keywords", expe.getKeywords(),
@@ -138,7 +142,9 @@ public class ExperimentationController {
                     "teachingTitle", expe.getPedagogicalContext().getTeachingTitle(),
                     "studyField", expe.getPedagogicalContext().getStudyField(),
                     "yearOfStudy", expe.getPedagogicalContext().getYearOfStudy(),
-                    "inProgress", expe.getInProgress()
+                    "inProgress", expe.getInProgress(),
+                    "newPedagogy", expe.getPedagogicalContext().getNewPedagogy(),
+                    "expeWorked", expeWorked
                 );
             })
             .collect(Collectors.toList());

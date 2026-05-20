@@ -8,23 +8,24 @@ export function Database({experimentations}:{experimentations: Array<Data|undefi
     return <table className={styles.table}>
                 <thead>
                     <tr>
-                        <th>Expérimentation id</th>
+                        <th>Numéro de l'expérimentation</th>
                         <th>Mots clés</th>
                         <th>Discipline</th>
                         <th>Année scolaire</th>
                         <th>Institution</th>
                         <th>Pratique pédagogique</th>
                         <th>En cours/Terminée</th>
-                        <th>A fonctionné</th>
+                        <th>L'expérimentation a fonctionné</th>
                     </tr>
                 </thead>
                 <tbody>
                     {experimentations.map(expe => (expe !== undefined &&
                         <tr className={styles.tableLines} key={expe.id} onClick={() => navigate(`/experimentationSummary/${expe.id}`)} style={{cursor: 'pointer'}}>
                             <td>{expe.id}</td>
-                            <td>Mots clés à gérer</td>
+                            <td>{expe.keywords.join(", ") + ", " + expe.personalKeywords}</td>
                             <td>{expe.studyField}</td>
                             <td>{expe.yearOfStudy}</td>
+                            <td>{expe.institutionName}</td>
                             <td>{expe.newPedagogy}</td>
                             <td>{expe.inProgress ? "En cours" : "Terminée"}</td>
                             <td>{expe.expeWorked}</td>
