@@ -47,7 +47,7 @@ export function ExperimentationListPage({isUserExpeList=true}:{isUserExpeList?: 
         return  <>
                     <Input title="Filtrer par discipline" value={filterState.studyField}  onChange={(e) => {setFilterState({...filterState, studyField: e.target.value})}}/>
                     <Input title="Filtrer par mot-clé" value={filterState.keyword} onChange={(e) => {setFilterState({...filterState, keyword: e.target.value})}}/>
-                    <Input title="Filtrer par établissement" value={filterState.institution} onChange={(e) => {setFilterState({...filterState, institution: e.target.value})}}/>
+                    <Input title="Filtrer par institution" value={filterState.institution} onChange={(e) => {setFilterState({...filterState, institution: e.target.value})}}/>
                     {isUserExpeList && <div className={styles.container}>
                         {filteredExpes.map(expe => expe !== undefined && <ExperimentationPostButton key={expe.id} data={expe}/>)};
                     </div>}

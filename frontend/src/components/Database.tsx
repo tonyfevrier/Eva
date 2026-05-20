@@ -8,27 +8,31 @@ export function Database({experimentations}:{experimentations: Array<Data|undefi
     return <table className={styles.table}>
                 <thead>
                     <tr>
-                        <th>Numéro de l'expérimentation</th>
+                        <th className={styles.responsiveDisappear}>Numéro de l'expérimentation</th>
                         <th>Mots clés</th>
                         <th>Discipline</th>
-                        <th>Année scolaire</th>
+                        <th className={styles.responsiveDisappear}>Année scolaire</th>
                         <th>Institution</th>
-                        <th>Pratique pédagogique</th>
-                        <th>En cours/Terminée</th>
-                        <th>L'expérimentation a fonctionné</th>
+                        <th className={styles.responsiveDisappear}>Pratique pédagogique</th>
+                        <th className={styles.responsiveDisappear}>En cours/Terminée</th>
+                        <th className={styles.responsiveDisappear}>L'expérimentation a fonctionné</th>
                     </tr>
                 </thead>
                 <tbody>
                     {experimentations.map(expe => (expe !== undefined &&
                         <tr className={styles.tableLines} key={expe.id} onClick={() => navigate(`/experimentationSummary/${expe.id}`)} style={{cursor: 'pointer'}}>
-                            <td>{expe.id}</td>
-                            <td>{expe.keywords.join(", ") + ", " + expe.personalKeywords}</td>
+                            <td className={styles.responsiveDisappear}>{expe.id}</td>
+                            {
+                                expe.personalKeywords !== ""? 
+                                <td>{expe.keywords.concat(expe.personalKeywords).join(", ")}</td> :
+                                <td>{expe.keywords.join(", ")}</td>
+                            }
                             <td>{expe.studyField}</td>
-                            <td>{expe.yearOfStudy}</td>
+                            <td className={styles.responsiveDisappear}>{expe.yearOfStudy}</td>
                             <td>{expe.institutionName}</td>
-                            <td>{expe.newPedagogy}</td>
-                            <td>{expe.inProgress ? "En cours" : "Terminée"}</td>
-                            <td>{expe.expeWorked}</td>
+                            <td className={styles.responsiveDisappear}>{expe.newPedagogy}</td>
+                            <td className={styles.responsiveDisappear}>{expe.inProgress ? "En cours" : "Terminée"}</td>
+                            <td className={styles.responsiveDisappear}>{expe.expeWorked}</td>
                         </tr>
                     ))}
                 </tbody>

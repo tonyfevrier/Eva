@@ -39,18 +39,7 @@
 }
 
 @media (max-width: 800px) {
-	.table, .table thead, .table tbody, .table th, .table td, .table tr {
-		display: block;
-	}
-	.table tr {
-		margin-bottom: 1rem;
-	}
-	.table td {
-		padding: 0.7rem 0.5rem;
-		border: none;
-		position: relative;
-	}
-	.table thead {
+	.responsiveDisappear{
 		display: none;
 	}
 }
