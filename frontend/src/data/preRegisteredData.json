@@ -58,5 +58,14 @@
         "Doctorat 1",
         "Doctorat 2",
         "Doctorat 3+"
+    ],
+    "keywords": [ 
+        "Attention", 
+        "Motivation",
+        "Compréhension", 
+        "Raisonnement",
+        "Gestion de classe", 
+        "Evaluation",
+        "Mémorisation"
     ]
 }

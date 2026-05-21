@@ -48,6 +48,10 @@ export function NewExperimentationPage(){
     
     const initialExpeData: ExperimentationData = {
         keywords: new Map(preRegisteredData["keywords"].map(keyword => [keyword, false])),
+        /*keywords: new Map([["Attention", false], ["Motivation", false],
+                           ["Compréhension", false], ["Raisonnement", false],
+                           ["Gestion de classe", false], ["Evaluation", false],
+                           ["Mémorisation", false]]), */
         personalKeywords: "", learningDifficulty: "",learningDifficultyOrigin: "",
         affiliation: {id:"", name:""}, studyField: "",teachingTitle: "",
         knowledges: "",prerequisite: "",organisationParticularities: "",
