@@ -9,6 +9,7 @@ import { Goto } from "../../components/Goto"
 import { ModalFilteredSelector } from "../../components/ModalFilteredSelector"
 import { Button } from "../../components/Button"
 import styles from "./FirstStep.module.css"
+import { FilteredInput } from "../../components/FilteredInput"
 
 type FirstStepState = {
     state: ExperimentationData;

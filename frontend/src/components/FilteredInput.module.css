@@ -1,0 +1,27 @@
+.body {
+    margin: 1em 0;
+    line-height: 1.6;
+}
+
+.body :first-child{
+    width: 100%;
+    padding: 1em;
+}
+
+.beforeItems {
+    font-weight: bold;
+    font-style: italic;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    margin: 0;
+}
+
+.item{
+    display: block;
+    width: 100%;
+}
+
+.item:focus{
+    background-color: greenyellow;
+    color: green;
+}
