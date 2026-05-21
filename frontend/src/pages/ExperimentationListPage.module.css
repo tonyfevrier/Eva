@@ -10,6 +10,16 @@
     color:black;
 }
 
+.filter, .filterSelect {
+    display: inline-block;
+    margin: 1em;
+}
+
+.filterSelect > select {
+    background-color: white;
+    max-width: 100%;
+}
+
 @media screen and (max-width: 560px) {
     .container > * {
         margin: 1em auto;

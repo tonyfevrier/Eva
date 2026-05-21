@@ -6,17 +6,18 @@ type InputProps = {
     title: string,
     onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void,
     variant?: string,
+    className?: string
 } & React.InputHTMLAttributes<HTMLInputElement>
 
-export function Input({title, onChange = () => {}, variant="noErrorMsg", ...props}:PropsWithChildren<InputProps>){
+export function Input({title, onChange = () => {}, variant="noErrorMsg", className= styles.formField, ...props}:PropsWithChildren<InputProps>){
     if (variant === "noErrorMsg"){
-        return  <div className={styles.formField}>
+        return  <div className={className}>
                     <p>{title}</p>
                     <input onChange={onChange} {...props} />
                 </div>
     } else {
         return  <div className={styles.container}>
-                    <div className={styles.formField}>
+                    <div className={className}>
                         <p>{title}</p>
                         <input onChange={onChange} {...props}/>
                     </div>
