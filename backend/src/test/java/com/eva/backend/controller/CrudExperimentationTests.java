@@ -324,6 +324,55 @@ public class CrudExperimentationTests {
     public void testGetExperimentationList() throws Exception {
         createAnExperimentation();
 
+        Evaluations oldEvaluations2 = Evaluations.builder()
+                .initialEvaluation(LocalDate.of(2024, 1, 15))
+                .immediateEvaluation(LocalDate.of(2024, 2, 15))
+                .delayedEvaluation(LocalDate.of(2024, 3, 15))
+                .build();
+
+        Evaluations newEvaluations2 = Evaluations.builder()
+                .initialEvaluation(LocalDate.of(2024, 1, 15))
+                .immediateEvaluation(LocalDate.of(2024, 2, 15))
+                .delayedEvaluation(LocalDate.of(2024, 3, 15))
+                .build();
+
+        PedagogicalContext pedagogicalContext2 = PedagogicalContext.builder()
+                .learningDifficulty("Difficultés en sciences")
+                .learningDifficultyOrigin("Manque de méthode")
+                .studyField("Physique")
+                .teachingTitle("Mécanique et énergie")
+                .knowledges("Forces, vitesse, accélération")
+                .prerequisite("Mathématiques de base")
+                .organisationParticularities("Travaux pratiques")
+                .classesFrequencies("3 fois par semaine")
+                .classesDates("Mardi, jeudi et vendredi")
+                .yearOfStudy("4ème B")
+                .studentsSpecificities("Classe standard")
+                .studentsNumber("28")
+                .oldPedagogy("Cours théorique")
+                .newPedagogy("Apprentissage par l'expérimentation")
+                .oldPedagogyEvaluations(oldEvaluations2)
+                .newPedagogyEvaluations(newEvaluations2)
+                .build();
+
+        Experimentation experimentation2 = Experimentation.builder()
+                .keywords(Arrays.asList("physique", "sciences", "collège"))
+                .personalKeywords("expérimentation, pratique")
+                .protocol("Protocole 2")
+                .isSharingData(false)
+                .dataPath("")
+                .pedagogicalContext(pedagogicalContext2)
+                .build();
+
+        ExperimentationRequest experimentationRequest2 = new ExperimentationRequest(experimentation2, institution.getId());
+        String experimentationJson2 = objectMapper.writeValueAsString(experimentationRequest2);
+
+        mockMvc.perform(post("/expe/create")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(experimentationJson2)
+                        .cookie(new jakarta.servlet.http.Cookie("jwt", jwtCookie)))
+                        .andExpect(status().isOk());
+
         mockMvc.perform(get("/auth/logout")
                         .cookie(new jakarta.servlet.http.Cookie("jwt", jwtCookie)))
                         .andExpect(status().isOk());
@@ -333,6 +382,7 @@ public class CrudExperimentationTests {
                         .andExpect(status().isOk())
                         .andExpect(jsonPath("$.length()").value(1))
                         .andExpect(jsonPath("$[0].id").value(1))
+                        .andExpect(jsonPath("$[?(@.id == 2)]").isEmpty())
                         .andExpect(jsonPath("$[0].keywords[0]").value("mathématiques"))
                         .andExpect(jsonPath("$[0].keywords[1]").value("apprentissage actif"))
                         .andExpect(jsonPath("$[0].keywords[2]").value("collège"))
@@ -716,7 +766,7 @@ public class CrudExperimentationTests {
         mockMvc.perform(get("/expe/endExpe/1")
                        .cookie(new jakarta.servlet.http.Cookie("jwt", jwtCookie)))
                        .andExpect(status().isBadRequest())
-                       .andExpect(content().string("Requête refusée : assurez-vous d'avoir soumis vos résultats et généré le pdf final"));
+                       .andExpect(content().string("Requête refusée : assurez-vous d'avoir soumis vos résultats et généré le pdf final avant de terminer l'expérimentation"));
 
         Experimentation experimentationAfter = experimentationRepository.findById(1L).orElseThrow();
         assertThat(experimentationAfter.getInProgress()).isTrue();
@@ -735,7 +785,7 @@ public class CrudExperimentationTests {
         mockMvc.perform(get("/expe/endExpe/1")
                        .cookie(new jakarta.servlet.http.Cookie("jwt", jwtCookie)))
                        .andExpect(status().isBadRequest())
-                       .andExpect(content().string("Requête refusée : assurez-vous d'avoir soumis vos résultats et généré le pdf final"));
+                       .andExpect(content().string("Requête refusée : assurez-vous d'avoir soumis vos résultats et généré le pdf final avant de terminer l'expérimentation"));
 
         Experimentation experimentationAfter = experimentationRepository.findById(1L).orElseThrow();
         assertThat(experimentationAfter.getInProgress()).isTrue();

@@ -53,7 +53,7 @@ export function NewExperimentationPage(){
         knowledges: "",prerequisite: "",organisationParticularities: "",
         yearOfStudy: "",classesFrequencies: "",classesDates: "",
         studentsSpecificities: "",studentsNumber: "",oldPedagogy: "",
-        newPedagogy: "", protocol: "", isSharingData: false,
+        newPedagogy: "", protocol: "", isSharingData: true,
         initialEvaluationOld: "",immediateEvaluationOld: "",delayedEvaluationOld: "",
         accountedEvaluationOld: "",initialEvaluationNew: "",immediateEvaluationNew: "",
         delayedEvaluationNew: "",accountedEvaluationNew: ""

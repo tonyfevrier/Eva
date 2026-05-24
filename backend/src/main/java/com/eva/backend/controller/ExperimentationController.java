@@ -130,6 +130,7 @@ public class ExperimentationController {
     public ResponseEntity<?> getExperimentationList() {
         List<Map<String, Object>> experimentationsList = experimentationService.findExperimentations().stream()
             .sorted((e1, e2) -> e2.getId().compareTo(e1.getId()))
+            .filter(expe -> expe.getIsSharingData())
             .map(expe -> {
                 String expeWorked = "En attente";
                 if (expe.getExpeWorked() != null){
