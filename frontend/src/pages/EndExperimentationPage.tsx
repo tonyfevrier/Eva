@@ -216,6 +216,9 @@ async function endExperimentation(id: string|undefined, setError: Dispatch<SetSt
 
     if (response.ok){
         alert("L'expérimentation est considérée comme terminée");
+    } else {
+        let errorMessage = `Erreur ${response.status}: ${await response.text()}`;
+        alert(errorMessage);
     }
 }
 

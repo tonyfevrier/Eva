@@ -235,7 +235,7 @@ public class ExperimentationController {
         System.out.println(experimentation.getExpeWorked());
         System.out.println(userSaidIfExpeWorked);
         if (!expeHasGeneratedPdf || !userHasInterpretedData || !userSaidIfExpeWorked){
-            return ResponseEntity.badRequest().body("Requête refusée : assurez-vous d'avoir soumis vos résultats et généré le pdf final");
+            return ResponseEntity.badRequest().body("Requête refusée : assurez-vous d'avoir soumis vos résultats et généré le pdf final avant de terminer l'expérimentation");
         }
         experimentation.setInProgress(false);
         experimentationService.save(experimentation);
