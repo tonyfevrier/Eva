@@ -658,6 +658,25 @@ public class CrudExperimentationTests {
     public void testEndExperimentation() throws Exception {
         createAnExperimentation();
 
+        String interpretationJson = """
+                {
+                        "interpretation": {
+                                "content": "Interprétation finale"
+                        },
+                        "expeWorked": true
+                }
+                """;
+
+        mockMvc.perform(post("/expe/interpret/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(interpretationJson)
+                        .cookie(new jakarta.servlet.http.Cookie("jwt", jwtCookie)))
+                        .andExpect(status().isOk());
+
+        Experimentation experimentationReadyToEnd = experimentationRepository.findById(1L).orElseThrow();
+        experimentationReadyToEnd.setDataPath("/tmp/final.pdf");
+        experimentationRepository.save(experimentationReadyToEnd);
+
         Experimentation experimentationBefore = experimentationRepository.findById(1L).orElseThrow();
         assertThat(experimentationBefore.getInProgress()).isTrue();
 
@@ -668,6 +687,58 @@ public class CrudExperimentationTests {
 
         Experimentation experimentationAfter = experimentationRepository.findById(1L).orElseThrow();
         assertThat(experimentationAfter.getInProgress()).isFalse();
+    }
+
+    @Test
+    public void testEndExperimentationRejectedWhenDataPathIsNull() throws Exception {
+        createAnExperimentation();
+
+        String interpretationJson = """
+                {
+                        "interpretation": {
+                                "content": "Interprétation présente"
+                        },
+                        "expeWorked": true
+                }
+                """;
+
+        mockMvc.perform(post("/expe/interpret/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(interpretationJson)
+                        .cookie(new jakarta.servlet.http.Cookie("jwt", jwtCookie)))
+                        .andExpect(status().isOk());
+
+        Experimentation experimentationBefore = experimentationRepository.findById(1L).orElseThrow();
+        experimentationBefore.setDataPath(null);
+        experimentationRepository.save(experimentationBefore);
+        assertThat(experimentationBefore.getInProgress()).isTrue();
+
+        mockMvc.perform(get("/expe/endExpe/1")
+                       .cookie(new jakarta.servlet.http.Cookie("jwt", jwtCookie)))
+                       .andExpect(status().isBadRequest())
+                       .andExpect(content().string("Requête refusée : assurez-vous d'avoir soumis vos résultats et généré le pdf final"));
+
+        Experimentation experimentationAfter = experimentationRepository.findById(1L).orElseThrow();
+        assertThat(experimentationAfter.getInProgress()).isTrue();
+    }
+
+    @Test
+    public void testEndExperimentationRejectedWhenInterpretationIsMissing() throws Exception {
+        createAnExperimentation();
+
+        Experimentation experimentationBefore = experimentationRepository.findById(1L).orElseThrow();
+        experimentationBefore.setDataPath("/tmp/final.pdf");
+        experimentationBefore.setExpeWorked(true);
+        experimentationRepository.save(experimentationBefore);
+        assertThat(experimentationBefore.getInProgress()).isTrue();
+
+        mockMvc.perform(get("/expe/endExpe/1")
+                       .cookie(new jakarta.servlet.http.Cookie("jwt", jwtCookie)))
+                       .andExpect(status().isBadRequest())
+                       .andExpect(content().string("Requête refusée : assurez-vous d'avoir soumis vos résultats et généré le pdf final"));
+
+        Experimentation experimentationAfter = experimentationRepository.findById(1L).orElseThrow();
+        assertThat(experimentationAfter.getInProgress()).isTrue();
     }
 
     private Institution createInstitution(){
