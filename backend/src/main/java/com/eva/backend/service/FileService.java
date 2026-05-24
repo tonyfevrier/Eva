@@ -1,5 +1,6 @@
 package com.eva.backend.service;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -10,6 +11,8 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
@@ -183,4 +186,26 @@ public class FileService {
         String lowerName = fileName.toLowerCase();
         return lowerName.endsWith(".xls") || lowerName.endsWith(".xlsx") || lowerName.endsWith(".ods");
     }
+
+    public byte[] buildZipFromDataPaths(List<String> dataPaths) throws IOException {
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+             ZipOutputStream zipOutputStream = new ZipOutputStream(outputStream)) {
+
+            for (String dataPath : dataPaths) {
+                Path path = Paths.get(dataPath).toAbsolutePath().normalize();
+                if (!Files.exists(path) || !Files.isRegularFile(path)) {
+                    throw new IllegalArgumentException("Fichier introuvable: " + path);
+                }
+
+                ZipEntry entry = new ZipEntry(path.getFileName().toString());
+                zipOutputStream.putNextEntry(entry);
+                zipOutputStream.write(Files.readAllBytes(path));
+                zipOutputStream.closeEntry();
+            }
+
+            zipOutputStream.finish();
+            return outputStream.toByteArray();
+        }
+    }
+    
 }

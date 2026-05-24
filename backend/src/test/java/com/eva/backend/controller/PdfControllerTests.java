@@ -7,14 +7,20 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
@@ -71,6 +77,46 @@ class PdfControllerTests {
 		ReflectionTestUtils.setField(pdfController, "fileService", new FileService(List.of(), List.of()));
 		ReflectionTestUtils.setField(pdfController, "pdfXlsxService", pdfFromXlsx);
 		mockMvc = MockMvcBuilders.standaloneSetup(pdfController).build();
+	}
+
+	@Test
+	void shouldReturnZipContainingTwoExperimentationPdfFiles() throws Exception {
+		Long firstId = 1L;
+		Long secondId = 2L;
+		Path firstPdfPath = tempDir.resolve("experimentation_summary_1.pdf");
+		Path secondPdfPath = tempDir.resolve("experimentation_summary_2.pdf");
+		byte[] firstPdfBytes = "first-pdf-content".getBytes(StandardCharsets.UTF_8);
+		byte[] secondPdfBytes = "second-pdf-content".getBytes(StandardCharsets.UTF_8);
+
+		Files.write(firstPdfPath, firstPdfBytes);
+		Files.write(secondPdfPath, secondPdfBytes);
+
+		Experimentation firstExperimentation = new Experimentation();
+		firstExperimentation.setId(firstId);
+		firstExperimentation.setInProgress(false);
+		firstExperimentation.setDataPath(firstPdfPath.toString());
+
+		Experimentation secondExperimentation = new Experimentation();
+		secondExperimentation.setId(secondId);
+		secondExperimentation.setInProgress(false);
+		secondExperimentation.setDataPath(secondPdfPath.toString());
+
+		when(experimentationService.findById(firstId)).thenReturn(Optional.of(firstExperimentation));
+		when(experimentationService.findById(secondId)).thenReturn(Optional.of(secondExperimentation));
+
+		MvcResult mvcResult = mockMvc.perform(get("/pdf/generate")
+				.contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+				.content("{\"idsOfExpe\":[1,2]}"))
+				.andExpect(status().isOk())
+				.andExpect(content().contentType("application/zip"))
+				.andReturn();
+
+		byte[] zipBytes = mvcResult.getResponse().getContentAsByteArray();
+		Map<String, byte[]> zipEntries = unzipEntries(zipBytes);
+
+		assertThat(zipEntries).containsOnlyKeys("experimentation_summary_1.pdf", "experimentation_summary_2.pdf");
+		assertThat(zipEntries.get("experimentation_summary_1.pdf")).isEqualTo(firstPdfBytes);
+		assertThat(zipEntries.get("experimentation_summary_2.pdf")).isEqualTo(secondPdfBytes);
 	}
 
 	@Test
@@ -158,5 +204,17 @@ class PdfControllerTests {
 		}
 
 		return outputStream.toByteArray();
+	}
+
+	private Map<String, byte[]> unzipEntries(byte[] zipBytes) throws Exception {
+		Map<String, byte[]> entries = new LinkedHashMap<>();
+		try (ZipInputStream zipInputStream = new ZipInputStream(new ByteArrayInputStream(zipBytes))) {
+			ZipEntry entry;
+			while ((entry = zipInputStream.getNextEntry()) != null) {
+				entries.put(entry.getName(), zipInputStream.readAllBytes());
+				zipInputStream.closeEntry();
+			}
+		}
+		return entries;
 	}
 }

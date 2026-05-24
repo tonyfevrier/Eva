@@ -2,6 +2,8 @@ package com.eva.backend.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,14 +18,20 @@ import com.eva.backend.service.PdfGenerationServiceViaHtml;
 import com.eva.backend.service.PdfMergeService;
 
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.GetMapping;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+
 
 @RestController
 @RequestMapping("/pdf")
@@ -108,5 +116,18 @@ public class PdfController {
         Experimentation experimentation = experimentationService.findById(id).orElseThrow();
         experimentation.setDataPath(Paths.get(generatedPdfDir).resolve(generatedFileName).toString());
         experimentationService.save(experimentation);
+    }
+
+    @GetMapping("/generate")
+    public ResponseEntity<?> getMultiplePdf(@RequestBody Map<String, List<Long>> idExperimentationsList) throws IOException {
+        List<String> dataPaths = idExperimentationsList.get("idsOfExpe").stream()
+                .map(id -> experimentationService.findById(id).orElseThrow().getDataPath())
+                .toList();
+
+        byte[] zipContent = fileService.buildZipFromDataPaths(dataPaths);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=experimentations.zip")
+                .contentType(MediaType.parseMediaType("application/zip"))
+                .body(zipContent);
     }
 }
