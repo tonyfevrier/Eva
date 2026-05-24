@@ -1,5 +1,6 @@
 .container{
     display: flex;
+    justify-content: space-evenly;
     flex-wrap: wrap;
 }
 
@@ -18,10 +19,4 @@
 .filterSelect > select {
     background-color: white;
     max-width: 100%;
-}
-
-@media screen and (max-width: 560px) {
-    .container > * {
-        margin: 1em auto;
-    }
-}
+} 

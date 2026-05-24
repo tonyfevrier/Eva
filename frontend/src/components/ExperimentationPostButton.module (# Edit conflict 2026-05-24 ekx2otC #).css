@@ -1,6 +1,7 @@
 .container  {
     text-align: left;
-    width: 350px;
+    /*width: 20%;*/
+    max-width: 400px;
     min-width: 250px;
 }
 
@@ -30,6 +31,9 @@
 }
 
 .header{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     padding: 1em;
 }
 
