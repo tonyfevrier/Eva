@@ -18,19 +18,16 @@ import com.eva.backend.service.PdfGenerationServiceViaHtml;
 import com.eva.backend.service.PdfMergeService;
 
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.GetMapping;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 
 @RestController
@@ -118,7 +115,7 @@ public class PdfController {
         experimentationService.save(experimentation);
     }
 
-    @GetMapping("/generate")
+    @PostMapping("/generate")
     public ResponseEntity<?> getMultiplePdf(@RequestBody Map<String, List<Long>> idExperimentationsList) throws IOException {
         List<String> dataPaths = idExperimentationsList.get("idsOfExpe").stream()
                 .map(id -> experimentationService.findById(id).orElseThrow().getDataPath())

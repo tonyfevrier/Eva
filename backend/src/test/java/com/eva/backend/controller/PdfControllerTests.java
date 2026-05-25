@@ -7,6 +7,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -104,7 +105,7 @@ class PdfControllerTests {
 		when(experimentationService.findById(firstId)).thenReturn(Optional.of(firstExperimentation));
 		when(experimentationService.findById(secondId)).thenReturn(Optional.of(secondExperimentation));
 
-		MvcResult mvcResult = mockMvc.perform(get("/pdf/generate")
+		MvcResult mvcResult = mockMvc.perform(post("/pdf/generate")
 				.contentType(org.springframework.http.MediaType.APPLICATION_JSON)
 				.content("{\"idsOfExpe\":[1,2]}"))
 				.andExpect(status().isOk())

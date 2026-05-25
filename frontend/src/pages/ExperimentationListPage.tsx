@@ -3,10 +3,11 @@ import { useFetch } from "../hooks/useFetch";
 import { ExperimentationPostButton } from "../components/ExperimentationPostButton";
 import styles from "./ExperimentationListPage.module.css"
 import { Input } from "../components/Input";
-import { useState } from "react";
+import { useState, type Dispatch, type SetStateAction } from "react";
 import { Database } from "../components/Database";
 import { Button } from "../components/Button";
 import { Select } from "../components/Select";
+import { exportFile } from "../utils/request/fileExport";
 
 export type Data = {
     id: string,
@@ -21,12 +22,17 @@ export type Data = {
     newPedagogy?: string
 }
 
+type ZipRequestBody = {
+  idsOfExpe: string[];
+};
+
 export function ExperimentationListPage({isUserExpeList=true}:{isUserExpeList?: boolean}){
     const [filterState, setFilterState] = useState({keyword: "", institution: "", studyField: "",
                                                     yearOfStudy: "", expeWorked:"", newPedagogy:""});
     const endpoint = isUserExpeList? "getAllOfOneUser": "getAll";
     const credentials = isUserExpeList? 'include': undefined;
     const {loading, data, error} = useFetch<Array<Data>>(`http://localhost:9000/expe/${endpoint}`, credentials);
+    const [requestError, setRequestError] = useState<Error|null>(null);
 
     if (loading){
         return <Spinner/>
@@ -44,6 +50,7 @@ export function ExperimentationListPage({isUserExpeList=true}:{isUserExpeList?: 
             const isAFilteredExperimentation = institutionIncludesInput && keywordIncludesInput && studyFieldIncludesInput;
             return isAFilteredExperimentation && expe;
         });
+        
         if (isUserExpeList){
             return  <>
                         <Input className={styles.filter} title="Filtrer par discipline" value={filterState.studyField}  onChange={(e) => {setFilterState({...filterState, studyField: e.target.value})}}/>
@@ -62,6 +69,11 @@ export function ExperimentationListPage({isUserExpeList=true}:{isUserExpeList?: 
                 const isAFilteredExperimentation = ( keepExpeIndependentlyOfSuccess || userSuccessChoiceEqualsExpeSuccess) && !expe.inProgress && yearOfStudyIncludesInput && newPedagogyIncludesInput;
                 return isAFilteredExperimentation && expe; 
             });
+
+            const getMultiplePdf = async () => {
+                const body = {"idsOfExpe": filteredExpesInProgress.map(expe => expe.id)};
+                sendZipRequest(body, setRequestError);
+            }
             return  <>
                         <Input className={styles.filter} title="Filtrer par discipline" value={filterState.studyField}  onChange={(e) => {setFilterState({...filterState, studyField: e.target.value})}}/>
                         <Input className={styles.filter} title="Filtrer par mot-clé" value={filterState.keyword} onChange={(e) => {setFilterState({...filterState, keyword: e.target.value})}}/>
@@ -75,9 +87,29 @@ export function ExperimentationListPage({isUserExpeList=true}:{isUserExpeList?: 
                         </Select>
                         <>
                             <Database experimentations={filteredExpesInProgress}/>
-                            <Button>Télécharger les expérimentations filtrées</Button>
+                            <Button onClick={getMultiplePdf} disabled={filteredExpesInProgress.length == 0}>Télécharger les expérimentations filtrées</Button>
+                            {requestError?.message && <p>{requestError?.message}</p>}
                         </>
                     </>
         }
     }
+}
+
+async function sendZipRequest(body: ZipRequestBody, setError: Dispatch<SetStateAction<Error|null>>){
+    const response = await fetch("http://localhost:9000/pdf/generate", {
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            method: "post",
+            body: JSON.stringify(body)
+        }).catch(error => {
+            setError(error);
+            throw error;
+        })
+
+        if (response.ok){
+            exportFile(response, "experimentation.zip");
+        } else {
+            setError(new Error(`Erreur ${response.status}: ${response.statusText}`));
+        }
 }
