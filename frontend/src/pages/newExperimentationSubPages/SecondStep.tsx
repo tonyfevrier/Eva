@@ -1,5 +1,4 @@
 import type { Dispatch, SetStateAction } from "react";
-import { Select } from "../../components/Select"
 import type { ExperimentationData } from "../NewExperimentationPage";
 import { PostButton } from "../../components/PostButton";
 import variantData from "../../data/variants.json";

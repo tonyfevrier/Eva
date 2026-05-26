@@ -1,5 +1,4 @@
-import React, { useState, type Dispatch, type SetStateAction } from "react"
-import { Button } from "./Button";
+import React, { type Dispatch, type SetStateAction } from "react"
 import { FilteredSelector } from "./FilteredSelector";
 import styles from "./ModalFilteredSelector.module.css"
 
