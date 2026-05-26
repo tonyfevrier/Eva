@@ -1,4 +1,4 @@
-import { useState, type Dispatch, type SetStateAction } from "react";
+import { type Dispatch, type SetStateAction } from "react";
 import { FilteredSelector } from "../components/FilteredSelector"
 import { Spinner } from "../components/Spinner";
 import { useFetch } from "../hooks/useFetch";
@@ -24,6 +24,6 @@ export function InstitutionSelectionPage({setData}:PageData){
     }
     
     if (data){
-        return <FilteredSelector title="Choisissez votre affiliation" items={data["institutions"]} onClick={handleChooseAffiliation}/>
+        return <FilteredSelector items={data["institutions"]} onClick={handleChooseAffiliation}/>
     }
 }

@@ -11,10 +11,6 @@ import { Goto } from "../components/Goto";
 import { exportFile } from "../utils/request/fileExport";
 import { generatePdf } from "./EndExperimentationPage";
 
-type BodyData = {
-    format: string
-}
-
 export function ExperimentationSummaryPage(){
     const {id} = useParams();
     const credentials = undefined;  

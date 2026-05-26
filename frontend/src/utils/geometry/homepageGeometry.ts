@@ -1,4 +1,4 @@
-import type { CircleDimensions } from "../types/types";
+import type { CircleDimensions } from "../../types/types";
 
 export function homepageGeometry(){
     const northEastCircleDimensions: CircleDimensions = {
