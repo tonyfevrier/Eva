@@ -78,7 +78,7 @@ export function InstitutionProfilePage(){
     const [state, dispatch] = useReducer(reducer, initialState);
 
     const {id} = useParams();
-    const {loading, data, error} = useFetch(`http://localhost:9000/institution/get/${id}`);
+    const {loading, data} = useFetch(`http://localhost:9000/institution/get/${id}`);
     
     useEffect(() => {
         if (data){
