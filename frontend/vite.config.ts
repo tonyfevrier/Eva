@@ -10,6 +10,15 @@ export default defineConfig({
       },
     }),
   ],
+  server: { //proxy pour rediriger /api vers spring. npm run dev appelle .env.development qui envoie vers /api
+    proxy: {
+      '/api': {
+        target: 'http://localhost:9000',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ''),
+      },
+    },
+  },
   test: {
     globals: true,
     environment: 'jsdom',  // ✅ Simule le DOM

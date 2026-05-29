@@ -1,6 +1,7 @@
 import { useState, type Dispatch, type SetStateAction } from "react";
 import { Button } from "../components/Button";
 import { Goto } from "../components/Goto";
+import { apiFetch } from "../utils/apiFetch";
 
 export function RegisterConfirmationPage(){
     const [registrationConfirmed, setRegistrationConfirmed] = useState<Boolean>(false);
@@ -25,7 +26,7 @@ export function RegisterConfirmationPage(){
 }
 
 async function sendPostRequest(body: string, setError: Dispatch<SetStateAction<Error|null>>, setRegistrationConfirmed: Dispatch<SetStateAction<Boolean>>) {
-    const response = await fetch("http://localhost:9000/auth/confirm", {
+    const response = await apiFetch("/auth/confirm", {
         headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',

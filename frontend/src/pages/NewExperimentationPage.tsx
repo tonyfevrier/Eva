@@ -5,6 +5,7 @@ import { SecondStep } from "./newExperimentationSubPages/SecondStep";
 import { ThirdStep } from "./newExperimentationSubPages/ThirdStep";
 import { FourthStep } from "./newExperimentationSubPages/FourthStep";
 import { useNavigate, type NavigateFunction } from "react-router-dom";
+import { apiFetch } from "../utils/apiFetch";
 
 export type Affiliation = {
     id: string,
@@ -153,7 +154,7 @@ function buildExperimentationData(expeData:ExperimentationData) {
 }
 
 async function sendPostRequest(data: any, setError:Dispatch<SetStateAction<Error|null>>, navigate: NavigateFunction){
-    const response = await fetch("http://localhost:9000/expe/create", {
+    const response = await apiFetch("/expe/create", {
             method: "POST",
             headers:{
                 'Content-Type': 'application/json',

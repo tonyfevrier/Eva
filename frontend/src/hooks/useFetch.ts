@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { apiFetch } from "../utils/apiFetch";
 
 interface FetchOptions extends RequestInit {
     headers?: Record<string, string>;
@@ -6,7 +7,7 @@ interface FetchOptions extends RequestInit {
     RequestInit est un type représentant ce qu'on peut passer à fetch */
 }
 
-export function useFetch<T>(url: string, credentials: RequestCredentials = 'include', options: FetchOptions = {}) {
+export function useFetch<T>(endpointPath: string, credentials: RequestCredentials = 'include', options: FetchOptions = {}) {
     const [loading, setLoading] = useState<boolean>(true);
     const [data, setData] = useState<T | null>(null);
     const [error, setError] = useState<Error | null>(null);
@@ -15,7 +16,7 @@ export function useFetch<T>(url: string, credentials: RequestCredentials = 'incl
         setLoading(true);
         setError(null);
 
-        fetch(url, {
+        apiFetch(endpointPath, {
             ...options,
             headers: {
                 'Content-Type': 'application/json',

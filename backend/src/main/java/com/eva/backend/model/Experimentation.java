@@ -2,6 +2,7 @@ package com.eva.backend.model;
 
 import java.util.List;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
@@ -56,7 +57,7 @@ public class Experimentation {
 
     private String dataPath;
 
-    @OneToMany(mappedBy = "experimentation")
+    @OneToMany(mappedBy = "experimentation", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Interpretation> interpretations;
 
     @Builder.Default
