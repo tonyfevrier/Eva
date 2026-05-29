@@ -188,6 +188,7 @@ export async function generatePdf(id: string|undefined, setError: Dispatch<SetSt
             'Accept': 'application/json'
         },
         method: "get",
+        credentials: "include"
     }).catch(requestError => {
         setError(requestError);
         setLoading(false);

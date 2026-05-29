@@ -53,7 +53,7 @@ export function ExperimentationSummaryPage(){
 
         const handlePdf = () => {
             setLoading(true);
-            generatePdf(id, setSendError, setLoading);
+            sendDownloadRequest(id, setSendError, setLoading);
         }
 
         return <>
@@ -182,3 +182,22 @@ async function sendExportRequest(format: string, setSendError: Dispatch<SetState
     exportFile(response, "ResultatsEVA_v2." + format);
 }
  
+async function sendDownloadRequest(id: string|undefined, setError: Dispatch<SetStateAction<Error|null>>, setLoading: Dispatch<SetStateAction<boolean>>){
+    setLoading(true);
+    const response = await apiFetch(`/pdf/getPdf/${id}`, {
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            method: "get",
+        }).catch(error => {
+            setError(error);
+            throw error;
+        })
+
+        if (response.ok){
+            exportFile(response, `experimentation_${id}.pdf`);
+        } else {
+            setError(new Error(`Erreur ${response.status}: ${response.statusText}`));
+        }
+        setLoading(false);
+}

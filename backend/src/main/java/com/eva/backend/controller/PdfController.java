@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -115,7 +116,20 @@ public class PdfController {
         experimentationService.save(experimentation);
     }
 
-    @PostMapping("/generate")
+    @GetMapping("/getPdf/{id}")
+    public ResponseEntity<?> getPdf(@PathVariable Long id) throws IOException {
+        String dataPath = experimentationService.findById(id).orElseThrow().getDataPath();
+        
+        // Lire le fichier PDF depuis le chemin
+        byte[] pdfByte = Files.readAllBytes(Paths.get(dataPath));
+        
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdfByte);
+    }
+
+    @PostMapping("/getPdfs")
     public ResponseEntity<?> getMultiplePdf(@RequestBody Map<String, List<Long>> idExperimentationsList) throws IOException {
         List<String> dataPaths = idExperimentationsList.get("idsOfExpe").stream()
                 .map(id -> experimentationService.findById(id).orElseThrow().getDataPath())
@@ -123,7 +137,7 @@ public class PdfController {
 
         byte[] zipContent = fileService.buildZipFromDataPaths(dataPaths);
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=experimentations.zip")
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;")
                 .contentType(MediaType.parseMediaType("application/zip"))
                 .body(zipContent);
     }

@@ -97,7 +97,7 @@ export function ExperimentationListPage({isUserExpeList=true}:{isUserExpeList?: 
 }
 
 async function sendZipRequest(body: ZipRequestBody, setError: Dispatch<SetStateAction<Error|null>>){
-    const response = await apiFetch("/pdf/generate", {
+    const response = await apiFetch("/pdf/getPdfs", {
             headers: {
                 'Content-Type': 'application/json',
             },

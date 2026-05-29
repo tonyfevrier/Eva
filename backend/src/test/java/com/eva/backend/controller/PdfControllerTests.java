@@ -105,7 +105,7 @@ class PdfControllerTests {
 		when(experimentationService.findById(firstId)).thenReturn(Optional.of(firstExperimentation));
 		when(experimentationService.findById(secondId)).thenReturn(Optional.of(secondExperimentation));
 
-		MvcResult mvcResult = mockMvc.perform(post("/pdf/generate")
+		MvcResult mvcResult = mockMvc.perform(post("/pdf/getPdfs")
 				.contentType(org.springframework.http.MediaType.APPLICATION_JSON)
 				.content("{\"idsOfExpe\":[1,2]}"))
 				.andExpect(status().isOk())
@@ -118,6 +118,26 @@ class PdfControllerTests {
 		assertThat(zipEntries).containsOnlyKeys("experimentation_summary_1.pdf", "experimentation_summary_2.pdf");
 		assertThat(zipEntries.get("experimentation_summary_1.pdf")).isEqualTo(firstPdfBytes);
 		assertThat(zipEntries.get("experimentation_summary_2.pdf")).isEqualTo(secondPdfBytes);
+	}
+
+	@Test
+	void shouldReturnPdfForGivenExperimentationId() throws Exception {
+		Long experimentationId = 7L;
+		Path pdfPath = tempDir.resolve("experimentation_summary_7.pdf");
+		byte[] pdfBytes = createPdfBytes("PDF unique de l'expérimentation");
+		Files.write(pdfPath, pdfBytes);
+
+		Experimentation experimentation = new Experimentation();
+		experimentation.setId(experimentationId);
+		experimentation.setDataPath(pdfPath.toString());
+		when(experimentationService.findById(experimentationId)).thenReturn(Optional.of(experimentation));
+
+		mockMvc.perform(get("/pdf/getPdf/{id}", experimentationId))
+				.andExpect(status().isOk())
+				.andExpect(content().contentType(org.springframework.http.MediaType.APPLICATION_PDF))
+				.andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers
+						.header().string("Content-Disposition", "attachment;"))
+				.andExpect(content().bytes(pdfBytes));
 	}
 
 	@Test
