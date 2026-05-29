@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useTheme } from "../hooks/useTheme";
 import { InstitutionCreationPage} from "./InstitutionCreationPage";
 import { InstitutionSelectionPage } from "./InstitutionSelectionPage";
+import { apiFetch } from "../utils/apiFetch";
 
 export type InstitutionFormData = InstitutionCreationData | InstitutionSelectionData | null;
 
@@ -72,7 +73,7 @@ async function sendPostRequest(
 ){
     const isDataAnInstitutionCreationPage = data != null && "name" in data;
     const endpoint = isDataAnInstitutionCreationPage?"create":"associate"; 
-    const response = await fetch(`http://localhost:9000/institution/${endpoint}`, {
+    const response = await apiFetch(`/institution/${endpoint}`, {
             method: "POST",
             headers:{
                 'Content-Type': 'application/json',

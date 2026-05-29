@@ -2,6 +2,7 @@ import React, { useState, type Dispatch, type SetStateAction } from "react";
 import { Input } from "../components/Input";
 import { Button } from "../components/Button";
 import { Goto } from "../components/Goto";
+import { apiFetch } from "../utils/apiFetch";
 
 export function RecoveryPage(){
     const [mailSent, setMailSent] = useState<Boolean>(false);
@@ -31,7 +32,7 @@ export function RecoveryPage(){
 }
 
 async function sendPostRequest(mailValue:string, setFetchError:Dispatch<SetStateAction<Error|null>>, setMailSent:Dispatch<SetStateAction<Boolean>>){    
-    const response = await fetch("http://localhost:9000/auth/resetMail", {
+    const response = await apiFetch("/auth/resetMail", {
             method: "POST",
             headers:{
                 'Content-Type': 'application/json',

@@ -10,11 +10,12 @@ import { ModalList } from "../components/ModalList";
 import { Goto } from "../components/Goto";
 import { exportFile } from "../utils/request/fileExport";
 import { generatePdf } from "./EndExperimentationPage";
+import { apiFetch } from "../utils/apiFetch";
 
 export function ExperimentationSummaryPage(){
     const {id} = useParams();
     const credentials = undefined;  
-    const {loading, data, error} = useFetch<Record<string, any>>(`http://localhost:9000/expe/get/${id}`, credentials);
+    const {loading, data, error} = useFetch<Record<string, any>>(`/expe/get/${id}`, credentials);
     const [sendError, setSendError] = useState<Error|null>(null);
     const [printModal, setPrintModal] = useState<boolean>(false);
     const [printExportModal, setPrintExportModal] = useState<boolean>(false);
@@ -132,7 +133,7 @@ export function ExperimentationSummaryPage(){
 
 
 async function sendDeleteRequest(id: string|undefined, setSendError: Dispatch<SetStateAction<Error|null>>, navigate: NavigateFunction){
-    const response = await fetch(`http://localhost:9000/expe/delete/${id}`, {
+    const response = await apiFetch(`/expe/delete/${id}`, {
             method: "delete",
             headers: {
                 'Content-Type': 'application/json',
@@ -158,7 +159,7 @@ async function sendExportRequest(format: string, setSendError: Dispatch<SetState
     formData.append("entry", format);
     formData.append("exportType", "format");
     
-    const response = await fetch(`http://localhost:9000/file/export`, {
+    const response = await apiFetch(`/file/export`, {
             method: "post",
             headers: {
                 'Accept': 'application/json',

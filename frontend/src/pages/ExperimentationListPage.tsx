@@ -9,7 +9,7 @@ export function ExperimentationListPage({isUserExpeList=true}:{isUserExpeList?: 
     const [filterState, setFilterState] = useState({keyword: "", institution: "", studyField: ""});
     const endpoint = isUserExpeList?"getAllOfOneUser":"getAll";
     const credentials = isUserExpeList?'include': undefined;
-    const {loading, data, error} = useFetch<Array<Data>>(`http://localhost:9000/expe/${endpoint}`, credentials);
+    const {loading, data, error} = useFetch<Array<Data>>(`/expe/${endpoint}`, credentials);
 
     if (loading){
         return <Spinner/>
