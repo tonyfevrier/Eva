@@ -9,7 +9,7 @@ type PageData = {
 }
 
 export function InstitutionSelectionPage({setData}:PageData){
-    const {loading, data, error} = useFetch<{institutions: Array<Record<string, any>>}>("http://localhost:9000/institution/getAll");
+    const {loading, data, error} = useFetch<{institutions: Array<Record<string, any>>}>("/institution/getAll");
 
     const handleChooseAffiliation = (e: React.MouseEvent<HTMLButtonElement>) => {
         setData({affiliationId: e.currentTarget.id});

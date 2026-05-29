@@ -9,6 +9,7 @@ import { useNavigate, type NavigateFunction } from "react-router-dom";
 import { useTheme } from "../hooks/useTheme";
 import { Goto } from "../components/Goto";
 import styles from "./ProfilePage.module.css"
+import { apiFetch } from "../utils/apiFetch";
 
 
 type State = {
@@ -84,7 +85,7 @@ export function ProfilePage(){
     const {toggleIsAuthenticated} = useTheme();
 
     // Chargement des données utilisateurs
-    const {loading, data, error} = useFetch<any>("http://localhost:9000/auth/profile");
+    const {loading, data, error} = useFetch<any>("auth/profile");
 
     useEffect(() => {
         if (data){
@@ -198,7 +199,7 @@ function fillInputsWithUserInfos(data: any, dispatch:Dispatch<Action>){
 }
 
 async function sendPutRequest(updatedData:string, dispatch:Dispatch<Action>, saveAction: 'SAVE_INFOS'|'SAVE_PWD'){
-    const response = await fetch("http://localhost:9000/auth/update", {
+    const response = await apiFetch("/auth/update", {
             method: "put",
             headers: {
                 'Content-Type': 'application/json',
@@ -221,7 +222,7 @@ async function sendPutRequest(updatedData:string, dispatch:Dispatch<Action>, sav
 }
 
 async function sendDeleteRequest(dispatch:Dispatch<Action>, toggleIsAuthenticated:() => void, navigate: NavigateFunction){
-    const response = await fetch("http://localhost:9000/auth/delete", {
+    const response = await apiFetch("/auth/delete", {
             method: "delete",
             headers: {
                 'Content-Type': 'application/json',

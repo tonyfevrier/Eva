@@ -10,6 +10,7 @@ import { Spinner } from "../components/Spinner";
 import styles from "./EndExperimentationPage.module.css";
 import { Input } from "../components/Input";
 import { useFetch } from "../hooks/useFetch";
+import { apiFetch } from "../utils/apiFetch";
 
 
 
@@ -23,7 +24,7 @@ export function EndExperimentationPage(){
     const [expeWorked, setExpeWorked] = useState<boolean>(false);
     const {id} = useParams();
     const [interpretation, setInterpretation] = useState<string>("");
-    const {data} = useFetch<Record<string, any>>(`http://localhost:9000/expe/get/${id}`);
+    const {data} = useFetch<Record<string, any>>(`/expe/get/${id}`);
 
     const handleImportFile = (type: string = importType) => {
         const fileInput = document.createElement("input");
@@ -141,7 +142,7 @@ async function sendImportRequest(file: File, id: string|undefined, setError: Dis
         formData.append("id", id);
     }
 
-    const response = await fetch(`http://localhost:9000/file/import`, {
+    const response = await apiFetch(`/file/import`, {
             method: "post",
             headers: {
                 'Accept': 'application/json',
@@ -162,7 +163,7 @@ async function sendImportRequest(file: File, id: string|undefined, setError: Dis
 }
 
 async function sendInterpretationRequest(id: string|undefined, body: string, setError: Dispatch<SetStateAction<Error|null>>, setInterpretation: Dispatch<SetStateAction<string>>){
-    const response = await fetch(`http://localhost:9000/expe/interpret/${id}`, {
+    const response = await apiFetch(`/expe/interpret/${id}`, {
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
@@ -182,7 +183,7 @@ async function sendInterpretationRequest(id: string|undefined, body: string, set
 }
 
 export async function generatePdf(id: string|undefined, setError: Dispatch<SetStateAction<Error|null>>, setLoading: Dispatch<SetStateAction<boolean>>){
-    const response = await fetch(`http://localhost:9000/pdf/generate/${id}`, {
+    const response = await apiFetch(`/pdf/generate/${id}`, {
         headers: {
             'Accept': 'application/json'
         },
@@ -203,7 +204,7 @@ export async function generatePdf(id: string|undefined, setError: Dispatch<SetSt
 }
 
 async function endExperimentation(id: string|undefined, setError: Dispatch<SetStateAction<Error|null>>){
-    const response = await fetch(`http://localhost:9000/expe/endExpe/${id}`, {
+    const response = await apiFetch(`/expe/endExpe/${id}`, {
         headers: {
             'Accept': 'application/json'
         },
@@ -226,7 +227,7 @@ async function getRegisteredFileNames(fileType: string, id: string|undefined, se
     const formData= new FormData();
     formData.append("importType", fileType);
     
-    const response = await fetch(`http://localhost:9000/file/getFileNames/${id}`, {
+    const response = await apiFetch(`/file/getFileNames/${id}`, {
         headers: {
             'Accept': 'application/json'
         },
@@ -251,7 +252,7 @@ async function sendDeleteRequest(fileNames: Array<string>, setError: Dispatch<Se
     const formData = new FormData();
     fileNames.forEach(fileName => formData.append("fileNames", fileName));
     
-    const response = await fetch(`http://localhost:9000/file/delete`, {
+    const response = await apiFetch(`/file/delete`, {
         headers: {
             'Accept': 'application/json',
         },
@@ -275,7 +276,7 @@ async function sendExportRequest(fileName: string, setError: Dispatch<SetStateAc
     formData.append("entry", fileName);
     formData.append("exportType", "pdf");
     
-    const response = await fetch(`http://localhost:9000/file/export`, {
+    const response = await apiFetch(`/file/export`, {
             method: "post",
             headers: {
                 'Accept': 'application/json',

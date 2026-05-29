@@ -8,6 +8,7 @@ import { Database } from "../components/Database";
 import { Button } from "../components/Button";
 import { Select } from "../components/Select";
 import { exportFile } from "../utils/request/fileExport";
+import { apiFetch } from "../utils/apiFetch";
 
 export type Data = {
     id: string,
@@ -31,7 +32,7 @@ export function ExperimentationListPage({isUserExpeList=true}:{isUserExpeList?: 
                                                     yearOfStudy: "", expeWorked:"", newPedagogy:""});
     const endpoint = isUserExpeList? "getAllOfOneUser": "getAll";
     const credentials = isUserExpeList? 'include': undefined;
-    const {loading, data, error} = useFetch<Array<Data>>(`http://localhost:9000/expe/${endpoint}`, credentials);
+    const {loading, data, error} = useFetch<Array<Data>>(`/expe/${endpoint}`, credentials);
     const [requestError, setRequestError] = useState<Error|null>(null);
 
     if (loading){
@@ -96,7 +97,7 @@ export function ExperimentationListPage({isUserExpeList=true}:{isUserExpeList?: 
 }
 
 async function sendZipRequest(body: ZipRequestBody, setError: Dispatch<SetStateAction<Error|null>>){
-    const response = await fetch("http://localhost:9000/pdf/generate", {
+    const response = await apiFetch("/pdf/generate", {
             headers: {
                 'Content-Type': 'application/json',
             },

@@ -17,7 +17,7 @@ type FirstStepState = {
 }
 
 export function FirstStep({state, setState, handleClickOnCloud}:FirstStepState){
-    const {loading, data, error} = useFetch<{institutions: Array<Record<string, any>>}>("http://localhost:9000/institution/getAll");
+    const {loading, data, error} = useFetch<{institutions: Array<Record<string, any>>}>("/institution/getAll");
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     const handleChooseAffiliation = (e: React.MouseEvent<HTMLButtonElement>) => {

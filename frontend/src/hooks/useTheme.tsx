@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, type Dispatch, type PropsWithChildren, type SetStateAction } from "react"
+import { apiFetch } from "../utils/apiFetch";
 
 type ThemeContextType = {
     isAuthenticated: boolean,
@@ -29,7 +30,7 @@ export function useTheme(){
 
     const logout = async () => {
         try{
-            await fetch("http://localhost:9000/auth/logout", {
+            await apiFetch("/auth/logout", {
                 headers: {
                             'Content-Type': 'application/json',
                             'Accept': 'application/json',
@@ -46,7 +47,7 @@ export function useTheme(){
     const refresh = async () => {
         try{
             // Réception de l'éventuel nouveau access token et update de la date d'expiration
-            const response = await fetch("http://localhost:9000/auth/refresh", {
+            const response = await apiFetch("/auth/refresh", {
                 headers: {
                             'Content-Type': 'application/json',
                             'Accept': 'application/json',

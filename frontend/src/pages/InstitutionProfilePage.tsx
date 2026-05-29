@@ -6,6 +6,7 @@ import { UpdateButtons } from "../components/UpdateButtons";
 import { useFetch } from "../hooks/useFetch";
 import { useParams } from "react-router-dom";
 import { Spinner } from "../components/Spinner";
+import { apiFetch } from "../utils/apiFetch";
 
 type InstitutionFormData = {
     name: string,
@@ -78,7 +79,7 @@ export function InstitutionProfilePage(){
     const [state, dispatch] = useReducer(reducer, initialState);
 
     const {id} = useParams();
-    const {loading, data} = useFetch(`http://localhost:9000/institution/get/${id}`);
+    const {loading, data} = useFetch(`/institution/get/${id}`);
     
     useEffect(() => {
         if (data){
@@ -149,7 +150,7 @@ function fillInputsWithUserInfos(data: any, dispatch:Dispatch<Action>){
 }
 
 async function sendPutRequest(data: InstitutionFormData, id:string, dispatch:Dispatch<Action>){
-    const response = await fetch(`http://localhost:9000/institution/update/${id}`, {
+    const response = await apiFetch(`/institution/update/${id}`, {
             method: "PUT",
             headers:{
                 'Content-Type': 'application/json',

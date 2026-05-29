@@ -7,6 +7,7 @@ import { FourthStep } from "./newExperimentationSubPages/FourthStep";
 import { useNavigate, useParams, type NavigateFunction } from "react-router-dom";
 import { useFetch } from "../hooks/useFetch";
 import { Spinner } from "../components/Spinner";
+import { apiFetch } from "../utils/apiFetch";
 
 export type Affiliation = {
     id: string,
@@ -65,7 +66,7 @@ export function ExperimentationProfilePage(){
     const [updateError, setUpdateError] = useState<Error|null>(null);
     const navigate = useNavigate();
     const {id} = useParams();
-    const {loading, data, error} = useFetch(`http://localhost:9000/expe/get/${id}`);
+    const {loading, data, error} = useFetch(`/expe/get/${id}`);
     
     useEffect( () => {
         if (data){
@@ -211,7 +212,7 @@ function fillKeywords(data: any, expeData:ExperimentationData){
 }
 
 async function sendPostRequest(id:string|undefined, data: any, setError:Dispatch<SetStateAction<Error|null>>, navigate: NavigateFunction){
-    const response = await fetch(`http://localhost:9000/expe/update/${id}`, {
+    const response = await apiFetch(`/expe/update/${id}`, {
             method: "PUT",
             headers:{
                 'Content-Type': 'application/json',

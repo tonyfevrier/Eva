@@ -3,8 +3,8 @@ import { FormHandler } from "./FormHandler";
 
 export class RegisterFormHandler extends FormHandler<RegisterFormBoolean> {
 
-    async sendFormData(url:string){
-        const response = await this._fetchData(url);         
+    async sendFormData(endpointPath:string){
+        const response = await this._fetchData(endpointPath);         
         const text = await response.text();
         this.displayEmptyInputs(); // évite qu'une erreur de non complétion d'inputs reste affichée après soumission du formulaire
         if (response.ok) {

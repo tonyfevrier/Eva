@@ -1,4 +1,5 @@
 import type {FormHandlerInput, SendingStatus } from "../../types/types";
+import { apiFetch } from "../apiFetch";
 
 export abstract class FormHandler<T> {
 
@@ -33,9 +34,9 @@ export abstract class FormHandler<T> {
         return formKeys.every(key => this.formData.get(key) !== "");
     }
 
-    async _fetchData(url:string){
+    async _fetchData(endpointPath:string){
         const body = this._createBody();
-        const response = await fetch(url, {
+        const response = await apiFetch(endpointPath, {
             method : "POST",
             body : body,
             headers: {

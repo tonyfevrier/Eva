@@ -29,7 +29,7 @@ export function RegisterPage(){
                 formHandler.displayPasswordIncongruent();
                 return;
             }
-            formHandler.sendFormData("http://localhost:9000/auth/register");
+            formHandler.sendFormData("/auth/register");
             setRegistrationSent(true);
         }
     }

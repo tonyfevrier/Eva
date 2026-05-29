@@ -6,6 +6,7 @@ import { useTheme } from "../hooks/useTheme";
 import { Textarea } from "../components/Textarea";
 import { Select } from "../components/Select";
 import { Goto } from "../components/Goto";
+import { apiFetch } from "../utils/apiFetch";
 
 type DescribeFormData = {
     acceptMap: boolean,
@@ -75,7 +76,7 @@ export function DescribePage(){
 
 
 async function sendPostRequest(data: DescribeFormData, setFetchError:Dispatch<SetStateAction<Error|null>>, navigate: NavigateFunction){
-    const response = await fetch("http://localhost:9000/user/addData", {
+    const response = await apiFetch("/user/addData", {
             method: "POST",
             headers:{
                 'Content-Type': 'application/json',

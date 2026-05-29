@@ -2,6 +2,7 @@ import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import { Button } from "../components/Button";
 import { Input } from "../components/Input";
 import { Goto } from "../components/Goto";
+import { apiFetch } from "../utils/apiFetch";
 
 
 type DataType = {
@@ -59,7 +60,7 @@ export function PasswordChangePage(){
 
 
 async function sendPostRequest(data: DataType, setFetchError:Dispatch<SetStateAction<Error|null>>, setPwdSent:Dispatch<SetStateAction<Boolean>>){
-    const response = await fetch("http://localhost:9000/auth/recoverPwd", {
+    const response = await apiFetch("/auth/recoverPwd", {
             method: "POST",
             headers:{
                 'Content-Type': 'application/json',
