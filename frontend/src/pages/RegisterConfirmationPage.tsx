@@ -2,6 +2,7 @@ import { useState, type Dispatch, type SetStateAction } from "react";
 import { Button } from "../components/Button";
 import { Goto } from "../components/Goto";
 import { apiFetch } from "../utils/apiFetch";
+import { Alert } from "../components/Alert";
 
 export function RegisterConfirmationPage(){
     const [registrationConfirmed, setRegistrationConfirmed] = useState<Boolean>(false);
@@ -17,7 +18,7 @@ export function RegisterConfirmationPage(){
         return <> 
             <p>Veuillez confirmer la création du compte</p>
             <Button style={{"margin": "1em"}} onClick={handleClick}>Confirmer</Button>
-            {error?.message && <p>{error?.message}</p>}
+            {error?.message && <Alert message={error?.message} onClose={() => setError(null)}/>}
         </>
     }
     return <>

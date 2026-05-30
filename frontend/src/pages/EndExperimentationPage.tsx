@@ -11,6 +11,7 @@ import styles from "./EndExperimentationPage.module.css";
 import { Input } from "../components/Input";
 import { useFetch } from "../hooks/useFetch";
 import { apiFetch } from "../utils/apiFetch";
+import { Alert } from "../components/Alert";
 
 
 
@@ -25,6 +26,7 @@ export function EndExperimentationPage(){
     const {id} = useParams();
     const [interpretation, setInterpretation] = useState<string>("");
     const {data} = useFetch<Record<string, any>>(`/expe/get/${id}`);
+    const [success, setSuccess] = useState<string>("");
 
     const handleImportFile = (type: string = importType) => {
         const fileInput = document.createElement("input");
@@ -38,7 +40,7 @@ export function EndExperimentationPage(){
             }
 
             setRequestError(null);
-            sendImportRequest(selectedFile, id, setRequestError, type);
+            sendImportRequest(selectedFile, id, setRequestError, type, setSuccess);
             setIsFileModalOpen(false);
         }
 
@@ -54,7 +56,7 @@ export function EndExperimentationPage(){
     const handleInterpretation = () => {
         const body = JSON.stringify({"interpretation": {"content": interpretation},
                                      "expeWorked": expeWorked});
-        sendInterpretationRequest(id, body, setRequestError, setInterpretation);
+        sendInterpretationRequest(id, body, setRequestError, setInterpretation, setSuccess);
     }
 
     const handlePdf = () => {
@@ -63,7 +65,7 @@ export function EndExperimentationPage(){
     }
 
     const handleEnd = () => {
-        endExperimentation(id, setRequestError);
+        endExperimentation(id, setRequestError, setSuccess);
     }
 
     const handleDisplayFileModal = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -86,7 +88,7 @@ export function EndExperimentationPage(){
     }
 
     const handleDeleteFiles = () => {
-        sendDeleteRequest(fileNamesToDelete, setRequestError);
+        sendDeleteRequest(fileNamesToDelete, setRequestError, setSuccess);
         handleCloseModal();
     }
 
@@ -121,12 +123,13 @@ export function EndExperimentationPage(){
                     </ModalList>
                 }
                 {loadingPdf && <Spinner/>}
-                {requestError?.message && <p>{requestError?.message}</p>}
+                {requestError?.message && <Alert message={requestError?.message} onClose={() => setRequestError(null)}/>}
+                {success !== "" && <Alert variant="success" title="Succès" message={success} onClose={() => setSuccess("")}/>}
            </>
 }
 
 
-async function sendImportRequest(file: File, id: string|undefined, setError: Dispatch<SetStateAction<Error|null>>, importType: string){
+async function sendImportRequest(file: File, id: string|undefined, setError: Dispatch<SetStateAction<Error|null>>, importType: string, setSuccess: Dispatch<SetStateAction<string>>){
     const supportedExtensions = importType == "xls" ? "xls, xlsx ou ods" : "pdf";
     const extension = file.name.split(".").pop()?.toLowerCase();
 
@@ -156,13 +159,13 @@ async function sendImportRequest(file: File, id: string|undefined, setError: Dis
         });
 
     if (response.ok){
-        alert("Fichier envoyé avec succès!");
+        setSuccess("Fichier envoyé avec succès!");
     } else {
         setError(new Error(`Erreur ${response.status}: ${response.statusText}`));
     }
 }
 
-async function sendInterpretationRequest(id: string|undefined, body: string, setError: Dispatch<SetStateAction<Error|null>>, setInterpretation: Dispatch<SetStateAction<string>>){
+async function sendInterpretationRequest(id: string|undefined, body: string, setError: Dispatch<SetStateAction<Error|null>>, setInterpretation: Dispatch<SetStateAction<string>>, setSuccess: Dispatch<SetStateAction<string>>){
     const response = await apiFetch(`/expe/interpret/${id}`, {
             headers: {
                 'Content-Type': 'application/json',
@@ -177,7 +180,7 @@ async function sendInterpretationRequest(id: string|undefined, body: string, set
         });
 
     if (response.ok){
-        alert("Requête bien envoyée au serveur")
+        setSuccess("Requête bien envoyée au serveur");
         setInterpretation("");
     }
 }
@@ -199,12 +202,12 @@ export async function generatePdf(id: string|undefined, setError: Dispatch<SetSt
         exportFile(response, `experimentation_summary.pdf`);
     } else {
         const errorMessage = await response.text();
-        alert(errorMessage);
+        setError(new Error(errorMessage));
     }
     setLoading(false);
 }
 
-async function endExperimentation(id: string|undefined, setError: Dispatch<SetStateAction<Error|null>>){
+async function endExperimentation(id: string|undefined, setError: Dispatch<SetStateAction<Error|null>>, setSuccess: Dispatch<SetStateAction<string>>){
     const response = await apiFetch(`/expe/endExpe/${id}`, {
         headers: {
             'Accept': 'application/json'
@@ -217,10 +220,10 @@ async function endExperimentation(id: string|undefined, setError: Dispatch<SetSt
     });
 
     if (response.ok){
-        alert("L'expérimentation est considérée comme terminée");
+        setSuccess("L'expérimentation est considérée comme terminée");
     } else {
         let errorMessage = `Erreur ${response.status}: ${await response.text()}`;
-        alert(errorMessage);
+        setError(new Error(errorMessage));
     }
 }
 
@@ -249,7 +252,7 @@ async function getRegisteredFileNames(fileType: string, id: string|undefined, se
     }
 }
 
-async function sendDeleteRequest(fileNames: Array<string>, setError: Dispatch<SetStateAction<Error|null>>){
+async function sendDeleteRequest(fileNames: Array<string>, setError: Dispatch<SetStateAction<Error|null>>, setSuccess: Dispatch<SetStateAction<string>>){
     const formData = new FormData();
     fileNames.forEach(fileName => formData.append("fileNames", fileName));
     
@@ -266,7 +269,7 @@ async function sendDeleteRequest(fileNames: Array<string>, setError: Dispatch<Se
     });
 
     if (response.ok){ 
-        alert("Fichiers supprimés avec succès")
+        setSuccess("Fichiers supprimés avec succès")
     } else {
         setError(new Error(`Erreur ${response.status}: ${response.statusText}`))
     }

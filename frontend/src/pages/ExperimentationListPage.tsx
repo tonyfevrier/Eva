@@ -9,6 +9,7 @@ import { Button } from "../components/Button";
 import { Select } from "../components/Select";
 import { exportFile } from "../utils/request/fileExport";
 import { apiFetch } from "../utils/apiFetch";
+import { Alert } from "../components/Alert";
 
 export type Data = {
     id: string,
@@ -89,7 +90,7 @@ export function ExperimentationListPage({isUserExpeList=true}:{isUserExpeList?: 
                         <>
                             <Database experimentations={filteredExpesInProgress}/>
                             <Button onClick={getMultiplePdf} disabled={filteredExpesInProgress.length == 0}>Télécharger les expérimentations filtrées</Button>
-                            {requestError?.message && <p>{requestError?.message}</p>}
+                            {requestError?.message && <Alert message={requestError?.message} onClose={() => setRequestError(null)}/>}
                         </>
                     </>
         }

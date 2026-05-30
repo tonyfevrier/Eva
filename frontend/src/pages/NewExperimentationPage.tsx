@@ -7,6 +7,7 @@ import { FourthStep } from "./newExperimentationSubPages/FourthStep";
 import { useNavigate, type NavigateFunction } from "react-router-dom";
 import preRegisteredData from "../data/preRegisteredData.json";
 import { apiFetch } from "../utils/apiFetch";
+import { Alert } from "../components/Alert";
 
 
 export type Affiliation = {
@@ -95,7 +96,7 @@ export function NewExperimentationPage(){
                     <ThirdStep state={expeData} setState={setExpeData}/>
                     <FourthStep state={expeData} setState={setExpeData}/>
                 </MultiStep>
-                {error?.message && <p>{error?.message}</p>}
+                {error?.message && <Alert message={error?.message} onClose={() => setError(null)}/>}
             </>
 }
 

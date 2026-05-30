@@ -1,4 +1,3 @@
-import { Alert } from "../components/Alert";
 import { ArcOfCircle } from "../components/ArcOfCircle";
 import { homepageGeometry } from "../utils/geometry/homepageGeometry";
 import styles from "./HomePage.module.css"

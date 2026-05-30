@@ -2,13 +2,13 @@ import { Button } from "./Button";
 import styles from "./Alert.module.css";
 
 type AlertItems = {
-    title: string,
+    title?: string,
     message: string,
     variant?: string,
     onClose: () => void 
 }
 
-export function Alert({title, message, variant="error", onClose}: AlertItems){
+export function Alert({title="Erreur", message, variant="error", onClose}: AlertItems){
     const variantClass = variant === "error" ? styles.error : styles.success;
 
     return (

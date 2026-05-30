@@ -6,6 +6,7 @@ import styles from "./Database.module.css"
 import { useNavigate } from "react-router-dom"
 import { exportFile } from "../utils/request/fileExport";
 import { Spinner } from "./Spinner";
+import { Alert } from "./Alert";
 
 export function Database({experimentations}:{experimentations: Array<Data>}){
     const navigate = useNavigate();
@@ -50,7 +51,7 @@ export function Database({experimentations}:{experimentations: Array<Data>}){
                 </tbody>
               </table>
               {loading &&<Spinner/>}
-              {error?.message && <p>{error?.message}</p>}
+              {error?.message && <Alert message={error?.message} onClose={() => {setError(null)}}/>}
             </>;
 }
 

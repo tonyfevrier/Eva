@@ -5,6 +5,7 @@ import { useTheme } from "../hooks/useTheme";
 import { InstitutionCreationPage} from "./InstitutionCreationPage";
 import { InstitutionSelectionPage } from "./InstitutionSelectionPage";
 import { apiFetch } from "../utils/apiFetch";
+import { Alert } from "../components/Alert";
 
 export type InstitutionFormData = InstitutionCreationData | InstitutionSelectionData | null;
 
@@ -34,6 +35,8 @@ export function InstitutionPage(){
     const [creationFormData, setCreationFormData] = useState<InstitutionCreationData>(initialformData);
     
     const [error, setError] = useState<Error|null>(null);
+    const [success, setSuccess] = useState<string>("");
+
     const navigate = useNavigate();
 
     const areRequiredInputsFilled = userCreatesInstitution 
@@ -44,7 +47,7 @@ export function InstitutionPage(){
         /*Envoie le formulaire de données adapté  */
         e.preventDefault();
         const data = userCreatesInstitution?creationFormData:selectionFormData;
-        sendPostRequest(data, setError, setIsProfileCompleted, setCreationFormData, setSelectionFormData);
+        sendPostRequest(data, setError, setIsProfileCompleted, setCreationFormData, setSelectionFormData, setSuccess);
     }
 
     return <>
@@ -59,7 +62,8 @@ export function InstitutionPage(){
                 <Button style={{"margin": "1em"}} onClick={() => {setUserCreatesInstitution(!userCreatesInstitution)}}>{userCreatesInstitution?"Choisir un établissement existant":"Créer un établissement"}</Button>
                 <Button style={{"margin": "1em"}} disabled={!areRequiredInputsFilled} name="save" onClick={handleSubmit}>Sauver l'établissement</Button>
                 {isProfileCompleted && <Button style={{"margin": "1em"}} onClick={()=>{navigate("/")}}>Quitter la page</Button> }
-                {error?.message && <p>{error?.message}</p>}
+                {error?.message && <Alert message={error?.message} onClose={() => setError(null)}/>}
+                {success && <Alert variant="success" title="Succès" message={success} onClose={() => setSuccess("")}/>}
            </>
 }
 
@@ -70,6 +74,7 @@ async function sendPostRequest(
     setIsProfileCompleted: Dispatch<SetStateAction<boolean>>,
     setCreationFormData: Dispatch<SetStateAction<InstitutionCreationData>>,
     setSelectionFormData: Dispatch<SetStateAction<InstitutionSelectionData>>,
+    setSuccess: Dispatch<SetStateAction<string>>
 ){
     const isDataAnInstitutionCreationPage = data != null && "name" in data;
     const endpoint = isDataAnInstitutionCreationPage?"create":"associate"; 
@@ -88,7 +93,7 @@ async function sendPostRequest(
      
     if (response.ok){
         setIsProfileCompleted(true);
-        alert("Vous venez d'enregistrer un établissement avec succès!")
+        setSuccess("Vous venez d'enregistrer un établissement avec succès!")
         setFetchError(null);
         setCreationFormData({name: "", town: "", category: "", contactMail: "", socialStatus: "",
                              institutionSpecifities: "", studentsSpecificities: "",

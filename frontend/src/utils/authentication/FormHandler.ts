@@ -1,3 +1,4 @@
+import type { Dispatch, SetStateAction } from "react";
 import type {FormHandlerInput, SendingStatus } from "../../types/types";
 import { apiFetch } from "../apiFetch";
 
@@ -15,7 +16,7 @@ export abstract class FormHandler<T> {
         this.inputToStateKeyMapping = formHandler.inputToStateKeyMapping;
     }
 
-    abstract sendFormData(url: string): Promise<void>;
+    abstract sendFormData(endpointPath: string, setRegistrationSent?: Dispatch<SetStateAction<Boolean>>): Promise<void>;
 
     displayEmptyInputs(){
         const keys = Array.from(this.formData.keys());

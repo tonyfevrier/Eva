@@ -3,6 +3,7 @@ import { Input } from "../components/Input";
 import { Button } from "../components/Button";
 import { Goto } from "../components/Goto";
 import { apiFetch } from "../utils/apiFetch";
+import { Alert } from "../components/Alert";
 
 export function RecoveryPage(){
     const [mailSent, setMailSent] = useState<Boolean>(false);
@@ -25,7 +26,7 @@ export function RecoveryPage(){
         return  <form action="" onSubmit={handleSubmit}>
                     <Input title="Veuillez entrer votre email" placeholder="email" name="email" value={mailValue} onChange={handleChange} type="text" disabled={false}/>
                     <Button style={{"margin": "1em"}}>Envoyer un mail à l'adresse indiquée</Button>
-                    {fetchError?.message && <p>{fetchError?.message}</p> }
+                    {fetchError?.message && <Alert message={fetchError?.message} onClose={() => setFetchError(null)}/> }
                 </form>
     }
     return <Goto href="/login" label="Un courriel vous a été envoyé, veuillez cliquer sur le lien présent dans ce courriel." buttonLabel="Revenir à la page de login"/>

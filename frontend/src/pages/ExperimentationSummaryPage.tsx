@@ -10,6 +10,7 @@ import { ModalList } from "../components/ModalList";
 import { Goto } from "../components/Goto";
 import { exportFile } from "../utils/request/fileExport";
 import { apiFetch } from "../utils/apiFetch";
+import { Alert } from "../components/Alert";
 
 export function ExperimentationSummaryPage(){
     const {id} = useParams();
@@ -124,7 +125,7 @@ export function ExperimentationSummaryPage(){
                             <Goto label="Fichier ods (Libre office calc)" buttonLabel="Exporter" variant="export" onClick={() => handleExport("ods")}/>
                         </ModalList>}
                     {printModal && <Modal title="Suppression de l'expérimentation" postTitle="Confirmation de fermeture" postContent="Confirmez-vous la suppression de votre expérimentation?" onClose={handleToggleModal} onSave={handleDeleteConfirm}/>}
-                    {sendError?.message && <p>{sendError?.message}</p>}
+                    {sendError?.message && <Alert message={sendError?.message} onClose={() => setSendError(null)}/>}
                     {loadingPdf && <Spinner/>}
                </>
     }
