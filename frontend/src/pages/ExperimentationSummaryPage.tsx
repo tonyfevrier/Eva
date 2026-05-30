@@ -9,7 +9,6 @@ import { Modal } from "../components/Modal";
 import { ModalList } from "../components/ModalList";
 import { Goto } from "../components/Goto";
 import { exportFile } from "../utils/request/fileExport";
-import { generatePdf } from "./EndExperimentationPage";
 import { apiFetch } from "../utils/apiFetch";
 
 export function ExperimentationSummaryPage(){

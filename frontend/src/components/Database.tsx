@@ -50,7 +50,7 @@ export function Database({experimentations}:{experimentations: Array<Data>}){
                 </tbody>
               </table>
               {loading &&<Spinner/>}
-              {error?.message && <p>error?.message</p>}
+              {error?.message && <p>{error?.message}</p>}
             </>;
 }
 
