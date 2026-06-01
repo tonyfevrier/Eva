@@ -3,6 +3,7 @@ package com.eva.backend.controller;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -155,6 +156,7 @@ class PdfControllerTests {
 		byte[] convertedXlsxPdf = createPdfBytes("PDF XLSX complet");
 		byte[] lastFivePagesPdf = createPdfBytes(xlsxTabsText);
 		Experimentation experimentation = new Experimentation();
+		experimentation.setExpeWorked(true);
 
 		when(dataExtractionService.extractExperimentationData(experimentationId)).thenReturn(extractedData);
 		when(dataExtractionService.extractInterpretationsData(experimentationId)).thenReturn(interpretationData);
@@ -204,6 +206,40 @@ class PdfControllerTests {
 		verify(pdfFromXlsx).convertTabsInPdf(xlsDataDir, "42_resultats.xlsx");
 		verify(pdfFromXlsx).keepOnlyLastSheets(convertedXlsxPdf, 5);
 		verify(experimentationService).save(experimentation);
+	}
+
+	@Test
+	void shouldReturnBadRequestWhenExpeWorkedIsNullEvenIfDataFileExists() throws Exception {
+		Long experimentationId = 21L;
+		Experimentation experimentation = new Experimentation();
+		experimentation.setExpeWorked(null);
+		when(experimentationService.findById(experimentationId)).thenReturn(Optional.of(experimentation));
+
+		Files.write(xlsDataDir.resolve("21_resultats.xlsx"), "xlsx placeholder".getBytes());
+
+		mockMvc.perform(get("/pdf/generate/{id}", experimentationId))
+				.andExpect(status().isBadRequest())
+				.andExpect(content().string("Veuillez importer vos données, soumettre une interprétation et le succès de votre expérimentation avant de générer le pdf."));
+
+		verify(dataExtractionService, never()).extractExperimentationData(any());
+		verify(pdfGenerationService, never()).createPdf(any(DataForHtml.class));
+	}
+
+	@Test
+	void shouldReturnBadRequestWhenNoDataFileStartingWithIdPrefixExists() throws Exception {
+		Long experimentationId = 22L;
+		Experimentation experimentation = new Experimentation();
+		experimentation.setExpeWorked(true);
+		when(experimentationService.findById(experimentationId)).thenReturn(Optional.of(experimentation));
+
+		Files.write(xlsDataDir.resolve("autre_fichier.xlsx"), "xlsx placeholder".getBytes());
+
+		mockMvc.perform(get("/pdf/generate/{id}", experimentationId))
+				.andExpect(status().isBadRequest())
+				.andExpect(content().string("Veuillez importer vos données, soumettre une interprétation et le succès de votre expérimentation avant de générer le pdf."));
+
+		verify(dataExtractionService, never()).extractExperimentationData(any());
+		verify(pdfGenerationService, never()).createPdf(any(DataForHtml.class));
 	}
 
 	private byte[] createPdfBytes(String content) throws Exception {

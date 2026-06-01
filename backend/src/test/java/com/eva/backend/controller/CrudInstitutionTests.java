@@ -3,6 +3,7 @@ package com.eva.backend.controller;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.hamcrest.Matchers.is;
@@ -79,7 +80,17 @@ public class CrudInstitutionTests {
 
     @Test
     public void testCreateInstitution() throws Exception {        
-        Institution institution = createInstitution();
+        Institution institution = Institution.builder()
+                .name("Institution Initiale")
+                .town("Marseille")
+                .contactMail("contact@initial.fr")
+                .category("Collège")
+                .studentsNumber(500)
+                .socialStatus("Public")
+                .institutionSpecifities("Spécialité initiale")
+                .studentsSpecificities("Étudiants initiaux")
+                .teachersSpecificities("Enseignants initiaux")
+                .build();
         
         String institutionJson = objectMapper.writeValueAsString(institution);
         
@@ -100,6 +111,50 @@ public class CrudInstitutionTests {
         assertEquals("Institution Initiale", savedInstitution.get().getName());
         assertEquals("Marseille", savedInstitution.get().getTown());
         assertEquals(500, savedInstitution.get().getStudentsNumber());
+    }
+
+    @Test
+    public void testCreateInstitutionWithDuplicateContactMail() throws Exception {
+        Institution firstInstitution = Institution.builder()
+                .name("Institution 1")
+                .town("Marseille")
+                .contactMail("duplicate@institution.fr")
+                .category("Collège")
+                .studentsNumber(500)
+                .socialStatus("Public")
+                .institutionSpecifities("Spécialité 1")
+                .studentsSpecificities("Étudiants 1")
+                .teachersSpecificities("Enseignants 1")
+                .build();
+
+        Institution secondInstitution = Institution.builder()
+                .name("Institution 2")
+                .town("Lille")
+                .contactMail("duplicate@institution.fr")
+                .category("Lycée")
+                .studentsNumber(700)
+                .socialStatus("Privé")
+                .institutionSpecifities("Spécialité 2")
+                .studentsSpecificities("Étudiants 2")
+                .teachersSpecificities("Enseignants 2")
+                .build();
+
+        String firstInstitutionJson = objectMapper.writeValueAsString(firstInstitution);
+        String secondInstitutionJson = objectMapper.writeValueAsString(secondInstitution);
+
+        mockMvc.perform(post("/institution/create")
+                .cookie(new jakarta.servlet.http.Cookie("jwt", jwtCookie))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(firstInstitutionJson))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message", is("Institution créée")));
+
+        mockMvc.perform(post("/institution/create")
+                .cookie(new jakarta.servlet.http.Cookie("jwt", jwtCookie))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(secondInstitutionJson))
+                .andExpect(status().isConflict())
+                .andExpect(content().string("L'institution existe déjà. Veuillez choisir parmi les institutions existantes."));
     }
 
     @Test

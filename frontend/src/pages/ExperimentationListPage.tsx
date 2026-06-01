@@ -58,8 +58,9 @@ export function ExperimentationListPage({isUserExpeList=true}:{isUserExpeList?: 
                         <Input className={styles.filter} title="Filtrer par discipline" value={filterState.studyField}  onChange={(e) => {setFilterState({...filterState, studyField: e.target.value})}}/>
                         <Input className={styles.filter} title="Filtrer par mot-clé" value={filterState.keyword} onChange={(e) => {setFilterState({...filterState, keyword: e.target.value})}}/>
                         <Input className={styles.filter} title="Filtrer par institution" value={filterState.institution} onChange={(e) => {setFilterState({...filterState, institution: e.target.value})}}/>
+                        {filteredExpes.length == 0 && <h2>Il n'y a pas d'expérimentation enregistrée.</h2>}
                         <div className={styles.container}>
-                            {filteredExpes.map(expe => <ExperimentationPostButton key={expe.id} data={expe}/>)};
+                            {filteredExpes.map(expe => <ExperimentationPostButton key={expe.id} data={expe}/>)}
                         </div>
                     </>
         } else {
@@ -88,8 +89,12 @@ export function ExperimentationListPage({isUserExpeList=true}:{isUserExpeList?: 
                             <option value="Non"> L'expérimentation n'a pas fonctionné </option>
                         </Select>
                         <>
-                            <Database experimentations={filteredExpesInProgress}/>
-                            <Button onClick={getMultiplePdf} disabled={filteredExpesInProgress.length == 0}>Télécharger les expérimentations filtrées</Button>
+                            {filteredExpesInProgress.length == 0 && <h2>Il n'y a pas d'expérimentation enregistrée.</h2>}
+                            {filteredExpesInProgress.length > 0 && 
+                            <>
+                                <Database experimentations={filteredExpesInProgress}/>
+                                <Button onClick={getMultiplePdf} disabled={filteredExpesInProgress.length == 0}>Télécharger les expérimentations filtrées</Button>
+                            </>}
                             {requestError?.message && <Alert message={requestError?.message} onClose={() => setRequestError(null)}/>}
                         </>
                     </>

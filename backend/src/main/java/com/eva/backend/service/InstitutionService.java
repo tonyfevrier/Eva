@@ -22,6 +22,10 @@ public class InstitutionService {
         return institutionRepository.findById(id);
     }
 
+    public Optional<Institution> findByContactMail(String contactMail){
+        return institutionRepository.findByContactMail(contactMail);
+    }
+
     public Institution findByIdWithUsers(Long id){
         return institutionRepository.findByIdWithUsers(id);
     }

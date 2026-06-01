@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.apache.commons.math3.analysis.function.Exp;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -231,10 +230,6 @@ public class ExperimentationController {
         boolean userHasInterpretedData = experimentation.getInterpretations().size() != 0;
         boolean userSaidIfExpeWorked = experimentation.getExpeWorked() != null;
         
-        System.out.println(userHasInterpretedData);
-        System.out.println(expeHasGeneratedPdf);
-        System.out.println(experimentation.getExpeWorked());
-        System.out.println(userSaidIfExpeWorked);
         if (!expeHasGeneratedPdf || !userHasInterpretedData || !userSaidIfExpeWorked){
             return ResponseEntity.badRequest().body("Requête refusée : assurez-vous d'avoir soumis vos résultats et généré le pdf final avant de terminer l'expérimentation");
         }

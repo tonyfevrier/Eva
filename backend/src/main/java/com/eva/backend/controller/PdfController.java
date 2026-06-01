@@ -29,6 +29,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 
 @RestController
@@ -62,8 +63,16 @@ public class PdfController {
     private PdfFromSpreadSheet pdfXlsxService;
 
     @GetMapping("/generate/{id}")
-    public ResponseEntity<byte[]> generatePdf(@PathVariable Long id) throws IOException {
+    public ResponseEntity<?> generatePdf(@PathVariable Long id) throws IOException {
         /* On crée la première page de données, on la merge aux fichiers tests et questionnaires importés par l'utilisateur et au fichier xls. */
+        
+        /* Datapath non null, expeworked non null,  */
+        Experimentation experimentation = experimentationService.findById(id).orElseThrow();
+        boolean dataFileExists = dataFileExistsForExpeWith(id);
+        if (experimentation.getExpeWorked() == null || !dataFileExists) {
+            return ResponseEntity.badRequest().body("Veuillez importer vos données, soumettre une interprétation et le succès de votre expérimentation avant de générer le pdf.");
+        }
+        
         byte[] experimentationDataByte = getExperimentationData(id);
         byte[] interpretationDataByte = getInterpretationData(id);
 
@@ -83,6 +92,14 @@ public class PdfController {
             String errorMessage = "Impossible de generer le PDF: " + e.getMessage();
             return ResponseEntity.badRequest().body(errorMessage.getBytes(StandardCharsets.UTF_8));
         }   
+    }
+
+    private boolean dataFileExistsForExpeWith(Long id) throws IOException{
+        boolean dataFileExists;
+        try (Stream<Path> files = Files.list(Paths.get(xlsDataDir).toAbsolutePath().normalize())) {
+            dataFileExists = files.anyMatch(path -> path.getFileName().toString().startsWith(id + "_"));
+        }
+        return dataFileExists;
     }
 
     private byte[] getExperimentationData(Long id) throws IOException{
