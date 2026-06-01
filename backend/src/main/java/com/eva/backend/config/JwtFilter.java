@@ -39,7 +39,7 @@ public class JwtFilter extends OncePerRequestFilter{
              * avec un utilisateur et si oui on crée un nouvel objet d'authentication
              */
             
-            String path = request.getRequestURI();
+            String path = request.getServletPath();
             if (isPathAnAllUsersPermittedPath(path)) {
                 filterChain.doFilter(request, response);
                 return;
