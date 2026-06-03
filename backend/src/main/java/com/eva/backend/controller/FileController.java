@@ -99,7 +99,7 @@ public class FileController {
             return ResponseEntity.ok(Map.of("fileNames", List.of()));
         }
 
-        fileService.deleteFiles(testsDirectory, fileNames);
+        fileService.deletePdfFiles(testsDirectory, fileNames);
 
         return ResponseEntity.ok("Files are deleted");
     }

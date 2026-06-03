@@ -79,7 +79,7 @@ public class FileService {
                                                       .findFirst()
                                                       .orElseThrow();
         Path baseDir = getBaseDir(strategy.getImportDir());
-        deleteExistingExperimentationFile(baseDir, id);
+        deleteExistingDataFile(baseDir, id);
         String importedFileName = strategy.createImportedFileName(id, extension);
         Path importedFilePath = writeFilePath(importedFileName, baseDir);
         strategy.copy(file, importedFilePath);
@@ -91,16 +91,22 @@ public class FileService {
         return baseDir;
     }
 
-    private void deleteExistingExperimentationFile(Path baseDir, Long id) throws IOException{
+    public void deleteExistingDataFile(Path baseDir, Long id) throws IOException{
         String expectedPrefix = id + "_";
 
         try (Stream<Path> files = Files.list(baseDir)) {
+            System.out.println(2222);
+            System.out.println(baseDir);
+            System.out.println(expectedPrefix);
             Path fileToDelete = files
                             .filter(Files::isRegularFile)
+                            .peek(path -> System.out.println(path.getFileName().toString()))
+                            .peek(path -> System.out.println(path.getFileName().toString().startsWith(expectedPrefix)))
                             .filter(path -> path.getFileName().toString().startsWith(expectedPrefix))
                             .findFirst()
                             .orElse(null);
 
+            System.out.println(fileToDelete);
             if (fileToDelete != null) {
                 Files.deleteIfExists(fileToDelete);
             }
@@ -141,7 +147,7 @@ public class FileService {
         return number.equals(id);
     }
 
-    public void deleteFiles(Path testsDirectory, List<String> fileNames) throws IOException{
+    public void deletePdfFiles(Path testsDirectory, List<String> fileNames) throws IOException{
         for (String fileName : fileNames) {
             String safeFileName = Paths.get(fileName).getFileName().toString();
             Path targetFile = testsDirectory.resolve(safeFileName).normalize();
@@ -208,4 +214,24 @@ public class FileService {
         }
     }
     
+    public void deleteGeneratedExperimentationFile(Path baseDir, Long id) throws IOException{
+        try (Stream<Path> files = Files.list(baseDir)) {
+            System.out.println(1111);
+            System.out.println(baseDir);
+            Path fileToDelete = files
+                            .filter(Files::isRegularFile)
+                            .peek(path -> System.out.println(path.getFileName().toString()))
+                            .peek(path -> System.out.println(path.getFileName().toString().equals("experimentation_summary_" + id + ".pdf")))
+                            .filter(path -> path.getFileName().toString().equals("experimentation_summary_" + id + ".pdf"))
+                            .findFirst()
+                            .orElse(null);
+            
+            System.out.println(fileToDelete);
+            if (fileToDelete != null) {
+                Files.deleteIfExists(fileToDelete);
+            }
+        } 
+    }
 }
+
+ 

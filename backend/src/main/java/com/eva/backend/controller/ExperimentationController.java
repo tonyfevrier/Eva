@@ -1,11 +1,17 @@
 package com.eva.backend.controller;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.RestController;
@@ -17,6 +23,7 @@ import com.eva.backend.model.User;
 import com.eva.backend.records.AddInterpretationRequest;
 import com.eva.backend.records.ExperimentationRequest;
 import com.eva.backend.service.ExperimentationService;
+import com.eva.backend.service.FileService;
 import com.eva.backend.service.InstitutionService;
 import com.eva.backend.service.UserService;
 import com.eva.backend.service.InterpretationService;
@@ -36,6 +43,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RestController
 @RequestMapping("/expe")
 public class ExperimentationController {
+
+    @Value("${app.generated-pdf-dir}")
+    private String generatedPdfDir;
+
+    @Value("${app.pdf-dir}")
+    private String pdfDir;
+
+    @Value("${app.xls-data-dir}")
+    private String xlsDataDir;
     
     @Autowired
     private ExperimentationService experimentationService;
@@ -51,6 +67,9 @@ public class ExperimentationController {
 
     @Autowired
     private RequestUtils requestUtils;
+
+    @Autowired
+    private FileService fileService;
 
     @PostMapping("/create") 
     //@Transactional //Important pour que ma ligne 42 permette aussi d'enregistrer l'expérimentation dans user pour maintenir la relation birectionnelle   
@@ -154,7 +173,7 @@ public class ExperimentationController {
     }
 
     @DeleteMapping("/delete/{id}") 
-    public ResponseEntity<?> deleteExperimentation(@PathVariable Long id, @AuthenticationPrincipal User authenticatedUser){
+    public ResponseEntity<?> deleteExperimentation(@PathVariable Long id, @AuthenticationPrincipal User authenticatedUser) throws IOException {
         // Vérifier que l'expérimentation existe
         Optional<Experimentation> optionalExperimentation = experimentationService.findById(id);
         if (optionalExperimentation.isEmpty()) {
@@ -169,8 +188,23 @@ public class ExperimentationController {
         }
         
         experimentationService.deleteById(id);
+        deleteFilesRelatedToExpe(id);
         
         return ResponseEntity.ok(Map.of("message", "L'expérimentation a bien été supprimée"));
+    }
+
+    private void deleteFilesRelatedToExpe(Long id) throws IOException {
+        fileService.deleteExistingDataFile(Paths.get(xlsDataDir).toAbsolutePath().normalize(), id);
+        fileService.deleteGeneratedExperimentationFile(Paths.get(generatedPdfDir).toAbsolutePath().normalize(), id);
+        Path pathPdfDir = Paths.get(pdfDir).toAbsolutePath().normalize();
+        try (Stream<Path> files = Files.list(pathPdfDir)){
+            List<String> fileNames = files
+                                   .filter(Files::isRegularFile)
+                                   .map(path -> path.getFileName().toString())
+                                   .filter(name -> name.contains("_id" + id))
+                                   .toList();
+            fileService.deletePdfFiles(pathPdfDir, fileNames);
+        }
     }
 
     @PutMapping("/update/{id}")

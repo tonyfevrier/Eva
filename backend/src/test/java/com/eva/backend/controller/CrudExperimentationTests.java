@@ -10,6 +10,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
@@ -621,15 +624,38 @@ public class CrudExperimentationTests {
     @Test
     public void testDeleteExperimentation() throws Exception {
         createAnExperimentation();
+        Long experimentationId = 1L;
+
+        Path baseDir = Paths.get("target/test-imports").toAbsolutePath().normalize();
+        Files.createDirectories(baseDir);
+
+        Path generatedPdf = baseDir.resolve("experimentation_summary_" + experimentationId + ".pdf");
+        Path xlsxData = baseDir.resolve(experimentationId + "_test.xlsx");
+        Path testPdf = baseDir.resolve("test_id" + experimentationId + ".pdf");
+        Path questionnairePdf = baseDir.resolve("questionnaire_id" + experimentationId + ".pdf");
+
+        Files.writeString(generatedPdf, "generated-pdf");
+        Files.writeString(xlsxData, "xlsx-data");
+        Files.writeString(testPdf, "test-pdf");
+        Files.writeString(questionnairePdf, "questionnaire-pdf");
+
+        assertThat(generatedPdf).exists();
+        assertThat(xlsxData).exists();
+        assertThat(testPdf).exists();
+        assertThat(questionnairePdf).exists();
         
-        assertThat(experimentationRepository.findById(1L)).isPresent();
+        assertThat(experimentationRepository.findById(experimentationId)).isPresent();
         
-        mockMvc.perform(delete("/expe/delete/1")
-                        .cookie(new jakarta.servlet.http.Cookie("jwt", jwtCookie)))
-                        .andExpect(status().isOk())
-                        .andExpect(jsonPath("$.message").value("L'expérimentation a bien été supprimée"));
+        mockMvc.perform(delete("/expe/delete/{id}", experimentationId)
+                .cookie(new jakarta.servlet.http.Cookie("jwt", jwtCookie)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("L'expérimentation a bien été supprimée"));
         
-        assertThat(experimentationRepository.findById(1L)).isEmpty();
+        assertThat(experimentationRepository.findById(experimentationId)).isEmpty();
+        assertThat(generatedPdf).doesNotExist();
+        assertThat(xlsxData).doesNotExist();
+        assertThat(testPdf).doesNotExist();
+        assertThat(questionnairePdf).doesNotExist();
     }
 
     @Test
