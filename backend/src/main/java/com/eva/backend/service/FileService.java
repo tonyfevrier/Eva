@@ -95,18 +95,12 @@ public class FileService {
         String expectedPrefix = id + "_";
 
         try (Stream<Path> files = Files.list(baseDir)) {
-            System.out.println(2222);
-            System.out.println(baseDir);
-            System.out.println(expectedPrefix);
             Path fileToDelete = files
                             .filter(Files::isRegularFile)
-                            .peek(path -> System.out.println(path.getFileName().toString()))
-                            .peek(path -> System.out.println(path.getFileName().toString().startsWith(expectedPrefix)))
                             .filter(path -> path.getFileName().toString().startsWith(expectedPrefix))
                             .findFirst()
                             .orElse(null);
 
-            System.out.println(fileToDelete);
             if (fileToDelete != null) {
                 Files.deleteIfExists(fileToDelete);
             }
@@ -216,17 +210,12 @@ public class FileService {
     
     public void deleteGeneratedExperimentationFile(Path baseDir, Long id) throws IOException{
         try (Stream<Path> files = Files.list(baseDir)) {
-            System.out.println(1111);
-            System.out.println(baseDir);
             Path fileToDelete = files
                             .filter(Files::isRegularFile)
-                            .peek(path -> System.out.println(path.getFileName().toString()))
-                            .peek(path -> System.out.println(path.getFileName().toString().equals("experimentation_summary_" + id + ".pdf")))
                             .filter(path -> path.getFileName().toString().equals("experimentation_summary_" + id + ".pdf"))
                             .findFirst()
                             .orElse(null);
             
-            System.out.println(fileToDelete);
             if (fileToDelete != null) {
                 Files.deleteIfExists(fileToDelete);
             }
