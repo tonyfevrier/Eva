@@ -1,5 +1,6 @@
 package com.eva.backend.service;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -10,6 +11,8 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
@@ -76,7 +79,7 @@ public class FileService {
                                                       .findFirst()
                                                       .orElseThrow();
         Path baseDir = getBaseDir(strategy.getImportDir());
-        deleteExistingExperimentationFile(baseDir, id);
+        deleteExistingDataFile(baseDir, id);
         String importedFileName = strategy.createImportedFileName(id, extension);
         Path importedFilePath = writeFilePath(importedFileName, baseDir);
         strategy.copy(file, importedFilePath);
@@ -88,7 +91,7 @@ public class FileService {
         return baseDir;
     }
 
-    private void deleteExistingExperimentationFile(Path baseDir, Long id) throws IOException{
+    public void deleteExistingDataFile(Path baseDir, Long id) throws IOException{
         String expectedPrefix = id + "_";
 
         try (Stream<Path> files = Files.list(baseDir)) {
@@ -138,7 +141,7 @@ public class FileService {
         return number.equals(id);
     }
 
-    public void deleteFiles(Path testsDirectory, List<String> fileNames) throws IOException{
+    public void deletePdfFiles(Path testsDirectory, List<String> fileNames) throws IOException{
         for (String fileName : fileNames) {
             String safeFileName = Paths.get(fileName).getFileName().toString();
             Path targetFile = testsDirectory.resolve(safeFileName).normalize();
@@ -183,4 +186,41 @@ public class FileService {
         String lowerName = fileName.toLowerCase();
         return lowerName.endsWith(".xls") || lowerName.endsWith(".xlsx") || lowerName.endsWith(".ods");
     }
+
+    public byte[] buildZipFromDataPaths(List<String> dataPaths) throws IOException {
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+             ZipOutputStream zipOutputStream = new ZipOutputStream(outputStream)) {
+
+            for (String dataPath : dataPaths) {
+                Path path = Paths.get(dataPath).toAbsolutePath().normalize();
+                if (!Files.exists(path) || !Files.isRegularFile(path)) {
+                    throw new IllegalArgumentException("Fichier introuvable: " + path);
+                }
+
+                ZipEntry entry = new ZipEntry(path.getFileName().toString());
+                zipOutputStream.putNextEntry(entry);
+                zipOutputStream.write(Files.readAllBytes(path));
+                zipOutputStream.closeEntry();
+            }
+
+            zipOutputStream.finish();
+            return outputStream.toByteArray();
+        }
+    }
+    
+    public void deleteGeneratedExperimentationFile(Path baseDir, Long id) throws IOException{
+        try (Stream<Path> files = Files.list(baseDir)) {
+            Path fileToDelete = files
+                            .filter(Files::isRegularFile)
+                            .filter(path -> path.getFileName().toString().equals("experimentation_summary_" + id + ".pdf"))
+                            .findFirst()
+                            .orElse(null);
+            
+            if (fileToDelete != null) {
+                Files.deleteIfExists(fileToDelete);
+            }
+        } 
+    }
 }
+
+ 

@@ -7,6 +7,7 @@ import { useFetch } from "../hooks/useFetch";
 import { useParams } from "react-router-dom";
 import { Spinner } from "../components/Spinner";
 import { apiFetch } from "../utils/apiFetch";
+import { Alert } from "../components/Alert";
 
 type InstitutionFormData = {
     name: string,
@@ -136,7 +137,7 @@ export function InstitutionProfilePage(){
                     <Textarea title="Particularités des enseignants" name="teachersSpecificities" value={state.formData.teachersSpecificities} onChange={(e)=>{dispatch({type: 'UPDATE_FIELD', field: 'teachersSpecificities', value: e.target.value})}} disabled={!state.isEditing}/>
 
                     <UpdateButtons toggleButton={state.isEditing} handleToggleButton={handleToggleEditing}/>
-                    {state.updateError?.message && <p>{state.updateError?.message}</p> }
+                    {state.updateError?.message && <Alert message={state.updateError?.message} onClose={() => dispatch({type: "SET_ERROR", error: null})}/>}
                 </form>
            </>
 }

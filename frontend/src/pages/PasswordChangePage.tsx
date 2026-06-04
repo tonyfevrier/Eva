@@ -3,6 +3,7 @@ import { Button } from "../components/Button";
 import { Input } from "../components/Input";
 import { Goto } from "../components/Goto";
 import { apiFetch } from "../utils/apiFetch";
+import { Alert } from "../components/Alert";
 
 
 type DataType = {
@@ -52,7 +53,7 @@ export function PasswordChangePage(){
                     <Input title="Veuillez entrer une seconde fois le mot de passe" type="password" name="passwordCopy" value={passwords.passwordCopy} onChange={handleFormChange}/>
                     <Button style={{"margin": "1em"}}>Enregistrer le mot de passe</Button>
                 </form>
-                {fetchError?.message && <p>{fetchError?.message}</p> }
+                {fetchError?.message && <Alert message={fetchError?.message} onClose={() => setFetchError(null)}/> }
            </>
     }
     return <Goto href="/login" label="Votre mot de passe a bien été modifié" buttonLabel="Revenir à la page de login"/>

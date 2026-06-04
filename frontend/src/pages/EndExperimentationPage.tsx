@@ -8,17 +8,25 @@ import { ModalList } from "../components/ModalList";
 import { LinkCheckbox } from "../components/LinkCheckBox";
 import { Spinner } from "../components/Spinner";
 import styles from "./EndExperimentationPage.module.css";
+import { Input } from "../components/Input";
+import { useFetch } from "../hooks/useFetch";
 import { apiFetch } from "../utils/apiFetch";
+import { Alert } from "../components/Alert";
+
+
 
 export function EndExperimentationPage(){
     const [isFileModalOpen, setIsFileModalOpen] = useState<boolean>(false);
     const [importType, setImportType] = useState<string>("xls");
     const [fileNames, setFileNames] = useState<Array<string>>([]);
     const [fileNamesToDelete, setFileNamesToDelete] = useState<Array<string>>([]);
-    const [error, setError] = useState<Error|null>(null);
-    const [loading, setLoading] = useState<boolean>(false);
+    const [requestError, setRequestError] = useState<Error|null>(null);
+    const [loadingPdf, setLoading] = useState<boolean>(false);
+    const [expeWorked, setExpeWorked] = useState<boolean>(false);
     const {id} = useParams();
     const [interpretation, setInterpretation] = useState<string>("");
+    const {data} = useFetch<Record<string, any>>(`/expe/get/${id}`);
+    const [success, setSuccess] = useState<string>("");
 
     const handleImportFile = (type: string = importType) => {
         const fileInput = document.createElement("input");
@@ -31,8 +39,8 @@ export function EndExperimentationPage(){
                 return;
             }
 
-            setError(null);
-            sendImportRequest(selectedFile, id, setError, type);
+            setRequestError(null);
+            sendImportRequest(selectedFile, id, setRequestError, type, setSuccess);
             setIsFileModalOpen(false);
         }
 
@@ -46,17 +54,18 @@ export function EndExperimentationPage(){
     }
 
     const handleInterpretation = () => {
-        const body = JSON.stringify({"content": interpretation});
-        sendInterpretationRequest(id, body, setError, setInterpretation);
+        const body = JSON.stringify({"interpretation": {"content": interpretation},
+                                     "expeWorked": expeWorked});
+        sendInterpretationRequest(id, body, setRequestError, setInterpretation, setSuccess);
     }
 
     const handlePdf = () => {
         setLoading(true); 
-        generatePdf(id, setError, setLoading);
+        generatePdf(id, setRequestError, setLoading);
     }
 
     const handleEnd = () => {
-        endExperimentation(id, setError);
+        endExperimentation(id, setRequestError, setSuccess);
     }
 
     const handleDisplayFileModal = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -64,7 +73,7 @@ export function EndExperimentationPage(){
         on affiche également les fichiers pdf du type de l'import */
         const nextImportType = e.currentTarget.id;
         setImportType(nextImportType);
-        getRegisteredFileNames(nextImportType, id, setError, setFileNames, setIsFileModalOpen);
+        getRegisteredFileNames(nextImportType, id, setRequestError, setFileNames, setIsFileModalOpen);
     }
 
     const modifyFileNamesToDelete = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -79,7 +88,7 @@ export function EndExperimentationPage(){
     }
 
     const handleDeleteFiles = () => {
-        sendDeleteRequest(fileNamesToDelete, setError);
+        sendDeleteRequest(fileNamesToDelete, setRequestError, setSuccess);
         handleCloseModal();
     }
 
@@ -89,7 +98,7 @@ export function EndExperimentationPage(){
     }
 
     const handleDownloadRegisteredFile = (e:React.MouseEvent<HTMLButtonElement>) => {
-        sendExportRequest(e.currentTarget.value, setError);
+        sendExportRequest(e.currentTarget.value, setRequestError);
         handleCloseModal();
     }
 
@@ -101,10 +110,11 @@ export function EndExperimentationPage(){
                 <h4 className={styles.h4}>Import des résultats de l'expérimentation</h4>
                 <Goto id="xls" variant="export" label="Importer le fichier de données brutes" buttonLabel="Importer" onClick={handleImportXls}/>
                 <Textarea title="Dans cet encart, vous pouvez interpréter vos données." value={interpretation} onChange={(e) => setInterpretation(e.target.value)}></Textarea>
-                <Button onClick={handleInterpretation}>Soumettre l'interprétation des données</Button>
+                <Input type="checkbox" title="Les résultats sont-ils significatifs" onChange={() => {setExpeWorked(!expeWorked)}}/>
+                <Button onClick={handleInterpretation}>Soumettre les résultats</Button>
                 <h4 className={styles.h4}>Génération du récapitulatif complet de l'expérimentation</h4>
                 <Goto variant="export" label="Vous pouvez générer le pdf récapitulant votre expérimentation avec ou sans interprétation de données." buttonLabel="Générer le pdf" onClick={handlePdf}/>
-                <Goto variant="export" label="Vous pouvez marquer l'expérimentation comme terminée. Tout utilisateur pourra télécharger le pdf généré." buttonLabel="Terminer" onClick={handleEnd}/>
+                {data?.inProgress && <Goto variant="export" label="Vous pouvez marquer l'expérimentation comme terminée. Tout utilisateur pourra télécharger le pdf généré." buttonLabel="Terminer" onClick={handleEnd}/>}
                 {isFileModalOpen && 
                     <ModalList title="Ajouter ou supprimer des tests" onClose={handleCloseModal}>
                         <LinkCheckbox title={fileNames.length > 0 ? "Fichiers enregistrés": ""} options={fileNames} onChange={modifyFileNamesToDelete} onButtonClick={handleDownloadRegisteredFile}/>
@@ -112,13 +122,14 @@ export function EndExperimentationPage(){
                         <Button onClick={handleDeleteFiles} style={{margin: '.5em'}}>Supprimer les fichiers sélectionnés</Button>
                     </ModalList>
                 }
-                {loading && <Spinner/>}
-                {error?.message && <p>{error?.message}</p>}
+                {loadingPdf && <Spinner/>}
+                {requestError?.message && <Alert message={requestError?.message} onClose={() => setRequestError(null)}/>}
+                {success !== "" && <Alert variant="success" title="Succès" message={success} onClose={() => setSuccess("")}/>}
            </>
 }
 
 
-async function sendImportRequest(file: File, id: string|undefined, setError: Dispatch<SetStateAction<Error|null>>, importType: string){
+async function sendImportRequest(file: File, id: string|undefined, setError: Dispatch<SetStateAction<Error|null>>, importType: string, setSuccess: Dispatch<SetStateAction<string>>){
     const supportedExtensions = importType == "xls" ? "xls, xlsx ou ods" : "pdf";
     const extension = file.name.split(".").pop()?.toLowerCase();
 
@@ -148,13 +159,13 @@ async function sendImportRequest(file: File, id: string|undefined, setError: Dis
         });
 
     if (response.ok){
-        alert("Fichier envoyé avec succès!");
+        setSuccess("Fichier envoyé avec succès!");
     } else {
         setError(new Error(`Erreur ${response.status}: ${response.statusText}`));
     }
 }
 
-async function sendInterpretationRequest(id: string|undefined, body: string, setError: Dispatch<SetStateAction<Error|null>>, setInterpretation: Dispatch<SetStateAction<string>>){
+async function sendInterpretationRequest(id: string|undefined, body: string, setError: Dispatch<SetStateAction<Error|null>>, setInterpretation: Dispatch<SetStateAction<string>>, setSuccess: Dispatch<SetStateAction<string>>){
     const response = await apiFetch(`/expe/interpret/${id}`, {
             headers: {
                 'Content-Type': 'application/json',
@@ -169,7 +180,7 @@ async function sendInterpretationRequest(id: string|undefined, body: string, set
         });
 
     if (response.ok){
-        alert("Requête bien envoyée au serveur")
+        setSuccess("Requête bien envoyée au serveur");
         setInterpretation("");
     }
 }
@@ -180,6 +191,7 @@ export async function generatePdf(id: string|undefined, setError: Dispatch<SetSt
             'Accept': 'application/json'
         },
         method: "get",
+        credentials: "include"
     }).catch(requestError => {
         setError(requestError);
         setLoading(false);
@@ -190,12 +202,12 @@ export async function generatePdf(id: string|undefined, setError: Dispatch<SetSt
         exportFile(response, `experimentation_summary.pdf`);
     } else {
         const errorMessage = await response.text();
-        alert(errorMessage);
+        setError(new Error(errorMessage));
     }
     setLoading(false);
 }
 
-async function endExperimentation(id: string|undefined, setError: Dispatch<SetStateAction<Error|null>>){
+async function endExperimentation(id: string|undefined, setError: Dispatch<SetStateAction<Error|null>>, setSuccess: Dispatch<SetStateAction<string>>){
     const response = await apiFetch(`/expe/endExpe/${id}`, {
         headers: {
             'Accept': 'application/json'
@@ -208,7 +220,10 @@ async function endExperimentation(id: string|undefined, setError: Dispatch<SetSt
     });
 
     if (response.ok){
-        alert("L'expérimentation est considérée comme terminée");
+        setSuccess("L'expérimentation est considérée comme terminée");
+    } else {
+        let errorMessage = `Erreur ${response.status}: ${await response.text()}`;
+        setError(new Error(errorMessage));
     }
 }
 
@@ -237,7 +252,7 @@ async function getRegisteredFileNames(fileType: string, id: string|undefined, se
     }
 }
 
-async function sendDeleteRequest(fileNames: Array<string>, setError: Dispatch<SetStateAction<Error|null>>){
+async function sendDeleteRequest(fileNames: Array<string>, setError: Dispatch<SetStateAction<Error|null>>, setSuccess: Dispatch<SetStateAction<string>>){
     const formData = new FormData();
     fileNames.forEach(fileName => formData.append("fileNames", fileName));
     
@@ -254,7 +269,7 @@ async function sendDeleteRequest(fileNames: Array<string>, setError: Dispatch<Se
     });
 
     if (response.ok){ 
-        alert("Fichiers supprimés avec succès")
+        setSuccess("Fichiers supprimés avec succès")
     } else {
         setError(new Error(`Erreur ${response.status}: ${response.statusText}`))
     }

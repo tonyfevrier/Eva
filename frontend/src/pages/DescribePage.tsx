@@ -7,6 +7,7 @@ import { Textarea } from "../components/Textarea";
 import { Select } from "../components/Select";
 import { Goto } from "../components/Goto";
 import { apiFetch } from "../utils/apiFetch";
+import { Alert } from "../components/Alert";
 
 type DescribeFormData = {
     acceptMap: boolean,
@@ -69,7 +70,7 @@ export function DescribePage(){
                     <Textarea title="Vous souhaitez ajouter quelque chose sur vous en tant qu'enseignant? Nous vous y invitons dans cette partie de commentaire libre" name="freeField" value={formData.freeField} onChange={(e)=>{setFormData({...formData, freeField: e.target.value})}}/>
 
                     <Button>Sauvegarder les informations</Button>
-                    {fetchError?.message && <p>{fetchError?.message}</p>}
+                    {fetchError?.message && <Alert message={fetchError?.message} onClose={() => {setFetchError(null)}}/>}
                 </form>
            </>
 }

@@ -10,6 +10,7 @@ import { useTheme } from "../hooks/useTheme";
 import { Goto } from "../components/Goto";
 import styles from "./ProfilePage.module.css"
 import { apiFetch } from "../utils/apiFetch";
+import { Alert } from "../components/Alert";
 
 
 type State = {
@@ -85,7 +86,7 @@ export function ProfilePage(){
     const {toggleIsAuthenticated} = useTheme();
 
     // Chargement des données utilisateurs
-    const {loading, data, error} = useFetch<any>("/auth/profile");
+    const {loading, data, error} = useFetch<any>("auth/profile");
 
     useEffect(() => {
         if (data){
@@ -184,8 +185,8 @@ export function ProfilePage(){
                     <Input title="Veuillez entrer une seconde fois le mot de passe" type="password" name="passwordCopy" value={state.formData.passwordCopy} onChange={handleFormChange} disabled={!state.isChangingPassword}/>
                     <UpdateButtons toggleButton={state.isChangingPassword} handleToggleButton={handleTogglePassword} text="Modifier le mot de passe"/>
                 </form>
-                {state.updateError?.message && <p>{state.updateError?.message}</p> }
                 <button onClick={handleToggleModal} style={{backgroundColor: '#ffebee', color: '#c62828'}}>Supprimer l'utilisateur</button>
+                {state.updateError?.message && <Alert message={state.updateError?.message} onClose={() => dispatch({type: "SET_ERROR", error: null})}/> }
                 {state.printModal && <Modal title="Suppression de compte" postTitle="Confirmation de fermeture" postContent="Confirmez-vous la suppression de votre compte utilisateur?" onClose={handleToggleModal} onSave={handleDeleteConfirm}/>}
            </>
 }

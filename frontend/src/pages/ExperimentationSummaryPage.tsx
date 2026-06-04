@@ -9,8 +9,8 @@ import { Modal } from "../components/Modal";
 import { ModalList } from "../components/ModalList";
 import { Goto } from "../components/Goto";
 import { exportFile } from "../utils/request/fileExport";
-import { generatePdf } from "./EndExperimentationPage";
 import { apiFetch } from "../utils/apiFetch";
+import { Alert } from "../components/Alert";
 
 export function ExperimentationSummaryPage(){
     const {id} = useParams();
@@ -53,7 +53,7 @@ export function ExperimentationSummaryPage(){
 
         const handlePdf = () => {
             setLoading(true);
-            generatePdf(id, setSendError, setLoading);
+            sendDownloadRequest(id, setSendError, setLoading);
         }
 
         return <>
@@ -125,7 +125,7 @@ export function ExperimentationSummaryPage(){
                             <Goto label="Fichier ods (Libre office calc)" buttonLabel="Exporter" variant="export" onClick={() => handleExport("ods")}/>
                         </ModalList>}
                     {printModal && <Modal title="Suppression de l'expérimentation" postTitle="Confirmation de fermeture" postContent="Confirmez-vous la suppression de votre expérimentation?" onClose={handleToggleModal} onSave={handleDeleteConfirm}/>}
-                    {sendError?.message && <p>{sendError?.message}</p>}
+                    {sendError?.message && <Alert message={sendError?.message} onClose={() => setSendError(null)}/>}
                     {loadingPdf && <Spinner/>}
                </>
     }
@@ -182,3 +182,22 @@ async function sendExportRequest(format: string, setSendError: Dispatch<SetState
     exportFile(response, "ResultatsEVA_v2." + format);
 }
  
+async function sendDownloadRequest(id: string|undefined, setError: Dispatch<SetStateAction<Error|null>>, setLoading: Dispatch<SetStateAction<boolean>>){
+    setLoading(true);
+    const response = await apiFetch(`/pdf/getPdf/${id}`, {
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            method: "get",
+        }).catch(error => {
+            setError(error);
+            throw error;
+        })
+
+        if (response.ok){
+            exportFile(response, `experimentation_${id}.pdf`);
+        } else {
+            setError(new Error(`Erreur ${response.status}: ${response.statusText}`));
+        }
+        setLoading(false);
+}

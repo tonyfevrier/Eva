@@ -5,7 +5,10 @@ import { SecondStep } from "./newExperimentationSubPages/SecondStep";
 import { ThirdStep } from "./newExperimentationSubPages/ThirdStep";
 import { FourthStep } from "./newExperimentationSubPages/FourthStep";
 import { useNavigate, type NavigateFunction } from "react-router-dom";
+import preRegisteredData from "../data/preRegisteredData.json";
 import { apiFetch } from "../utils/apiFetch";
+import { Alert } from "../components/Alert";
+
 
 export type Affiliation = {
     id: string,
@@ -44,17 +47,15 @@ export type ExperimentationData = {
 
 
 export function NewExperimentationPage(){
+    
     const initialExpeData: ExperimentationData = {
-        keywords: new Map([["Attention", false], ["Motivation", false],
-                           ["Compréhension", false], ["Raisonnement", false],
-                           ["Gestion de classe", false], ["Evaluation", false],
-                           ["Mémorisation", false]]), 
+        keywords: new Map(preRegisteredData["keywords"].map(keyword => [keyword, false])),
         personalKeywords: "", learningDifficulty: "",learningDifficultyOrigin: "",
         affiliation: {id:"", name:""}, studyField: "",teachingTitle: "",
         knowledges: "",prerequisite: "",organisationParticularities: "",
         yearOfStudy: "",classesFrequencies: "",classesDates: "",
         studentsSpecificities: "",studentsNumber: "",oldPedagogy: "",
-        newPedagogy: "", protocol: "", isSharingData: false,
+        newPedagogy: "", protocol: "", isSharingData: true,
         initialEvaluationOld: "",immediateEvaluationOld: "",delayedEvaluationOld: "",
         accountedEvaluationOld: "",initialEvaluationNew: "",immediateEvaluationNew: "",
         delayedEvaluationNew: "",accountedEvaluationNew: ""
@@ -95,7 +96,7 @@ export function NewExperimentationPage(){
                     <ThirdStep state={expeData} setState={setExpeData}/>
                     <FourthStep state={expeData} setState={setExpeData}/>
                 </MultiStep>
-                {error?.message && <p>{error?.message}</p>}
+                {error?.message && <Alert message={error?.message} onClose={() => setError(null)}/>}
             </>
 }
 

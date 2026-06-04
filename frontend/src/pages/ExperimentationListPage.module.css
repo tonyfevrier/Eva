@@ -1,5 +1,6 @@
 .container{
     display: flex;
+    justify-content: space-evenly;
     flex-wrap: wrap;
 }
 
@@ -10,8 +11,12 @@
     color:black;
 }
 
-@media screen and (max-width: 560px) {
-    .container > * {
-        margin: 1em auto;
-    }
+.filter, .filterSelect {
+    display: inline-block;
+    margin: 1em;
 }
+
+.filterSelect > select {
+    background-color: white;
+    max-width: 100%;
+} 

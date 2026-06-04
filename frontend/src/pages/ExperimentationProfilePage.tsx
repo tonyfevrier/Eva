@@ -8,6 +8,7 @@ import { useNavigate, useParams, type NavigateFunction } from "react-router-dom"
 import { useFetch } from "../hooks/useFetch";
 import { Spinner } from "../components/Spinner";
 import { apiFetch } from "../utils/apiFetch";
+import { Alert } from "../components/Alert";
 
 export type Affiliation = {
     id: string,
@@ -114,7 +115,7 @@ export function ExperimentationProfilePage(){
                     <ThirdStep state={expeData} setState={setExpeData}/>
                     <FourthStep state={expeData} setState={setExpeData}/>
                 </MultiStep>
-                {updateError?.message && <p>{updateError?.message}</p>}
+                {updateError?.message && <Alert message={updateError?.message} onClose={() => setUpdateError(null)}/>}
             </>
 }
 

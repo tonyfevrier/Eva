@@ -62,4 +62,6 @@ public class Experimentation {
 
     @Builder.Default
     private Boolean inProgress = true;
+
+    private Boolean expeWorked;
 }

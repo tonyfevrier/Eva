@@ -40,6 +40,9 @@ public class JwtFilter extends OncePerRequestFilter{
              */
             
             String path = request.getServletPath();
+            if (path == null || path.isBlank()) {
+                path = request.getRequestURI();
+            }
             if (isPathAnAllUsersPermittedPath(path)) {
                 filterChain.doFilter(request, response);
                 return;
@@ -47,7 +50,9 @@ public class JwtFilter extends OncePerRequestFilter{
 
             // for request with path necessitating an authentication to be accepted
             TokenInfo tokenInfo = getTokenAndeUsernameFrom(request);
-            if (tokenInfo.username != null && authenticationObjectDoesNotExist()){
+            if (tokenInfo.username != null && !tokenInfo.username.isBlank()
+                && tokenInfo.token != null && !tokenInfo.token.isBlank()
+                && authenticationObjectDoesNotExist()){
                 createNewAuthenticationObject(tokenInfo, request);
             }
             filterChain.doFilter(request, response);
@@ -63,7 +68,8 @@ public class JwtFilter extends OncePerRequestFilter{
             || path.equals("/auth/resetMail")
             || path.equals("/expe/getAll")
             || path.startsWith("/expe/get/")
-            || path.startsWith("/pdf/generate/");
+            || path.startsWith("/pdf/getPdfs")
+            || path.startsWith("/pdf/getPdf/");
     }
 
     private TokenInfo getTokenAndeUsernameFrom(HttpServletRequest request){
@@ -89,8 +95,8 @@ public class JwtFilter extends OncePerRequestFilter{
         return new TokenInfo(username, token);
     }
     private TokenInfo getTokenAndeUsernameFromCookie(HttpServletRequest request){
-        String token = "";
-        String username = "";
+        String token = null;
+        String username = null;
         for (Cookie cookie : request.getCookies()) {
                 if ("jwt".equals(cookie.getName())) {
                     token = cookie.getValue();

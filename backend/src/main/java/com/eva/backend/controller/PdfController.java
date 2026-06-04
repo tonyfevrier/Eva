@@ -2,26 +2,35 @@ package com.eva.backend.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.eva.backend.model.Experimentation;
 import com.eva.backend.records.DataForHtml;
 import com.eva.backend.service.DataExtractionService;
+import com.eva.backend.service.ExperimentationService;
 import com.eva.backend.service.FileService;
 import com.eva.backend.service.PdfFromSpreadSheet;
 import com.eva.backend.service.PdfGenerationServiceViaHtml;
 import com.eva.backend.service.PdfMergeService;
 
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
+
 
 @RestController
 @RequestMapping("/pdf")
@@ -48,34 +57,34 @@ public class PdfController {
     private FileService fileService;
 
     @Autowired
+    private ExperimentationService experimentationService;
+
+    @Autowired
     private PdfFromSpreadSheet pdfXlsxService;
 
     @GetMapping("/generate/{id}")
-    public ResponseEntity<byte[]> generatePdf(@PathVariable Long id) throws IOException {
+    public ResponseEntity<?> generatePdf(@PathVariable Long id) throws IOException {
         /* On crée la première page de données, on la merge aux fichiers tests et questionnaires importés par l'utilisateur et au fichier xls. */
-        Map<String, Map<String, Object>> experimentationData = dataExtractor.extractExperimentationData(id);
-        DataForHtml experimentationForHtml = new DataForHtml("experimentation-pdf", "experimentationData", experimentationData);
-        byte[] experimentationDataByte = pdfService.createPdf(experimentationForHtml);
         
-        Map<String, Object> interpretationData = dataExtractor.extractInterpretationsData(id);
-        DataForHtml interpretationForHtml = new DataForHtml("interpretation-pdf", "interpretationData", interpretationData);
-        byte[] interpretationDataByte = pdfService.createPdf(interpretationForHtml);
+        /* Datapath non null, expeworked non null,  */
+        Experimentation experimentation = experimentationService.findById(id).orElseThrow();
+        boolean dataFileExists = dataFileExistsForExpeWith(id);
+        if (experimentation.getExpeWorked() == null || !dataFileExists) {
+            return ResponseEntity.badRequest().body("Veuillez importer vos données, soumettre une interprétation et le succès de votre expérimentation avant de générer le pdf.");
+        }
         
-        try {
+        byte[] experimentationDataByte = getExperimentationData(id);
+        byte[] interpretationDataByte = getInterpretationData(id);
 
-            Path path = Paths.get(pdfDir).toAbsolutePath().normalize();
-            List<String> fileNames = fileService.getExperimentationFileNames(path, id);
-            byte[] testsByte = mergeService.mergeFilesFromDirectory(path, fileNames);
-            
-            Path xlsDirectory = Paths.get(xlsDataDir).toAbsolutePath().normalize();
-            String xlsFileName = fileService.findXlsFileByExperimentationId(xlsDirectory, id);
-            byte[] convertedByte = pdfXlsxService.convertTabsInPdf(xlsDirectory, xlsFileName);
-            byte[] tabsByte = pdfXlsxService.keepOnlyLastSheets(convertedByte, 5);
+        try {
+            byte[] testsByte = mergeTestsAndQuestionnaires(id);            
+            byte[] tabsByte = convertExpeResultsInPdf(id);
             
             List<byte[]> pdfToMerge = List.of(experimentationDataByte, testsByte, tabsByte, interpretationDataByte);
             byte[] pdfByte = mergeService.mergeMultipleFiles(pdfToMerge);
             String generatedFileName = "experimentation_summary_" + id + ".pdf";
             fileService.registerFile(generatedPdfDir, generatedFileName, pdfByte);
+            addDataPathToExperimentation(id, generatedFileName);
             return ResponseEntity.ok(pdfByte);
 
         } catch (IllegalArgumentException | NullPointerException e) {
@@ -83,5 +92,70 @@ public class PdfController {
             String errorMessage = "Impossible de generer le PDF: " + e.getMessage();
             return ResponseEntity.badRequest().body(errorMessage.getBytes(StandardCharsets.UTF_8));
         }   
+    }
+
+    private boolean dataFileExistsForExpeWith(Long id) throws IOException{
+        boolean dataFileExists;
+        try (Stream<Path> files = Files.list(Paths.get(xlsDataDir).toAbsolutePath().normalize())) {
+            dataFileExists = files.anyMatch(path -> path.getFileName().toString().startsWith(id + "_"));
+        }
+        return dataFileExists;
+    }
+
+    private byte[] getExperimentationData(Long id) throws IOException{
+        Map<String, Map<String, Object>> experimentationData = dataExtractor.extractExperimentationData(id);
+        DataForHtml experimentationForHtml = new DataForHtml("experimentation-pdf", "experimentationData", experimentationData);
+        return pdfService.createPdf(experimentationForHtml);
+    }
+
+    private byte[] getInterpretationData(Long id) throws IOException{
+        Map<String, Object> interpretationData = dataExtractor.extractInterpretationsData(id);
+        DataForHtml interpretationForHtml = new DataForHtml("interpretation-pdf", "interpretationData", interpretationData);
+        return pdfService.createPdf(interpretationForHtml);
+    }
+
+    private byte[] mergeTestsAndQuestionnaires(Long id) throws IOException{
+        Path path = Paths.get(pdfDir).toAbsolutePath().normalize();
+        List<String> fileNames = fileService.getExperimentationFileNames(path, id);
+        return mergeService.mergeFilesFromDirectory(path, fileNames);
+    }
+
+    private byte[] convertExpeResultsInPdf(Long id) throws IOException {
+        Path xlsDirectory = Paths.get(xlsDataDir).toAbsolutePath().normalize();
+        String xlsFileName = fileService.findXlsFileByExperimentationId(xlsDirectory, id);
+        byte[] convertedByte = pdfXlsxService.convertTabsInPdf(xlsDirectory, xlsFileName);
+        return pdfXlsxService.keepOnlyLastSheets(convertedByte, 5);
+    }
+
+    private void addDataPathToExperimentation(Long id, String generatedFileName){
+        Experimentation experimentation = experimentationService.findById(id).orElseThrow();
+        experimentation.setDataPath(Paths.get(generatedPdfDir).resolve(generatedFileName).toString());
+        experimentationService.save(experimentation);
+    }
+
+    @GetMapping("/getPdf/{id}")
+    public ResponseEntity<?> getPdf(@PathVariable Long id) throws IOException {
+        String dataPath = experimentationService.findById(id).orElseThrow().getDataPath();
+        
+        // Lire le fichier PDF depuis le chemin
+        byte[] pdfByte = Files.readAllBytes(Paths.get(dataPath));
+        
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdfByte);
+    }
+
+    @PostMapping("/getPdfs")
+    public ResponseEntity<?> getMultiplePdf(@RequestBody Map<String, List<Long>> idExperimentationsList) throws IOException {
+        List<String> dataPaths = idExperimentationsList.get("idsOfExpe").stream()
+                .map(id -> experimentationService.findById(id).orElseThrow().getDataPath())
+                .toList();
+
+        byte[] zipContent = fileService.buildZipFromDataPaths(dataPaths);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;")
+                .contentType(MediaType.parseMediaType("application/zip"))
+                .body(zipContent);
     }
 }

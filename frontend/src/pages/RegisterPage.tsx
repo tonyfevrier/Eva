@@ -16,7 +16,7 @@ export function RegisterPage(){
         if (registerForm.current !== null){
             //On enlève les erreurs de mauvais remplissage du formulaire éventuellement affichées.
             setFormState({isFirstnameEmpty : false, isLastnameEmpty : false, isUsernameEmpty : false, isPasswordEmpty : false, isPasswordCopyEmpty: false});
-            setSendingState(prev => ({...prev, error:""})); 
+            setSendingState(prev => ({...prev, error:null})); 
 
             const formData = new FormData(registerForm.current); 
             const formHandler = new RegisterFormHandler({formData, setFormState, setSendingState, inputToStateKeyMapping});
@@ -29,8 +29,7 @@ export function RegisterPage(){
                 formHandler.displayPasswordIncongruent();
                 return;
             }
-            formHandler.sendFormData("/auth/register");
-            setRegistrationSent(true);
+            formHandler.sendFormData("/auth/register", setRegistrationSent);
         }
     }
 
@@ -41,7 +40,7 @@ export function RegisterPage(){
     if (!registrationSent ){
         return <>
                 <h2 style={{'margin': '1em'}}> Inscription </h2>
-                <Form ref={registerForm} mapping={inputToStateMapping} sendingState={sendingState} onSubmit={handleClick}></Form>
+                <Form ref={registerForm} mapping={inputToStateMapping} sendingState={sendingState} setSendingState={setSendingState} onSubmit={handleClick}></Form>
                 <Goto href="/login" label="Vous souhaitez vous connecter?"/>
            </>;
     }

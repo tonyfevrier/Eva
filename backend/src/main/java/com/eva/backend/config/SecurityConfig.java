@@ -58,8 +58,9 @@ public class SecurityConfig {
                     .authorizeHttpRequests(request -> request
                         .requestMatchers("/auth/register", "/auth/login", "/auth/confirm",
                                          "/auth/logout", "/auth/refresh",
-                                          "/auth/resetMail", "/auth/recoverPwd",
-                                          "/expe/get/*", "/expe/getAll", "/pdf/generate/*")
+                                         "/auth/resetMail", "/auth/recoverPwd",
+                                         "/expe/get/*", "/expe/getAll", "/pdf/getPdf/*",
+                                         "/pdf/getPdfs")
                                           .permitAll() //ces url sont accessibles à tous
                         .requestMatchers("/auth/users").hasRole("ADMIN")
                         .anyRequest().authenticated()) //filtre exigeant l'authentification pour tout requête
@@ -75,10 +76,10 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of(
-                        "http://localhost:5173",
-                        "https://eva.villebon-charpak.fr",
-                        "http://eva.villebon-charpak.fr"
-                    ));
+            "http://localhost:5173",
+            "https://eva.villebon-charpak.fr",
+            "http://eva.villebon-charpak.fr"
+        ));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true); // ← Nécessaire pour JWT/Auth

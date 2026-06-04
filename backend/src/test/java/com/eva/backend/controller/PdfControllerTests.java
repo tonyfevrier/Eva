@@ -3,17 +3,26 @@ package com.eva.backend.controller;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
@@ -29,7 +38,9 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import com.eva.backend.records.DataForHtml;
+import com.eva.backend.model.Experimentation;
 import com.eva.backend.service.DataExtractionService;
+import com.eva.backend.service.ExperimentationService;
 import com.eva.backend.service.FileService;
 import com.eva.backend.service.PdfFromSpreadSheet;
 import com.eva.backend.service.PdfGenerationServiceViaHtml;
@@ -38,6 +49,7 @@ import com.eva.backend.service.PdfMergeService;
 class PdfControllerTests {
 
 	private DataExtractionService dataExtractionService;
+	private ExperimentationService experimentationService;
 	private PdfGenerationServiceViaHtml pdfGenerationService;
 	private PdfFromSpreadSheet pdfFromXlsx;
 	private PdfController pdfController;
@@ -52,6 +64,7 @@ class PdfControllerTests {
 	@BeforeEach
 	void setUp() {
 		dataExtractionService = mock(DataExtractionService.class);
+		experimentationService = mock(ExperimentationService.class);
 		pdfGenerationService = mock(PdfGenerationServiceViaHtml.class);
 		pdfFromXlsx = mock(PdfFromSpreadSheet.class);
 
@@ -60,11 +73,72 @@ class PdfControllerTests {
 		ReflectionTestUtils.setField(pdfController, "generatedPdfDir", tempDir.toString());
 		ReflectionTestUtils.setField(pdfController, "xlsDataDir", xlsDataDir.toString());
 		ReflectionTestUtils.setField(pdfController, "dataExtractor", dataExtractionService);
+		ReflectionTestUtils.setField(pdfController, "experimentationService", experimentationService);
 		ReflectionTestUtils.setField(pdfController, "pdfService", pdfGenerationService);
 		ReflectionTestUtils.setField(pdfController, "mergeService", new PdfMergeService());
 		ReflectionTestUtils.setField(pdfController, "fileService", new FileService(List.of(), List.of()));
 		ReflectionTestUtils.setField(pdfController, "pdfXlsxService", pdfFromXlsx);
 		mockMvc = MockMvcBuilders.standaloneSetup(pdfController).build();
+	}
+
+	@Test
+	void shouldReturnZipContainingTwoExperimentationPdfFiles() throws Exception {
+		Long firstId = 1L;
+		Long secondId = 2L;
+		Path firstPdfPath = tempDir.resolve("experimentation_summary_1.pdf");
+		Path secondPdfPath = tempDir.resolve("experimentation_summary_2.pdf");
+		byte[] firstPdfBytes = "first-pdf-content".getBytes(StandardCharsets.UTF_8);
+		byte[] secondPdfBytes = "second-pdf-content".getBytes(StandardCharsets.UTF_8);
+
+		Files.write(firstPdfPath, firstPdfBytes);
+		Files.write(secondPdfPath, secondPdfBytes);
+
+		Experimentation firstExperimentation = new Experimentation();
+		firstExperimentation.setId(firstId);
+		firstExperimentation.setInProgress(false);
+		firstExperimentation.setDataPath(firstPdfPath.toString());
+
+		Experimentation secondExperimentation = new Experimentation();
+		secondExperimentation.setId(secondId);
+		secondExperimentation.setInProgress(false);
+		secondExperimentation.setDataPath(secondPdfPath.toString());
+
+		when(experimentationService.findById(firstId)).thenReturn(Optional.of(firstExperimentation));
+		when(experimentationService.findById(secondId)).thenReturn(Optional.of(secondExperimentation));
+
+		MvcResult mvcResult = mockMvc.perform(post("/pdf/getPdfs")
+				.contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+				.content("{\"idsOfExpe\":[1,2]}"))
+				.andExpect(status().isOk())
+				.andExpect(content().contentType("application/zip"))
+				.andReturn();
+
+		byte[] zipBytes = mvcResult.getResponse().getContentAsByteArray();
+		Map<String, byte[]> zipEntries = unzipEntries(zipBytes);
+
+		assertThat(zipEntries).containsOnlyKeys("experimentation_summary_1.pdf", "experimentation_summary_2.pdf");
+		assertThat(zipEntries.get("experimentation_summary_1.pdf")).isEqualTo(firstPdfBytes);
+		assertThat(zipEntries.get("experimentation_summary_2.pdf")).isEqualTo(secondPdfBytes);
+	}
+
+	@Test
+	void shouldReturnPdfForGivenExperimentationId() throws Exception {
+		Long experimentationId = 7L;
+		Path pdfPath = tempDir.resolve("experimentation_summary_7.pdf");
+		byte[] pdfBytes = createPdfBytes("PDF unique de l'expérimentation");
+		Files.write(pdfPath, pdfBytes);
+
+		Experimentation experimentation = new Experimentation();
+		experimentation.setId(experimentationId);
+		experimentation.setDataPath(pdfPath.toString());
+		when(experimentationService.findById(experimentationId)).thenReturn(Optional.of(experimentation));
+
+		mockMvc.perform(get("/pdf/getPdf/{id}", experimentationId))
+				.andExpect(status().isOk())
+				.andExpect(content().contentType(org.springframework.http.MediaType.APPLICATION_PDF))
+				.andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers
+						.header().string("Content-Disposition", "attachment;"))
+				.andExpect(content().bytes(pdfBytes));
 	}
 
 	@Test
@@ -81,9 +155,12 @@ class PdfControllerTests {
 
 		byte[] convertedXlsxPdf = createPdfBytes("PDF XLSX complet");
 		byte[] lastFivePagesPdf = createPdfBytes(xlsxTabsText);
+		Experimentation experimentation = new Experimentation();
+		experimentation.setExpeWorked(true);
 
 		when(dataExtractionService.extractExperimentationData(experimentationId)).thenReturn(extractedData);
 		when(dataExtractionService.extractInterpretationsData(experimentationId)).thenReturn(interpretationData);
+		when(experimentationService.findById(experimentationId)).thenReturn(Optional.of(experimentation));
 		// Mock les deux appels à createPdf : experimentation puis interpretation
 		byte[] experimentationPdf = createPdfBytes(experimentationText);
 		byte[] interpretationPdf = createPdfBytes(interpretationText);
@@ -108,6 +185,7 @@ class PdfControllerTests {
 		assertThat(new String(generatedPdf, 0, 4)).isEqualTo("%PDF");
 		assertThat(savedFile).exists();
 		assertThat(Files.readAllBytes(savedFile)).isEqualTo(generatedPdf);
+		assertThat(experimentation.getDataPath()).isEqualTo(savedFile.toString());
 
         // Vérification la présence de contenus spécifiques
 		try (PDDocument document = PDDocument.load(generatedPdf)) {
@@ -127,6 +205,41 @@ class PdfControllerTests {
 		verify(pdfGenerationService, times(2)).createPdf(any(DataForHtml.class));
 		verify(pdfFromXlsx).convertTabsInPdf(xlsDataDir, "42_resultats.xlsx");
 		verify(pdfFromXlsx).keepOnlyLastSheets(convertedXlsxPdf, 5);
+		verify(experimentationService).save(experimentation);
+	}
+
+	@Test
+	void shouldReturnBadRequestWhenExpeWorkedIsNullEvenIfDataFileExists() throws Exception {
+		Long experimentationId = 21L;
+		Experimentation experimentation = new Experimentation();
+		experimentation.setExpeWorked(null);
+		when(experimentationService.findById(experimentationId)).thenReturn(Optional.of(experimentation));
+
+		Files.write(xlsDataDir.resolve("21_resultats.xlsx"), "xlsx placeholder".getBytes());
+
+		mockMvc.perform(get("/pdf/generate/{id}", experimentationId))
+				.andExpect(status().isBadRequest())
+				.andExpect(content().string("Veuillez importer vos données, soumettre une interprétation et le succès de votre expérimentation avant de générer le pdf."));
+
+		verify(dataExtractionService, never()).extractExperimentationData(any());
+		verify(pdfGenerationService, never()).createPdf(any(DataForHtml.class));
+	}
+
+	@Test
+	void shouldReturnBadRequestWhenNoDataFileStartingWithIdPrefixExists() throws Exception {
+		Long experimentationId = 22L;
+		Experimentation experimentation = new Experimentation();
+		experimentation.setExpeWorked(true);
+		when(experimentationService.findById(experimentationId)).thenReturn(Optional.of(experimentation));
+
+		Files.write(xlsDataDir.resolve("autre_fichier.xlsx"), "xlsx placeholder".getBytes());
+
+		mockMvc.perform(get("/pdf/generate/{id}", experimentationId))
+				.andExpect(status().isBadRequest())
+				.andExpect(content().string("Veuillez importer vos données, soumettre une interprétation et le succès de votre expérimentation avant de générer le pdf."));
+
+		verify(dataExtractionService, never()).extractExperimentationData(any());
+		verify(pdfGenerationService, never()).createPdf(any(DataForHtml.class));
 	}
 
 	private byte[] createPdfBytes(String content) throws Exception {
@@ -148,5 +261,17 @@ class PdfControllerTests {
 		}
 
 		return outputStream.toByteArray();
+	}
+
+	private Map<String, byte[]> unzipEntries(byte[] zipBytes) throws Exception {
+		Map<String, byte[]> entries = new LinkedHashMap<>();
+		try (ZipInputStream zipInputStream = new ZipInputStream(new ByteArrayInputStream(zipBytes))) {
+			ZipEntry entry;
+			while ((entry = zipInputStream.getNextEntry()) != null) {
+				entries.put(entry.getName(), zipInputStream.readAllBytes());
+				zipInputStream.closeEntry();
+			}
+		}
+		return entries;
 	}
 }

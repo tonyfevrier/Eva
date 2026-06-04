@@ -1,11 +1,17 @@
 package com.eva.backend.controller;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.RestController;
@@ -14,8 +20,10 @@ import com.eva.backend.model.Experimentation;
 import com.eva.backend.model.Institution;
 import com.eva.backend.model.Interpretation;
 import com.eva.backend.model.User;
+import com.eva.backend.records.AddInterpretationRequest;
 import com.eva.backend.records.ExperimentationRequest;
 import com.eva.backend.service.ExperimentationService;
+import com.eva.backend.service.FileService;
 import com.eva.backend.service.InstitutionService;
 import com.eva.backend.service.UserService;
 import com.eva.backend.service.InterpretationService;
@@ -35,6 +43,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RestController
 @RequestMapping("/expe")
 public class ExperimentationController {
+
+    @Value("${app.generated-pdf-dir}")
+    private String generatedPdfDir;
+
+    @Value("${app.pdf-dir}")
+    private String pdfDir;
+
+    @Value("${app.xls-data-dir}")
+    private String xlsDataDir;
     
     @Autowired
     private ExperimentationService experimentationService;
@@ -50,6 +67,9 @@ public class ExperimentationController {
 
     @Autowired
     private RequestUtils requestUtils;
+
+    @Autowired
+    private FileService fileService;
 
     @PostMapping("/create") 
     //@Transactional //Important pour que ma ligne 42 permette aussi d'enregistrer l'expérimentation dans user pour maintenir la relation birectionnelle   
@@ -128,7 +148,12 @@ public class ExperimentationController {
     public ResponseEntity<?> getExperimentationList() {
         List<Map<String, Object>> experimentationsList = experimentationService.findExperimentations().stream()
             .sorted((e1, e2) -> e2.getId().compareTo(e1.getId()))
+            .filter(expe -> expe.getIsSharingData())
             .map(expe -> {
+                String expeWorked = "En attente";
+                if (expe.getExpeWorked() != null){
+                    expeWorked = expe.getExpeWorked()? "Oui": "Non";
+                };
                 return Map.of(
                     "id", (Object) expe.getId(),
                     "keywords", expe.getKeywords(),
@@ -137,7 +162,9 @@ public class ExperimentationController {
                     "teachingTitle", expe.getPedagogicalContext().getTeachingTitle(),
                     "studyField", expe.getPedagogicalContext().getStudyField(),
                     "yearOfStudy", expe.getPedagogicalContext().getYearOfStudy(),
-                    "inProgress", expe.getInProgress()
+                    "inProgress", expe.getInProgress(),
+                    "newPedagogy", expe.getPedagogicalContext().getNewPedagogy(),
+                    "expeWorked", expeWorked
                 );
             })
             .collect(Collectors.toList());
@@ -146,7 +173,7 @@ public class ExperimentationController {
     }
 
     @DeleteMapping("/delete/{id}") 
-    public ResponseEntity<?> deleteExperimentation(@PathVariable Long id, @AuthenticationPrincipal User authenticatedUser){
+    public ResponseEntity<?> deleteExperimentation(@PathVariable Long id, @AuthenticationPrincipal User authenticatedUser) throws IOException {
         // Vérifier que l'expérimentation existe
         Optional<Experimentation> optionalExperimentation = experimentationService.findById(id);
         if (optionalExperimentation.isEmpty()) {
@@ -161,8 +188,23 @@ public class ExperimentationController {
         }
         
         experimentationService.deleteById(id);
+        deleteFilesRelatedToExpe(id);
         
         return ResponseEntity.ok(Map.of("message", "L'expérimentation a bien été supprimée"));
+    }
+
+    private void deleteFilesRelatedToExpe(Long id) throws IOException {
+        fileService.deleteExistingDataFile(Paths.get(xlsDataDir).toAbsolutePath().normalize(), id);
+        fileService.deleteGeneratedExperimentationFile(Paths.get(generatedPdfDir).toAbsolutePath().normalize(), id);
+        Path pathPdfDir = Paths.get(pdfDir).toAbsolutePath().normalize();
+        try (Stream<Path> files = Files.list(pathPdfDir)){
+            List<String> fileNames = files
+                                   .filter(Files::isRegularFile)
+                                   .map(path -> path.getFileName().toString())
+                                   .filter(name -> name.contains("_id" + id))
+                                   .toList();
+            fileService.deletePdfFiles(pathPdfDir, fileNames);
+        }
     }
 
     @PutMapping("/update/{id}")
@@ -199,23 +241,32 @@ public class ExperimentationController {
     }
 
     @PostMapping("/interpret/{id}")
-    private ResponseEntity<?> addInterpretation(@RequestBody Interpretation interpretation,  @PathVariable Long id){
+    private ResponseEntity<?> addInterpretation(@RequestBody AddInterpretationRequest request,  @PathVariable Long id){
         /*récupérer les interprétations et y ajouter le nouvel objet, on a le User dans l'expé*/
         Experimentation experimentation = experimentationService.findByIdWithInterpretations(id);
         User user = experimentation.getUser();
         List<Interpretation> interpretations = experimentation.getInterpretations();
+        Interpretation interpretation = request.interpretation();
         interpretation.setUser(user);
         interpretation.setExperimentation(experimentation);
         interpretationService.save(interpretation);
         interpretations.add(interpretation);
         experimentation.setInterpretations(interpretations);
+        experimentation.setExpeWorked(request.expeWorked());
         experimentationService.save(experimentation);
         return ResponseEntity.ok("L'interprétation a bien été sauvegardée");
     }
 
     @GetMapping("/endExpe/{id}")
     public ResponseEntity<?> endExperimentation(@PathVariable Long id){
-        Experimentation experimentation = experimentationService.findById(id).orElseThrow();
+        Experimentation experimentation = experimentationService.findByIdWithInterpretations(id);        
+        boolean expeHasGeneratedPdf = experimentation.getDataPath() != null;
+        boolean userHasInterpretedData = experimentation.getInterpretations().size() != 0;
+        boolean userSaidIfExpeWorked = experimentation.getExpeWorked() != null;
+        
+        if (!expeHasGeneratedPdf || !userHasInterpretedData || !userSaidIfExpeWorked){
+            return ResponseEntity.badRequest().body("Requête refusée : assurez-vous d'avoir soumis vos résultats et généré le pdf final avant de terminer l'expérimentation");
+        }
         experimentation.setInProgress(false);
         experimentationService.save(experimentation);
         return ResponseEntity.ok("L'expérimentation est bien marquée comme terminée");

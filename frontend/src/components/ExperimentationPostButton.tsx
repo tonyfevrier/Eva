@@ -1,16 +1,7 @@
 import { Button } from "./Button";
 import styles from "./ExperimentationPostButton.module.css";
+import { type Data} from "../pages/ExperimentationListPage";
 
-export type Data = {
-    id: string,
-    institutionName: string,
-    yearOfStudy: string,
-    teachingTitle: string,
-    keywords: Array<string>,
-    personalKeywords: string,
-    inProgress: boolean,
-    studyField: string
-}
 
 type ExpeData = {
     data: Data
@@ -25,8 +16,8 @@ export function ExperimentationPostButton({data}:ExpeData){
                 <div className={styles.header}>
                     <p>{data.institutionName}</p>
                     <p>{data.yearOfStudy}</p>
+                    <p>{data.studyField}</p>
                 </div>
-                <p>{data.teachingTitle}</p>
                 <div className={styles.footer}>
                     {data.keywords.map(word => <p key={word}>{word}</p>)}
                     {data.personalKeywords !== "" && <p className={styles.personalKeywords}>{data.personalKeywords}</p>}
