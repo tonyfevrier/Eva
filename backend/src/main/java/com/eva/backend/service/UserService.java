@@ -10,8 +10,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.http.ResponseCookie;
-import org.springframework.mail.javamail.JavaMailSender;
-
 import com.eva.backend.model.User;
 import com.eva.backend.model.UserAdditionalData;
 import com.eva.backend.repository.UserRepository;
@@ -38,7 +36,10 @@ public class UserService {
     private JWTService jwtService;
 
     @Autowired
-    private JavaMailSender mailSender;
+    private ConfirmationMailService confirmationMailService;
+
+    @Autowired
+    private RecoveryMailService recoveryMailService;
 
     public User saveUser(User user){
         User existingUser = userRepository.findByMail(user.getMail());
@@ -123,13 +124,11 @@ public class UserService {
     }
 
     public User sendConfirmationMail(String username) throws MessagingException {
-        MailWithLinkService mailService = new ConfirmationMailService(userRepository, mailSender, jwtService);
-        return mailService.sendMail(username);
+        return confirmationMailService.sendMail(username);
     }
 
     public User sendRecoveryMail(String username) throws MessagingException {
-        MailWithLinkService mailService = new RecoveryMailService(userRepository, mailSender, jwtService);
-        return mailService.sendMail(username);
+        return recoveryMailService.sendMail(username);
     }
 
     public boolean isTokenExpired(String token){

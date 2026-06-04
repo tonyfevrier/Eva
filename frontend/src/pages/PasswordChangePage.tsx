@@ -47,7 +47,7 @@ export function PasswordChangePage(){
 
     if (!pwdSent){
         return <>
-                <h1> Changer de mot de passe </h1>
+                <h2> Changer de mot de passe </h2>
                 <form onSubmit={handleSavePassword}>
                     <Input title="Veuillez entrer un nouveau mot de passe" type="password" name="password" value={passwords.password} onChange={handleFormChange}/>
                     <Input title="Veuillez entrer une seconde fois le mot de passe" type="password" name="passwordCopy" value={passwords.passwordCopy} onChange={handleFormChange}/>
