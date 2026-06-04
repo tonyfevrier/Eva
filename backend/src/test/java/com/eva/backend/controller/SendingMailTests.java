@@ -107,6 +107,7 @@ public class SendingMailTests {
     public void testRecoverPwdWithValidToken() throws Exception {
         // 1. Enregistrer un utilisateur
         registerAUser();
+        verifyRegisteredUserEmail("tony.fevrier@gmail.com");
         
         // 2. Générer directement un token valide
         String token = jwtService.generateToken("tony.fevrier@gmail.com", 10 * 60 * 1000); // 10 min
@@ -187,6 +188,12 @@ public class SendingMailTests {
                         .content(userJson))
                         .andExpect(status().isOk());
         return userJson;
+    }
+
+    private void verifyRegisteredUserEmail(String mail) {
+        User registeredUser = userRepository.findByMail(mail);
+        registeredUser.setEmailVerified(true);
+        userRepository.save(registeredUser);
     }
 }
 

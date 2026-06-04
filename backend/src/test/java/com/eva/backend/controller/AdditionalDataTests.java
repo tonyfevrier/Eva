@@ -92,6 +92,10 @@ public class AdditionalDataTests {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(userJson))
                         .andExpect(status().isOk());
+        
+        User registeredUser = userRepository.findByMail(user.getMail());
+        registeredUser.setEmailVerified(true);
+        userRepository.save(registeredUser);
         return userJson;
     }
 

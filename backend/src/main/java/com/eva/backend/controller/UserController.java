@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.eva.backend.exception.EmailNotVerifiedException;
 import com.eva.backend.model.Institution;
 import com.eva.backend.model.User;
 import com.eva.backend.model.UserAdditionalData;
@@ -47,7 +48,7 @@ public class UserController {
     // @Valid valide les contraintes de forme des inputs (mail, pwd) avant d'entrer dans la méthode.
     // Permet de le faire sur le mot de passe original et pas hashé.
     @PostMapping("/register")
-    public ResponseEntity<?> register(@Valid @RequestBody User user) throws MessagingException{
+    public ResponseEntity<?> register(@Valid @RequestBody User user) throws MessagingException {
         System.out.println("User: " + user.getMail());
         user.setPassword(encoder.encode(user.getPassword()));
         user.setEmailVerified(false);
@@ -84,19 +85,30 @@ public class UserController {
     public ResponseEntity<?> login(@RequestBody User user) {
         /* Au premier login, user est vérifié et le jwt token est envoyé via un http only cookie pour plus de sécurité.
         On envoie aussi l'objet UserAdditionalData pour déterminer si le profil est complété. */ 
-        TwoCookies<CookieEssentials> twoCookies = userService.verify(user);
         
-        User userInDatabase= userService.findByMail(user.getMail());
-        UserAdditionalData additionalData = userInDatabase.getAdditionalData();
+        try {
+            TwoCookies<CookieEssentials> twoCookies = userService.verify(user);
+        
+            User userInDatabase= userService.findByMail(user.getMail());
+            UserAdditionalData additionalData = userInDatabase.getAdditionalData();
 
-        return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, twoCookies.accessCookie().cookie())
-                .header(HttpHeaders.SET_COOKIE, twoCookies.refreshCookie().cookie())
-                .body(Map.of("message", "Login réussi",
-                             "accessExpiresIn", twoCookies.accessCookie().expiresIn(), 
-                             "refreshExpiresIn", twoCookies.refreshCookie().expiresIn(), 
-                             "additionalData", additionalData != null? additionalData : "null"
-                ));
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.SET_COOKIE, twoCookies.accessCookie().cookie())
+                    .header(HttpHeaders.SET_COOKIE, twoCookies.refreshCookie().cookie())
+                    .body(Map.of("message", "Login réussi",
+                                "accessExpiresIn", twoCookies.accessCookie().expiresIn(), 
+                                "refreshExpiresIn", twoCookies.refreshCookie().expiresIn(), 
+                                "additionalData", additionalData != null? additionalData : "null"
+                    ));
+        } catch (EmailNotVerifiedException e){
+            try {
+                userService.sendConfirmationMail(user.getMail());
+                return ResponseEntity.badRequest().body("Veuillez confirmer votre email. Un nouveau lien a été envoyé.");
+            } catch (MessagingException mailException) {
+                return ResponseEntity.badRequest().body("Veuillez confirmer votre email. Le renvoi du lien est temporairement indisponible.");
+            }
+        }
+        
     }
     
     @GetMapping("/users")

@@ -10,6 +10,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.http.ResponseCookie;
+import com.eva.backend.exception.EmailNotVerifiedException;
 import com.eva.backend.model.User;
 import com.eva.backend.model.UserAdditionalData;
 import com.eva.backend.repository.UserRepository;
@@ -57,8 +58,12 @@ public class UserService {
         Authentication authentication = authManager.authenticate(
             new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
         if (authentication.isAuthenticated()){
-            CookieEssentials accessCookie = cookieService.generateAccessCookie(user);
-            CookieEssentials refreshCookie = cookieService.generateRefreshCookie(user);
+            User authenticatedUser = (User) authentication.getPrincipal();
+            if (!Boolean.TRUE.equals(authenticatedUser.getEmailVerified())) {
+                throw new EmailNotVerifiedException("Veuillez confirmer votre email avant de vous connecter");
+            }
+            CookieEssentials accessCookie = cookieService.generateAccessCookie(authenticatedUser);
+            CookieEssentials refreshCookie = cookieService.generateRefreshCookie(authenticatedUser);
             return new TwoCookies<CookieEssentials>(accessCookie, refreshCookie);
         } 
         return null; 

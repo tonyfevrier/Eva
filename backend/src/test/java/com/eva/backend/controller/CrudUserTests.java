@@ -251,6 +251,7 @@ public class CrudUserTests {
 
     private String registerLogUserAndGetAccessCookie() throws Exception{
         registerAUser();
+        verifyRegisteredUserEmail("tony.fevrier@gmail.com");
         // Créer les credentials pour le login avec le mot de passe en clair
         User loginUser = User.builder()
                         .mail("tony.fevrier@gmail.com")
@@ -265,6 +266,12 @@ public class CrudUserTests {
                         .andExpect(status().isOk())
                         .andReturn();
         return loginResult.getResponse().getCookie("jwt").getValue(); 
+    }
+
+    private void verifyRegisteredUserEmail(String mail) {
+        User registeredUser = userRepository.findByMail(mail);
+        registeredUser.setEmailVerified(true);
+        userRepository.save(registeredUser);
     }
 
     private void registerAdditionalData(String jwtCookie) throws Exception{
