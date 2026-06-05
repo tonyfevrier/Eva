@@ -226,6 +226,8 @@ public class CrudExperimentationTests {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(secondUserJson))
                         .andExpect(status().isOk());
+
+        verifyUserEmail("pierre.martin@mail.com");
         
         String secondUserCookie = userCreation.login(secondUserJson);
         userCreation.registerAdditionalData(secondUserCookie);
@@ -530,6 +532,8 @@ public class CrudExperimentationTests {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(secondUserJson))
                         .andExpect(status().isOk());
+
+        verifyUserEmail("jean.dupont@mail.com");
         
         String secondUserCookie = userCreation.login(secondUserJson);
         
@@ -621,6 +625,12 @@ public class CrudExperimentationTests {
                         .andExpect(jsonPath("$.id").value(1));
     }
 
+        private void verifyUserEmail(String mail) {
+                User user = userRepository.findByMail(mail);
+                user.setEmailVerified(true);
+                userRepository.save(user);
+        }
+
     @Test
     public void testDeleteExperimentation() throws Exception {
         createAnExperimentation();
@@ -685,6 +695,8 @@ public class CrudExperimentationTests {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(secondUserJson))
                         .andExpect(status().isOk());
+
+        verifyUserEmail("pierre.martin@mail.com");
         
         String secondUserCookie = userCreation.login(secondUserJson);
         

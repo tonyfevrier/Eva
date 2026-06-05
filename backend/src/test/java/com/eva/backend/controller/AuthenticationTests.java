@@ -24,6 +24,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.eva.backend.model.User;
+import com.eva.backend.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.mail.Session;
@@ -41,6 +42,9 @@ public class AuthenticationTests {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private UserRepository userRepository;
+
     @MockitoBean
     private JavaMailSender mailSender;
 
@@ -52,7 +56,8 @@ public class AuthenticationTests {
 
     @Test
     public void testLogin() throws Exception {
-        String userJson = registerAUser(); 
+        String userJson = registerAUser();
+        verifyRegisteredUserEmail("marie.tremblay@mail.com");
 
         mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -71,6 +76,17 @@ public class AuthenticationTests {
     }
 
     @Test
+    public void testLoginFailIfEmailNotVerified() throws Exception {
+        String userJson = registerAUser();
+
+        mockMvc.perform(post("/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(userJson))
+                        .andExpect(status().isBadRequest())
+                        .andExpect(content().string("Veuillez confirmer votre email. Un nouveau lien a été envoyé."));
+    }
+
+    @Test
     public void testLogout() throws Exception {
         mockMvc.perform(get("/auth/logout"))
                         .andExpect(status().isOk())
@@ -85,6 +101,7 @@ public class AuthenticationTests {
     @Test
     public void testRefresh() throws Exception {
         String userJson = registerAUser();
+        verifyRegisteredUserEmail("marie.tremblay@mail.com");
 
         // Récupérer le cookie de refresh
         var loginResult = mockMvc.perform(post("/auth/login")
@@ -136,5 +153,11 @@ public class AuthenticationTests {
                         .content(userJson))
                         .andExpect(status().isOk());
         return userJson;
+    }
+
+    private void verifyRegisteredUserEmail(String mail) {
+        User registeredUser = userRepository.findByMail(mail);
+        registeredUser.setEmailVerified(true);
+        userRepository.save(registeredUser);
     }
 }

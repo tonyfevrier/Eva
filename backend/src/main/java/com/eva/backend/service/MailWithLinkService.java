@@ -9,10 +9,15 @@ import com.eva.backend.repository.UserRepository;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import org.springframework.beans.factory.annotation.Value;
+
 
 public abstract class MailWithLinkService {
     private final UserRepository userRepository;
     private final JavaMailSender mailSender;
+
+    @Value("${spring.mail.username}")
+    private String mailFrom;
 
     public MailWithLinkService(UserRepository userRepository, JavaMailSender mailSender){
         this.userRepository = userRepository;
@@ -34,7 +39,7 @@ public abstract class MailWithLinkService {
     private MimeMessage configureMail(String username, MailContent mailContent) throws MessagingException{
         MimeMessage message = mailSender.createMimeMessage();                    
         MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-        helper.setFrom("noreply.eva.application@gmail.com");
+        helper.setFrom(mailFrom);
         helper.setTo(username);
         helper.setSubject(mailContent.subject());
         helper.setText(mailContent.content(), true);

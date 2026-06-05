@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.eva.backend.model.User;
+import com.eva.backend.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Component
@@ -21,6 +22,9 @@ public class UserCreation {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private UserRepository userRepository;
 
     public String registerAUser() throws Exception{
         User user = User.builder()
@@ -35,6 +39,11 @@ public class UserCreation {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(userJson))
                         .andExpect(status().isOk());
+
+        User registeredUser = userRepository.findByMail(user.getMail());
+        registeredUser.setEmailVerified(true);
+        userRepository.save(registeredUser);
+
         return userJson;
     }
 
