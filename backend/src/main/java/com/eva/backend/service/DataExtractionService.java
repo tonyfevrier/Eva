@@ -74,6 +74,8 @@ public class DataExtractionService {
     private Map<String, Object> convertEvaluationsToMap(Evaluations evaluations) {
         Map<String, Object> evalMap = new LinkedHashMap<>();
         if (evaluations != null) {
+            evalMap.put("Début de la pédagogie", evaluations.getPedagogyBeginning());
+            evalMap.put("Fin de la pédagogie", evaluations.getPedagogyEnding());
             evalMap.put("Evaluation initiale", evaluations.getInitialEvaluation());
             evalMap.put("Evaluation immédiate", evaluations.getImmediateEvaluation());
             evalMap.put("Evaluation différée", evaluations.getDelayedEvaluation());

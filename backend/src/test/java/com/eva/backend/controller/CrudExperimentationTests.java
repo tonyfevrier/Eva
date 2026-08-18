@@ -101,6 +101,7 @@ public class CrudExperimentationTests {
         Experimentation savedExperimentation = experimentations.get(0);
         
         // Vérifier les données de l'expérimentation
+        assertThat(savedExperimentation.getExperimentationTitle()).isEqualTo("Expérimentation maths collège");
         assertThat(savedExperimentation.getKeywords()).containsExactly("mathématiques", "apprentissage actif", "collège");
         assertThat(savedExperimentation.getPersonalKeywords()).isEqualTo("motivation, collaboration");
         assertThat(savedExperimentation.getProtocol()).isEqualTo("Protocole 1");
@@ -149,6 +150,8 @@ public class CrudExperimentationTests {
         // Vérifier les évaluations de l'ancienne pédagogie
         Evaluations oldEvaluations = savedContext.getOldPedagogyEvaluations();
         assertThat(oldEvaluations).isNotNull();
+        assertThat(oldEvaluations.getPedagogyBeginning()).isEqualTo(LocalDate.of(2026, 9, 1));
+        assertThat(oldEvaluations.getPedagogyEnding()).isEqualTo(LocalDate.of(2026, 12, 15));
         assertThat(oldEvaluations.getInitialEvaluation()).isEqualTo(LocalDate.of(2026, 1, 15));
         assertThat(oldEvaluations.getImmediateEvaluation()).isEqualTo(LocalDate.of(2026, 2, 15));
         assertThat(oldEvaluations.getDelayedEvaluation()).isEqualTo(LocalDate.of(2026, 3, 15));
@@ -157,6 +160,8 @@ public class CrudExperimentationTests {
         // Vérifier les évaluations de la nouvelle pédagogie
         Evaluations newEvaluations = savedContext.getNewPedagogyEvaluations();
         assertThat(newEvaluations).isNotNull();
+        assertThat(newEvaluations.getPedagogyBeginning()).isEqualTo(LocalDate.of(2026, 9, 1));
+        assertThat(newEvaluations.getPedagogyEnding()).isEqualTo(LocalDate.of(2026, 12, 15));
         assertThat(newEvaluations.getInitialEvaluation()).isEqualTo(LocalDate.of(2026, 1, 20));
         assertThat(newEvaluations.getImmediateEvaluation()).isEqualTo(LocalDate.of(2026, 2, 20));
         assertThat(newEvaluations.getDelayedEvaluation()).isEqualTo(LocalDate.of(2026, 3, 20));
@@ -171,6 +176,7 @@ public class CrudExperimentationTests {
                         .cookie(new jakarta.servlet.http.Cookie("jwt", jwtCookie)))
                         .andExpect(status().isOk())
                         .andExpect(jsonPath("$.id").value(1))
+                        .andExpect(jsonPath("$.experimentationTitle").value("Expérimentation maths collège"))
                         .andExpect(jsonPath("$.keywords[0]").value("mathématiques"))
                         .andExpect(jsonPath("$.keywords[1]").value("apprentissage actif"))
                         .andExpect(jsonPath("$.keywords[2]").value("collège"))
@@ -187,10 +193,14 @@ public class CrudExperimentationTests {
                         .andExpect(jsonPath("$.pedagogicalContext.studentsNumber").value("24"))
                         .andExpect(jsonPath("$.pedagogicalContext.oldPedagogy").value("Cours magistral traditionnel"))
                         .andExpect(jsonPath("$.pedagogicalContext.newPedagogy").value("Apprentissage par projet"))
+                        .andExpect(jsonPath("$.pedagogicalContext.oldPedagogyEvaluations.pedagogyBeginning").value("2026-09-01"))
+                        .andExpect(jsonPath("$.pedagogicalContext.oldPedagogyEvaluations.pedagogyEnding").value("2026-12-15"))
                         .andExpect(jsonPath("$.pedagogicalContext.oldPedagogyEvaluations.initialEvaluation").value("2026-01-15"))
                         .andExpect(jsonPath("$.pedagogicalContext.oldPedagogyEvaluations.immediateEvaluation").value("2026-02-15"))
                         .andExpect(jsonPath("$.pedagogicalContext.oldPedagogyEvaluations.delayedEvaluation").value("2026-03-15"))
                         .andExpect(jsonPath("$.pedagogicalContext.oldPedagogyEvaluations.accountedEvaluation").value("2026-04-15"))
+                        .andExpect(jsonPath("$.pedagogicalContext.newPedagogyEvaluations.pedagogyBeginning").value("2026-09-01"))
+                        .andExpect(jsonPath("$.pedagogicalContext.newPedagogyEvaluations.pedagogyEnding").value("2026-12-15"))
                         .andExpect(jsonPath("$.pedagogicalContext.newPedagogyEvaluations.initialEvaluation").value("2026-01-20"))
                         .andExpect(jsonPath("$.pedagogicalContext.newPedagogyEvaluations.immediateEvaluation").value("2026-02-20"))
                         .andExpect(jsonPath("$.pedagogicalContext.newPedagogyEvaluations.delayedEvaluation").value("2026-03-20"))
@@ -278,6 +288,7 @@ public class CrudExperimentationTests {
                 .build();
 
         Experimentation experimentation2 = Experimentation.builder()
+                .experimentationTitle("Expérimentation sciences collège")
                 .keywords(Arrays.asList("physique", "sciences", "collège"))
                 .personalKeywords("expérimentation, pratique")
                 .protocol("Protocole 2")
@@ -301,6 +312,7 @@ public class CrudExperimentationTests {
                         .andExpect(status().isOk())
                         .andExpect(jsonPath("$.length()").value(2))
                         .andExpect(jsonPath("$[1].id").value(1))
+                        .andExpect(jsonPath("$[1].experimentationTitle").value("Expérimentation maths collège"))
                         .andExpect(jsonPath("$[1].keywords[0]").value("mathématiques"))
                         .andExpect(jsonPath("$[1].keywords[1]").value("apprentissage actif"))
                         .andExpect(jsonPath("$[1].keywords[2]").value("collège"))
@@ -311,6 +323,7 @@ public class CrudExperimentationTests {
                         .andExpect(jsonPath("$[1].yearOfStudy").value("5ème A"))
                         .andExpect(jsonPath("$[1].inProgress").value(true))
                         .andExpect(jsonPath("$[0].id").value(2))
+                        .andExpect(jsonPath("$[0].experimentationTitle").value("Expérimentation sciences collège"))
                         .andExpect(jsonPath("$[0].keywords[0]").value("physique"))
                         .andExpect(jsonPath("$[0].keywords[1]").value("sciences"))
                         .andExpect(jsonPath("$[0].keywords[2]").value("collège"))
@@ -361,6 +374,7 @@ public class CrudExperimentationTests {
                 .build();
 
         Experimentation experimentation2 = Experimentation.builder()
+                .experimentationTitle("Expérimentation sciences collège")
                 .keywords(Arrays.asList("physique", "sciences", "collège"))
                 .personalKeywords("expérimentation, pratique")
                 .protocol("Protocole 2")
@@ -387,6 +401,7 @@ public class CrudExperimentationTests {
                         .andExpect(status().isOk())
                         .andExpect(jsonPath("$.length()").value(1))
                         .andExpect(jsonPath("$[0].id").value(1))
+                        .andExpect(jsonPath("$[0].experimentationTitle").value("Expérimentation maths collège"))
                         .andExpect(jsonPath("$[?(@.id == 2)]").isEmpty())
                         .andExpect(jsonPath("$[0].keywords[0]").value("mathématiques"))
                         .andExpect(jsonPath("$[0].keywords[1]").value("apprentissage actif"))
@@ -440,6 +455,7 @@ public class CrudExperimentationTests {
                 .build();
 
         Experimentation updatedExperimentation = Experimentation.builder()
+                .experimentationTitle("Nouvelle géométrie 3D")
                 .keywords(Arrays.asList("géométrie", "3D", "lycée"))
                 .personalKeywords("visualisation, manipulation")
                 .protocol("Protocole modifié")
@@ -459,6 +475,7 @@ public class CrudExperimentationTests {
 
         Experimentation savedExperimentation = experimentationRepository.findById(1L).orElseThrow();
         
+        assertThat(savedExperimentation.getExperimentationTitle()).isEqualTo("Nouvelle géométrie 3D");
         assertThat(savedExperimentation.getKeywords()).containsExactly("géométrie", "3D", "lycée");
         assertThat(savedExperimentation.getPersonalKeywords()).isEqualTo("visualisation, manipulation");
         assertThat(savedExperimentation.getProtocol()).isEqualTo("Protocole modifié");
@@ -551,6 +568,7 @@ public class CrudExperimentationTests {
                 .build();
 
         Experimentation experimentation = Experimentation.builder()
+                .experimentationTitle("Test expérimentation")
                 .keywords(Arrays.asList("test"))
                 .protocol("Test")
                 .isSharingData(false)
@@ -575,6 +593,8 @@ public class CrudExperimentationTests {
                 .immediateEvaluation(LocalDate.of(2026, 2, 15))
                 .delayedEvaluation(LocalDate.of(2026, 3, 15))
                 .accountedEvaluation(LocalDate.of(2026, 4, 15))
+                .pedagogyBeginning(LocalDate.of(2026, 9, 1))
+                .pedagogyEnding(LocalDate.of(2026, 12, 15))
                 .build();
 
         Evaluations newPedagogyEvaluations = Evaluations.builder()
@@ -582,6 +602,8 @@ public class CrudExperimentationTests {
                 .immediateEvaluation(LocalDate.of(2026, 2, 20))
                 .delayedEvaluation(LocalDate.of(2026, 3, 20))
                 .accountedEvaluation(null)
+                .pedagogyBeginning(LocalDate.of(2026, 9, 1))
+                .pedagogyEnding(LocalDate.of(2026, 12, 15))
                 .build();
 
         PedagogicalContext pedagogicalContext = PedagogicalContext.builder()
@@ -604,6 +626,7 @@ public class CrudExperimentationTests {
                 .build();
 
         Experimentation experimentation = Experimentation.builder()
+                .experimentationTitle("Expérimentation maths collège")
                 .keywords(Arrays.asList("mathématiques", "apprentissage actif", "collège"))
                 .personalKeywords("motivation, collaboration")
                 .protocol("Protocole 1")

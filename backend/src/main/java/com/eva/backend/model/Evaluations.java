@@ -17,6 +17,12 @@ import lombok.NoArgsConstructor;
 public class Evaluations {
 
     @Column(nullable = false)
+    private LocalDate pedagogyBeginning;
+
+    @Column(nullable = false)
+    private LocalDate pedagogyEnding;
+
+    @Column(nullable = false)
     private LocalDate initialEvaluation;
     
     @Column(nullable = false)
@@ -26,4 +32,5 @@ public class Evaluations {
     private LocalDate delayedEvaluation;
 
     private LocalDate accountedEvaluation;
+
 }
