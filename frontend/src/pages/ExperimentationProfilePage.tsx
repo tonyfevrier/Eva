@@ -10,12 +10,13 @@ import { Spinner } from "../components/Spinner";
 import { apiFetch } from "../utils/apiFetch";
 import { Alert } from "../components/Alert";
 
-export type Affiliation = {
+type Affiliation = {
     id: string,
     name: string
 }
 
-export type ExperimentationData = {
+type ExperimentationData = {
+    experimentationTitle: string;
     keywords: Map<string, Boolean>; 
     personalKeywords: string;
     learningDifficulty: string;
@@ -48,6 +49,7 @@ export type ExperimentationData = {
 export function ExperimentationProfilePage(){
 
     const initialExpeData: ExperimentationData = {
+        experimentationTitle: "",
         keywords: new Map([["Attention", false], ["Motivation", false],
                            ["Compréhension", false], ["Raisonnement", false],
                            ["Gestion de classe", false], ["Evaluation", false],
@@ -162,7 +164,8 @@ function buildExperimentationData(expeData:ExperimentationData) {
                                 };
 
     const data = {experimentation: 
-                     {keywords: keywords, 
+                     {experimentationTitle: expeData.experimentationTitle,
+                      keywords: keywords, 
                       personalKeywords: expeData.personalKeywords,
                       protocol: expeData.protocol, 
                       isSharingData: expeData.isSharingData, 

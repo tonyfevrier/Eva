@@ -12,6 +12,7 @@ type FirstStepState = {
 
 export function FirstStep({state, setState, handleClickOnCloud}:FirstStepState){
     return  <div>
+                <Input title="Titre de l'expérimentation" maxLength={50} value={state.experimentationTitle} onChange={e => {setState({...state, experimentationTitle: e.target.value})}}/>
                 <Cloud title="Choisissez éventuellement des mots clés" options={state.keywords} onClick={handleClickOnCloud}/>
                 <Input title="Autres mots clés personnalisés" value={state.personalKeywords} onChange={e => {setState({...state, personalKeywords: e.target.value})}}/>
                 <Textarea title="Pratique pédagogique habituelle" variant="withErrorMsg" value={state.oldPedagogy} onChange={e => {setState({...state, oldPedagogy: e.target.value})}}/>

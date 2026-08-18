@@ -57,7 +57,7 @@ export function ExperimentationSummaryPage(){
         }
 
         return <>
-                    <h2 className={styles.h2}>Récapitulatif de l'expérimentation</h2>
+                    <h2 className={styles.h2}>{data?.experimentationTitle}</h2>
                     {ownerAcceptsContact && 
                     <>
                         <h4>Contact</h4>

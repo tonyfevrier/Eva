@@ -13,6 +13,7 @@ import { Alert } from "../components/Alert";
 
 export type Data = {
     id: string,
+    experimentationTitle: string,
     institutionName: string,
     yearOfStudy: string,
     teachingTitle: string,

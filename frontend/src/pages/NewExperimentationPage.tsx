@@ -10,12 +10,13 @@ import { apiFetch } from "../utils/apiFetch";
 import { Alert } from "../components/Alert";
 
 
-export type Affiliation = {
+type Affiliation = {
     id: string,
     name: string
 }
 
 export type ExperimentationData = {
+    experimentationTitle: string;
     keywords: Map<string, Boolean>; //Array<string>;
     personalKeywords: string;
     learningDifficulty: string;
@@ -49,6 +50,7 @@ export type ExperimentationData = {
 export function NewExperimentationPage(){
     
     const initialExpeData: ExperimentationData = {
+        experimentationTitle: "",
         keywords: new Map(preRegisteredData["keywords"].map(keyword => [keyword, false])),
         personalKeywords: "", learningDifficulty: "",learningDifficultyOrigin: "",
         affiliation: {id:"", name:""}, studyField: "",teachingTitle: "",
@@ -66,7 +68,7 @@ export function NewExperimentationPage(){
     const navigate = useNavigate();
 
     const oneKeyWordIsChosen = Array.from(expeData.keywords.values()).some(value => value === true) || expeData.personalKeywords !== "";
-    const firstPageIsFilled = oneKeyWordIsChosen && expeData.learningDifficulty !== "" && expeData.learningDifficultyOrigin !== "" && expeData.oldPedagogy !== "" && expeData.newPedagogy !== "";
+    const firstPageIsFilled = expeData.experimentationTitle !== "" && oneKeyWordIsChosen && expeData.learningDifficulty !== "" && expeData.learningDifficultyOrigin !== "" && expeData.oldPedagogy !== "" && expeData.newPedagogy !== "";
     const secondPageIsFilled = expeData.protocol !== "";
     const thirdPageIsFilled = expeData.affiliation.name !== "" && expeData.studyField !== "" && expeData.teachingTitle !== "" && expeData.knowledges !== "" && expeData.prerequisite !== "" && expeData.organisationParticularities !== "" && expeData.classesFrequencies !== "" && expeData.classesDates !== "" && expeData.yearOfStudy !== "" && expeData.studentsNumber !== "" && expeData.studentsSpecificities !== "" ;
     const fourthPageIsFilled = expeData.initialEvaluationOld !== "" && expeData.immediateEvaluationOld !== "" && expeData.delayedEvaluationOld !== "" && expeData.initialEvaluationNew !== "" && expeData.immediateEvaluationNew !== "" && expeData.delayedEvaluationNew !== "";
@@ -143,7 +145,8 @@ function buildExperimentationData(expeData:ExperimentationData) {
                                 };
 
     const data = {experimentation: 
-                     {keywords: keywords, 
+                     {experimentationTitle: expeData.experimentationTitle,
+                      keywords: keywords, 
                       personalKeywords: expeData.personalKeywords,
                       protocol: expeData.protocol, 
                       isSharingData: expeData.isSharingData, 
