@@ -17,7 +17,7 @@ export function PostButton({title, text, notices, onClick, protocol=""}:PostButt
                 <div className={styles.container}>
                     <Button className={isVariantChoosen? styles.btnContainerChosen : styles.btnContainer} onClick={() => setIsModalOpen(true)}>
                         <p>{title}</p>
-                        <p>{text}</p>
+                        <p>Clique ici pour plus d’infos</p>
                     </Button>
                     <Button className={styles.chooseButton} data-key={title} onClick={onClick}>Je choisis cette variante</Button> 
                 </div>

@@ -110,7 +110,7 @@ export function EndExperimentationPage(){
                 <h4 className={styles.h4}>Import des résultats de l'expérimentation</h4>
                 <Goto id="xls" variant="export" label="Importer le fichier de données brutes" buttonLabel="Importer" onClick={handleImportXls}/>
                 <Textarea title="Dans cet encart, vous pouvez interpréter vos données." value={interpretation} onChange={(e) => setInterpretation(e.target.value)}></Textarea>
-                <Input type="checkbox" title="Les résultats sont-ils significatifs" onChange={() => {setExpeWorked(!expeWorked)}}/>
+                <Input type="checkbox" title="D’après les données que vous avez obtenues, la nouvelle pratique pédagogique vous paraît elle efficace?" onChange={() => {setExpeWorked(!expeWorked)}}/>
                 <Button onClick={handleInterpretation}>Soumettre les résultats</Button>
                 <h4 className={styles.h4}>Génération du récapitulatif complet de l'expérimentation</h4>
                 <Goto variant="export" label="Vous pouvez générer le pdf récapitulant votre expérimentation avec ou sans interprétation de données." buttonLabel="Générer le pdf" onClick={handlePdf}/>
@@ -180,7 +180,7 @@ async function sendInterpretationRequest(id: string|undefined, body: string, set
         });
 
     if (response.ok){
-        setSuccess("Requête bien envoyée au serveur");
+        setSuccess("L'interprétation des résultats a bien été envoyée.");
         setInterpretation("");
     }
 }

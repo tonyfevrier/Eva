@@ -60,7 +60,7 @@ export function InstitutionPage(){
                 
 
                 <Button style={{"margin": "1em"}} onClick={() => {setUserCreatesInstitution(!userCreatesInstitution)}}>{userCreatesInstitution?"Choisir un établissement existant":"Créer un établissement"}</Button>
-                <Button style={{"margin": "1em"}} disabled={!areRequiredInputsFilled} name="save" onClick={handleSubmit}>Sauver l'établissement existant</Button>
+                <Button style={{"margin": "1em"}} disabled={!areRequiredInputsFilled} name="save" onClick={handleSubmit}>Sauver l'établissement</Button>
                 {isProfileCompleted && <Button style={{"margin": "1em"}} onClick={()=>{navigate("/")}}>Quitter la page</Button> }
                 {error?.message && <Alert message={error?.message} onClose={() => setError(null)}/>}
                 {success && <Alert variant="success" title="Succès" message={success} onClose={() => setSuccess("")}/>}
