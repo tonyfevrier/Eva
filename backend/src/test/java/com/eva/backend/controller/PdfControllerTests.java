@@ -144,11 +144,14 @@ class PdfControllerTests {
 	@Test
 	void shouldLaunchGetRequestGenerateSaveAndReturnMergedPdf() throws Exception {
 		Long experimentationId = 42L;
+		String experimentationTitle = "Expérience Test PDF";
+		String generatedFileName = "experimentation_" + experimentationId + ".pdf";
 		String experimentationText = "Données de l'expérimentation du contrôleur";
 		String interpretationText = "Données d'interprétation du contrôleur";
 		String mergedFileText = "Document de test merge";
 		String xlsxTabsText = "Contenu des onglets XLSX";
-		Map<String, Map<String, Object>> extractedData = Map.of(
+		Map<String, Object> extractedData = Map.of(
+				"experimentationTitle", experimentationTitle,
 				"Informations générales", Map.of("institution", "Institution Test", "contact", "contact@test.fr"));
 		Map<String, Object> interpretationData = Map.of(
 				"1", Map.of("content", "Analyse positive", "name", "Marie Tremblay"));
@@ -156,6 +159,7 @@ class PdfControllerTests {
 		byte[] convertedXlsxPdf = createPdfBytes("PDF XLSX complet");
 		byte[] lastFivePagesPdf = createPdfBytes(xlsxTabsText);
 		Experimentation experimentation = new Experimentation();
+		experimentation.setExperimentationTitle(experimentationTitle);
 		experimentation.setExpeWorked(true);
 
 		when(dataExtractionService.extractExperimentationData(experimentationId)).thenReturn(extractedData);
@@ -177,9 +181,10 @@ class PdfControllerTests {
 				.andExpect(status().isOk())
 				.andReturn();
 
-		// Vérifier qu'un pdf est enregistré et que son contenu est identique à la réponse binaire
 		byte[] generatedPdf = mvcResult.getResponse().getContentAsByteArray();
-		Path savedFile = tempDir.resolve("experimentation_summary_42.pdf");
+
+		// Vérifier qu'un pdf est enregistré et que son contenu est identique au contenu renvoyé
+		Path savedFile = tempDir.resolve(generatedFileName);
 
 		assertThat(generatedPdf).isNotEmpty();
 		assertThat(new String(generatedPdf, 0, 4)).isEqualTo("%PDF");

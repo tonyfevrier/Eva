@@ -22,14 +22,15 @@ public class DataExtractionService {
     @Autowired
     private ExperimentationRepository experimentationRepository;
 
-    public Map<String, Map<String, Object>> extractExperimentationData(Long id){
+    public Map<String, Object> extractExperimentationData(Long id){
         Experimentation experimentation = experimentationRepository.findById(id).orElseThrow();
         User user = experimentation.getUser();
         Institution institution = experimentation.getInstitution();
         PedagogicalContext context = experimentation.getPedagogicalContext();
         
-        Map<String, Map<String, Object>> data = new LinkedHashMap<>();
-        
+        Map<String, Object> data = new LinkedHashMap<>();
+        data.put("experimentationTitle", experimentation.getExperimentationTitle());
+
         // Contact
         Map<String, Object> contact = new LinkedHashMap<>();
         contact.put("Affiliation", institution.getName());

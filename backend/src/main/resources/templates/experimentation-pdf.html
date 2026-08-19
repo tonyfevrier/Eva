@@ -47,9 +47,9 @@
     </style>
 </head>
 <body>
-    <h1>Données de l'expérimentation</h1>
+    <h1 th:text="${experimentationData['experimentationTitle']}">Titre</h1>
 
-    <div th:each="category : ${experimentationData.entrySet()}" class="category">
+    <div th:each="category : ${experimentationData.entrySet()}" th:if="${category.key != 'experimentationTitle'}" class="category">
         <h2 th:text="${category.key}">Catégorie</h2>
 
         <div th:each="item : ${category.value.entrySet()}" class="entry">

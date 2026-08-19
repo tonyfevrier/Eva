@@ -199,7 +199,7 @@ export async function generatePdf(id: string|undefined, setError: Dispatch<SetSt
     });
 
     if (response.ok){
-        exportFile(response, `experimentation_summary.pdf`);
+        exportFile(response, "experimentation_" + id + ".pdf");
     } else {
         const errorMessage = await response.text();
         setError(new Error(errorMessage));

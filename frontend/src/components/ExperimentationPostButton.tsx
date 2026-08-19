@@ -14,7 +14,6 @@ export function ExperimentationPostButton({data}:ExpeData){
                     {data.inProgress ? <p className={styles.inProgress}>En cours</p>: <p className={styles.finished}>Terminée</p>}
                 </div>
                 <div className={styles.header}>
-                    <p>{data.institutionName}</p>
                     <p>{data.yearOfStudy}</p>
                     <p>{data.studyField}</p>
                 </div>
