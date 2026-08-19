@@ -36,10 +36,14 @@ type ExperimentationData = {
     newPedagogy: string;
     protocol: string;
     isSharingData: boolean;
+    pedagogyBeginningOld: string;
+    pedagogyEndingOld: string;
     initialEvaluationOld: string;
     immediateEvaluationOld: string;
     delayedEvaluationOld: string;
     accountedEvaluationOld: string;
+    pedagogyBeginningNew: string;
+    pedagogyEndingNew: string;
     initialEvaluationNew: string;
     immediateEvaluationNew: string;
     delayedEvaluationNew: string;
@@ -49,7 +53,8 @@ type ExperimentationData = {
 export function ExperimentationProfilePage(){
 
     const initialExpeData: ExperimentationData = {
-        experimentationTitle: "",
+        pedagogyBeginningOld: "", pedagogyEndingOld: "", pedagogyBeginningNew: "",
+        pedagogyEndingNew: "", experimentationTitle: "",
         keywords: new Map([["Attention", false], ["Motivation", false],
                            ["Compréhension", false], ["Raisonnement", false],
                            ["Gestion de classe", false], ["Evaluation", false],
@@ -131,6 +136,8 @@ function buildExperimentationData(expeData:ExperimentationData) {
         }
     
     const oldPedagogyEvaluations =  {
+                                        pedagogyBeginning: expeData.pedagogyBeginningOld,
+                                        pedagogyEnding: expeData.pedagogyEndingOld,
                                         initialEvaluation: expeData.initialEvaluationOld,
                                         immediateEvaluation: expeData.immediateEvaluationOld,
                                         delayedEvaluation: expeData.delayedEvaluationOld,
@@ -138,6 +145,8 @@ function buildExperimentationData(expeData:ExperimentationData) {
                                     }
     
     const newPedagogyEvaluations =  {
+                                        pedagogyBeginning: expeData.pedagogyBeginningNew,
+                                        pedagogyEnding: expeData.pedagogyEndingNew,
                                         initialEvaluation: expeData.initialEvaluationNew,
                                         immediateEvaluation: expeData.immediateEvaluationNew,
                                         delayedEvaluation: expeData.delayedEvaluationNew,
@@ -180,6 +189,10 @@ function fillInputsWithUserInfos(data: any, expeData:ExperimentationData, setExp
     const updates: any= {};
 
     // Remplissage des données d'évaluations de la bdd qui sont imbriquées dans pedagogicalContext
+    updates["pedagogyBeginningOld"] = data.pedagogicalContext.oldPedagogyEvaluations.pedagogyBeginning;
+    updates["pedagogyEndingOld"] = data.pedagogicalContext.oldPedagogyEvaluations.pedagogyEnding;
+    updates["pedagogyBeginningNew"] = data.pedagogicalContext.newPedagogyEvaluations.pedagogyBeginning;
+    updates["pedagogyEndingNew"] = data.pedagogicalContext.newPedagogyEvaluations.pedagogyEnding;
     updates["initialEvaluationOld"] = data.pedagogicalContext.oldPedagogyEvaluations.initialEvaluation;
     updates["immediateEvaluationOld"] = data.pedagogicalContext.oldPedagogyEvaluations.immediateEvaluation;
     updates["delayedEvaluationOld"] = data.pedagogicalContext.oldPedagogyEvaluations.delayedEvaluation;

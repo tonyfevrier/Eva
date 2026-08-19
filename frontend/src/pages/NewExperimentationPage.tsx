@@ -36,10 +36,14 @@ export type ExperimentationData = {
     newPedagogy: string;
     protocol: string;
     isSharingData: boolean;
+    pedagogyBeginningOld: string;
+    pedagogyEndingOld: string;
     initialEvaluationOld: string;
     immediateEvaluationOld: string;
     delayedEvaluationOld: string;
     accountedEvaluationOld: string;
+    pedagogyBeginningNew: string;
+    pedagogyEndingNew: string;
     initialEvaluationNew: string;
     immediateEvaluationNew: string;
     delayedEvaluationNew: string;
@@ -49,8 +53,9 @@ export type ExperimentationData = {
 
 export function NewExperimentationPage(){
     
-    const initialExpeData: ExperimentationData = {
-        experimentationTitle: "",
+    const initialExpeData: ExperimentationData = { 
+        pedagogyBeginningOld: "", pedagogyEndingOld: "", pedagogyBeginningNew: "",
+        pedagogyEndingNew: "", experimentationTitle: "",
         keywords: new Map(preRegisteredData["keywords"].map(keyword => [keyword, false])),
         personalKeywords: "", learningDifficulty: "",learningDifficultyOrigin: "",
         affiliation: {id:"", name:""}, studyField: "",teachingTitle: "",
@@ -112,6 +117,8 @@ function buildExperimentationData(expeData:ExperimentationData) {
         }
     
     const oldPedagogyEvaluations =  {
+                                        pedagogyBeginning: expeData.pedagogyBeginningOld,
+                                        pedagogyEnding: expeData.pedagogyEndingOld,
                                         initialEvaluation: expeData.initialEvaluationOld,
                                         immediateEvaluation: expeData.immediateEvaluationOld,
                                         delayedEvaluation: expeData.delayedEvaluationOld,
@@ -119,6 +126,8 @@ function buildExperimentationData(expeData:ExperimentationData) {
                                     }
     
     const newPedagogyEvaluations =  {
+                                        pedagogyBeginning: expeData.pedagogyBeginningNew,
+                                        pedagogyEnding: expeData.pedagogyEndingNew,
                                         initialEvaluation: expeData.initialEvaluationNew,
                                         immediateEvaluation: expeData.immediateEvaluationNew,
                                         delayedEvaluation: expeData.delayedEvaluationNew,
