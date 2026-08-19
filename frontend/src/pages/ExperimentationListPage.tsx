@@ -31,7 +31,7 @@ type ZipRequestBody = {
 };
 
 export function ExperimentationListPage({isUserExpeList=true}:{isUserExpeList?: boolean}){
-    const [filterState, setFilterState] = useState({keyword: "", institution: "", studyField: "",
+    const [filterState, setFilterState] = useState({keyword: "", institution: "", institutionTown: "", studyField: "",
                                                     yearOfStudy: "", expeWorked:"", newPedagogy:""});
     const endpoint = isUserExpeList? "getAllOfOneUser": "getAll";
     const credentials = isUserExpeList? 'include': undefined;
@@ -67,11 +67,12 @@ export function ExperimentationListPage({isUserExpeList=true}:{isUserExpeList?: 
                     </>
         } else {
             const filteredExpesInProgress = filteredExpes.filter(expe => {
+                const institutionTownIncludesInput = expe.institutionTown.toLowerCase().includes(filterState.institutionTown.trim().toLowerCase());
                 const yearOfStudyIncludesInput = expe.yearOfStudy.toLowerCase().includes(filterState.yearOfStudy.trim().toLowerCase());
                 const newPedagogyIncludesInput = expe.newPedagogy !== undefined? expe.newPedagogy.toLowerCase().includes(filterState.newPedagogy.trim().toLowerCase()):true;
                 const keepExpeIndependentlyOfSuccess = filterState.expeWorked === "";
                 const userSuccessChoiceEqualsExpeSuccess = filterState.expeWorked == expe.expeWorked;
-                const isAFilteredExperimentation = ( keepExpeIndependentlyOfSuccess || userSuccessChoiceEqualsExpeSuccess) && !expe.inProgress && yearOfStudyIncludesInput && newPedagogyIncludesInput;
+                const isAFilteredExperimentation = ( keepExpeIndependentlyOfSuccess || userSuccessChoiceEqualsExpeSuccess) && !expe.inProgress && yearOfStudyIncludesInput && newPedagogyIncludesInput && institutionTownIncludesInput;
                 return isAFilteredExperimentation && expe; 
             });
 
@@ -83,6 +84,7 @@ export function ExperimentationListPage({isUserExpeList=true}:{isUserExpeList?: 
                         <Input className={styles.filter} title="Filtrer par discipline" value={filterState.studyField}  onChange={(e) => {setFilterState({...filterState, studyField: e.target.value})}}/>
                         <Input className={styles.filter} title="Filtrer par mot-clé" value={filterState.keyword} onChange={(e) => {setFilterState({...filterState, keyword: e.target.value})}}/>
                         <Input className={styles.filter} title="Filtrer par institution" value={filterState.institution} onChange={(e) => {setFilterState({...filterState, institution: e.target.value})}}/>
+                        <Input className={styles.filter} title="Filtrer par ville" value={filterState.institutionTown} onChange={(e) => {setFilterState({...filterState, institutionTown: e.target.value})}}/>
                         <Input className={styles.filter} title="Filtrer par année scolaire" value={filterState.yearOfStudy} onChange={(e) => {setFilterState({...filterState, yearOfStudy: e.target.value})}}/>
                         <Input className={styles.filter} title="Filtrer par pédagogie" value={filterState.newPedagogy} onChange={(e) => {setFilterState({...filterState, newPedagogy: e.target.value})}}/>
                         <Select className={styles.filterSelect} value={filterState.expeWorked} onChange={(e) => {setFilterState({...filterState, expeWorked: e.target.value})}} title="Filtrer par succès">
