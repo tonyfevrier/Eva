@@ -15,6 +15,7 @@ export type Data = {
     id: string,
     experimentationTitle: string,
     institutionName: string,
+    institutionTown: string,
     yearOfStudy: string,
     teachingTitle: string,
     keywords: Array<string>,

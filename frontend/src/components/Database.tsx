@@ -25,7 +25,7 @@ export function Database({experimentations}:{experimentations: Array<Data>}){
                         <th>Mots clés</th>
                         <th>Discipline</th>
                         <th className={styles.responsiveDisappear}>Année scolaire</th>
-                        <th>Institution</th>
+                        <th>Ville</th>
                         <th className={styles.responsiveDisappear}>Pratique pédagogique</th>
                         <th className={styles.responsiveDisappear}>L'expérimentation a fonctionné</th>
                         <th>Télécharger</th>
@@ -42,7 +42,7 @@ export function Database({experimentations}:{experimentations: Array<Data>}){
                             }
                             <td>{expe.studyField}</td>
                             <td className={styles.responsiveDisappear}>{expe.yearOfStudy}</td>
-                            <td>{expe.institutionName}</td>
+                            <td>{expe.institutionTown}</td>
                             <td className={styles.responsiveDisappear}>{expe.newPedagogy}</td>
                             <td className={styles.responsiveDisappear}>{expe.expeWorked}</td>
                             <td><Button id={expe.id} onClick={download}>Cliquez</Button></td>
