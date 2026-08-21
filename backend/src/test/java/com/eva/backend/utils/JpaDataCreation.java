@@ -1,6 +1,7 @@
 package com.eva.backend.utils;
 
 import java.time.LocalDate;
+import java.time.Year;
 import java.util.Arrays;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +38,7 @@ public class JpaDataCreation {
 		.additionalData(new UserAdditionalData(
 			false,
 			true,
-			LocalDate.of(1990, 5, 15),
+			Year.of(1990),
 			"Femme",
 			"Enseignante",
 			"Mathématiques",

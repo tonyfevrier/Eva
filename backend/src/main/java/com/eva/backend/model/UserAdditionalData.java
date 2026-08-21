@@ -1,10 +1,9 @@
 package com.eva.backend.model;
 
-import java.time.LocalDate;
+import java.time.Year;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
-import jakarta.validation.constraints.Past;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -19,8 +18,7 @@ public class UserAdditionalData {
 
     private boolean acceptContact;
 
-    @Past(message="La date de naissance doit être antérieure à la date actuelle")
-    private LocalDate birthday;
+    private Year birthYear;
 
     private String gender;
 

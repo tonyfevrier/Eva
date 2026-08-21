@@ -13,7 +13,7 @@ type DescribeFormData = {
     acceptMap: boolean,
     acceptContact: boolean,
     gender: string,
-    birthday: string,
+    birthYear: string,
     job: string,
     specializedTopics: string,
     otherSpecialization: string,
@@ -25,7 +25,7 @@ export function DescribePage(){
     const {isProfileCompleted} = useTheme();
 
     const initialformData = {acceptMap: false, acceptContact: false,
-                             gender:"", birthday:"", job:"", specializedTopics:"",
+                             gender:"", birthYear:"", job:"", specializedTopics:"",
                              otherSpecialization: "",teacherBehaviour: "", freeField: ""};
     const [formData, setFormData] = useState<DescribeFormData>(initialformData);
     const [fetchError, setFetchError] = useState<Error|null>(null);
@@ -35,7 +35,7 @@ export function DescribePage(){
         e.preventDefault(); 
         const data = {acceptMap: formData.acceptMap, 
                       acceptContact: formData.acceptContact,
-                      gender: formData.gender, birthday: formData.birthday,
+                      gender: formData.gender, birthYear: formData.birthYear,
                       job: formData.job, specializedTopics: formData.specializedTopics,
                       otherSpecialization: formData.otherSpecialization,
                       teacherBehaviour: formData.teacherBehaviour, freeField: formData.freeField}
@@ -62,7 +62,7 @@ export function DescribePage(){
                         <option value="Autre">Autre</option>
                         <option value="Ne souhaite pas répondre">Ne souhaite pas répondre</option>
                     </Select>
-                    <Input title="Date de naissance" type="date" name="birthday" value={formData.birthday} onChange={(e)=>{setFormData({...formData, birthday: e.target.value})}} max={new Date().toISOString().split('T')[0]}/>
+                    <Input title="Année de naissance" type="text" name="birthYear" value={formData.birthYear} onChange={(e)=>{setFormData({...formData, birthYear: e.target.value})}}/>
                     <Input title="Profession/Type de poste actuel" name="job" type="text" value={formData.job} onChange={(e)=>{setFormData({...formData, job: e.target.value})}}/>
                     <Input title="Discipline(s)/Spécialité(s)" name="specializedTopics" type="text" value={formData.specializedTopics} onChange={(e)=>{setFormData({...formData, specializedTopics: e.target.value})}}/>
                     <Input title="Autre spécialisation/Formation à mentionner" name="otherSpecialization" type="text" value={formData.otherSpecialization} onChange={(e)=>{setFormData({...formData, otherSpecialization: e.target.value})}}/>                    

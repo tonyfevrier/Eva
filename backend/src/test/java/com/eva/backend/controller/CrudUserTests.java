@@ -152,7 +152,7 @@ public class CrudUserTests {
         updatedUserData.put("password", "newpassword");
         updatedUserData.put("acceptMap", true);
         updatedUserData.put("acceptContact", false);
-        updatedUserData.put("birthday", "1985-03-20");
+        updatedUserData.put("birthYear", "1985");
         updatedUserData.put("gender", "Homme");
         updatedUserData.put("job", "Professeur");
         updatedUserData.put("specializedTopics", "Physique");
@@ -174,7 +174,7 @@ public class CrudUserTests {
                        .andExpect(jsonPath("$[0].mail", is("tony.fevrier@gmail.com")))
                        .andExpect(jsonPath("$[0].additionalData.acceptMap", is(true)))
                        .andExpect(jsonPath("$[0].additionalData.acceptContact", is(false)))
-                       .andExpect(jsonPath("$[0].additionalData.birthday", is("1985-03-20")))
+                       .andExpect(jsonPath("$[0].additionalData.birthYear", is("1985")))
                        .andExpect(jsonPath("$[0].additionalData.gender", is("Homme")))
                        .andExpect(jsonPath("$[0].additionalData.job", is("Professeur")))
                        .andExpect(jsonPath("$[0].additionalData.specializedTopics", is("Physique")))
@@ -198,7 +198,7 @@ public class CrudUserTests {
                         .andExpect(jsonPath("$.mail", is("tony.fevrier@gmail.com")))
                         .andExpect(jsonPath("$.acceptContact", is(true)))
                         .andExpect(jsonPath("$.acceptMap", is(false)))
-                        .andExpect(jsonPath("$.birthday", is("1990-05-15")))
+                        .andExpect(jsonPath("$.birthYear", is("1990")))
                         .andExpect(jsonPath("$.gender", is("Homme")))
                         .andExpect(jsonPath("$.job", is("Enseignant")))
                         .andExpect(jsonPath("$.specializedTopics", is("Informatique")))
@@ -223,7 +223,7 @@ public class CrudUserTests {
                         .andExpect(jsonPath("$.mail", is("tony.fevrier@gmail.com")))
                         .andExpect(jsonPath("$.acceptContact", is(false)))
                         .andExpect(jsonPath("$.acceptMap", is(false)))
-                        .andExpect(jsonPath("$.birthday", is("")))
+                        .andExpect(jsonPath("$.birthYear", is("")))
                         .andExpect(jsonPath("$.gender", is("")))
                         .andExpect(jsonPath("$.job", is("")))
                         .andExpect(jsonPath("$.specializedTopics", is("")))
@@ -278,7 +278,7 @@ public class CrudUserTests {
         Map<String, Object> additionalData = new HashMap<>();
         additionalData.put("acceptContact", true);
         additionalData.put("acceptMap", false);
-        additionalData.put("birthday", "1990-05-15");
+        additionalData.put("birthYear", "1990");
         additionalData.put("gender", "Homme");
         additionalData.put("job", "Enseignant");
         additionalData.put("specializedTopics", "Informatique");

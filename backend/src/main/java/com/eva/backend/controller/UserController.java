@@ -153,7 +153,7 @@ public class UserController {
         if (additionalData != null){
             response.put("acceptContact", additionalData.isAcceptContact());
             response.put("acceptMap", additionalData.isAcceptMap());
-            response.put("birthday", additionalData.getBirthday());
+            response.put("birthYear", additionalData.getBirthYear());
             response.put("gender", additionalData.getGender());
             response.put("job", additionalData.getJob());
             response.put("specializedTopics", additionalData.getSpecializedTopics());
@@ -163,7 +163,7 @@ public class UserController {
         } else {
             response.put("acceptContact", false);
             response.put("acceptMap", false);
-            response.put("birthday", "");
+            response.put("birthYear", "");
             response.put("gender", "");
             response.put("job", "");
             response.put("specializedTopics", "");

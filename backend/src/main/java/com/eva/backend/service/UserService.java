@@ -1,6 +1,6 @@
 package com.eva.backend.service;
 
-import java.time.LocalDate;
+import java.time.Year;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -178,9 +178,9 @@ public class UserService {
             additionalData.setAcceptContact(acceptContact);
         }
 
-        String birthday = (String) body.get("birthday");
-        if (birthday != null){
-            additionalData.setBirthday(LocalDate.parse(birthday));
+        String birthYear = (String) body.get("birthYear");
+        if (birthYear != null){
+            additionalData.setBirthYear(Year.parse(birthYear));
         }
 
         String gender = (String) body.get("gender");
