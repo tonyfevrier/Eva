@@ -77,10 +77,17 @@ public class UserService {
     }
 
     public CookieEssentials refresh(String refreshToken){
-        String username = jwtService.extractUsername(refreshToken);
-        User user = userRepository.findByMail(username);
-        if (jwtService.validateToken(refreshToken, user)){
-            return cookieService.generateAccessCookie(user); 
+        User user = findByTokenSafely(refreshToken);
+        if (user == null){
+            return null;
+        }
+        try {
+            if (jwtService.validateToken(refreshToken, user)){
+                return cookieService.generateAccessCookie(user);
+            }
+        } catch (Exception e) {
+            // refresh token expiré ou invalide
+            return null;
         }
         return null;
     }

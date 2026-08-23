@@ -7,6 +7,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -14,6 +15,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import com.eva.backend.service.JWTService;
 import com.eva.backend.service.MyUserDetailsService;
 
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -91,8 +93,7 @@ public class JwtFilter extends OncePerRequestFilter{
 
     private TokenInfo getTokenAndeUsernameFromAuthorization(String authHeader){
         String token = authHeader.substring(7); // token is after Bearer in the string authHeader
-        String username = jwtService.extractUsername(token);
-        return new TokenInfo(username, token);
+        return new TokenInfo(extractUsernameSafely(token), token);
     }
     private TokenInfo getTokenAndeUsernameFromCookie(HttpServletRequest request){
         String token = null;
@@ -100,10 +101,20 @@ public class JwtFilter extends OncePerRequestFilter{
         for (Cookie cookie : request.getCookies()) {
                 if ("jwt".equals(cookie.getName())) {
                     token = cookie.getValue();
-                    username = jwtService.extractUsername(token);
+                    username = extractUsernameSafely(token);
                 }
             }
         return new TokenInfo(username, token);
+    }
+
+    private String extractUsernameSafely(String token){
+        /* Un token expiré ou invalide ne doit pas faire échouer la requête avec une 500 :
+           on laisse la chaîne de filtres répondre un 401 que le front pourra rejouer après refresh. */
+        try {
+            return jwtService.extractUsername(token);
+        } catch (JwtException | IllegalArgumentException e) {
+            return null;
+        }
     }
 
     private boolean authenticationObjectDoesNotExist(){
@@ -112,9 +123,14 @@ public class JwtFilter extends OncePerRequestFilter{
     private void createNewAuthenticationObject(TokenInfo tokenInfo, HttpServletRequest request){
         /* vérifie si les infos liées au token sont les mêmes que celles de la base de données,
          et crée l'objet authentication si c'est le cas */
-        UserDetails userDetails = getUserFromDatabase(tokenInfo.username);
+        UserDetails userDetails;
+        try {
+            userDetails = getUserFromDatabase(tokenInfo.username);
+        } catch (UsernameNotFoundException e) {
+            return;
+        }
 
-        if (jwtService.validateToken(tokenInfo.token, userDetails)){
+        if (isTokenValid(tokenInfo.token, userDetails)){
             UsernamePasswordAuthenticationToken authToken = 
                 new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
             authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
@@ -124,6 +140,14 @@ public class JwtFilter extends OncePerRequestFilter{
     
     private UserDetails getUserFromDatabase(String username){
         return context.getBean(MyUserDetailsService.class).loadUserByUsername(username);
+    }
+
+    private boolean isTokenValid(String token, UserDetails userDetails){
+        try {
+            return jwtService.validateToken(token, userDetails);
+        } catch (JwtException | IllegalArgumentException e) {
+            return false;
+        }
     }
     
 }

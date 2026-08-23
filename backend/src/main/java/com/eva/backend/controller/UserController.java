@@ -130,6 +130,10 @@ public class UserController {
         /* Si le refreshToken n'est pas expiré, envoie un nouvel accessToken */
         String refreshToken = requestUtils.getTokenFromRequest(request, "jwt-refresh");
         CookieEssentials accessCookie = userService.refresh(refreshToken);
+        if (accessCookie == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                                 .body(Map.of("message", "Session expirée, veuillez vous reconnecter"));
+        }
         return ResponseEntity.ok()
                              .header(HttpHeaders.SET_COOKIE, accessCookie.cookie())
                              .body(Map.of("message", "Token rafraîchi",
