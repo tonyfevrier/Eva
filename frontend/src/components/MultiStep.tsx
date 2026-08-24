@@ -4,10 +4,11 @@ import { Button } from "./Button";
 
 interface MultiProps extends PropsWithChildren{
     clickableSteps: Map<string, boolean>
-    onLastClick: () => void
+    onSave: () => void
+    onLastStep: () => void
 }
 
-export function MultiStep({clickableSteps, children, onLastClick}:MultiProps){
+export function MultiStep({clickableSteps, children, onSave, onLastStep}:MultiProps){
     /* Composant permettant de parcourir une série de pages et de revenir à souhait en arrière.
     Il doit y avoir le même nombre de children que de titre dans clickableSteps car 
     ils correspondent au nombre d'étapes, clickableSteps contient pour chaque titre l'information
@@ -20,8 +21,9 @@ export function MultiStep({clickableSteps, children, onLastClick}:MultiProps){
 
     const handleNextStepClick = () => {
         setStep(nextStep);
+        onSave();
         if (isOnTheLastStep){
-            onLastClick();
+            onLastStep();
         }
     }
     return  <>
@@ -37,8 +39,8 @@ export function MultiStep({clickableSteps, children, onLastClick}:MultiProps){
                     return null;
                 })}
                 <div>
-                    <Button style={{"margin" : "1em"}} onClick={()=>setStep(c=>c-1)} disabled={step===1}>Précédent</Button>
-                    <Button style={{"margin" : "1em"}} onClick={handleNextStepClick} disabled={!clickableSteps.get(clickableStepsKeys[step-1])}>{isOnTheLastStep?"Sauver l'expérimentation":"Suivant"}</Button>
+                    <Button style={{"margin" : "1em"}} onClick={()=>setStep(c=>c-1)} disabled={step===1}>Précédent</Button> 
+                    <Button style={{"margin" : "1em"}} onClick={handleNextStepClick} disabled={!clickableSteps.get(clickableStepsKeys[step-1])}>{isOnTheLastStep?"Sauver l'expérimentation":"Sauver et continuer"}</Button>
                 </div>
             </>
 }

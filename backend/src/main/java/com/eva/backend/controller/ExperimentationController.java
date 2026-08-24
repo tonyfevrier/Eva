@@ -77,11 +77,14 @@ public class ExperimentationController {
         Experimentation experimentation = experimentationRequest.experimentation();
         User user = userService.findByMail(authenticatedUser.getMail());
         experimentation.setUser(user); // le jwt filter extrait du cookie le User actuel. Il ne reste qu'à l'associer
-       
-        Optional<Institution> optionalInstitution = institutionService.findById(experimentationRequest.affiliationID());
-        if (!optionalInstitution.isEmpty()){
-            experimentation.setInstitution(optionalInstitution.get());            
-        } 
+
+        if (experimentationRequest.affiliationID() != null){
+            Optional<Institution> optionalInstitution = institutionService.findById(experimentationRequest.affiliationID());
+            if (!optionalInstitution.isEmpty()){
+                experimentation.setInstitution(optionalInstitution.get());            
+            } 
+        }
+        
         experimentationService.save(experimentation);
         Experimentation lastExperimentation = experimentationService.findLast().orElseThrow();
         return  ResponseEntity.ok(Map.of("message", "L'expérimentation a bien été enregistrée",
@@ -110,8 +113,8 @@ public class ExperimentationController {
             Map.entry("keywords", experimentation.getKeywords()),
             Map.entry("personalKeywords", experimentation.getPersonalKeywords() != null ? experimentation.getPersonalKeywords() : ""),
             Map.entry("protocol", experimentation.getProtocol()),
-            Map.entry("affiliation", Map.of("id", institution.getId(),
-                                             "name", institution.getName())),
+            Map.entry("affiliation", Map.of("id", institution != null ? institution.getId() : "",
+                                             "name", institution != null ? institution.getName(): "")),
             Map.entry("pedagogicalContext", experimentation.getPedagogicalContext()),
             Map.entry("inProgress", experimentation.getInProgress()),
             Map.entry("isSharingData", experimentation.getIsSharingData()),
@@ -128,14 +131,14 @@ public class ExperimentationController {
 
         List<Map<String, Object>> experimentationsList = user.getExperimentations().stream()
             .sorted((e1, e2) -> e2.getId().compareTo(e1.getId()))
-            .map(expe -> {
+            .map(expe -> { 
                 return Map.of(
                     "id", (Object) expe.getId(),
                     "experimentationTitle", expe.getExperimentationTitle(),
                     "keywords", expe.getKeywords(),
                     "personalKeywords", expe.getPersonalKeywords() != null ? expe.getPersonalKeywords() : "",
-                    "institutionName", expe.getInstitution().getName(),
-                    "institutionTown", expe.getInstitution().getTown(),
+                    "institutionName", expe.getInstitution() != null ? expe.getInstitution().getName() : "",
+                    "institutionTown", expe.getInstitution() != null ? expe.getInstitution().getTown() : "",
                     "teachingTitle", expe.getPedagogicalContext().getTeachingTitle(),
                     "studyField", expe.getPedagogicalContext().getStudyField(),
                     "yearOfStudy", expe.getPedagogicalContext().getYearOfStudy(),
@@ -162,8 +165,8 @@ public class ExperimentationController {
                     Map.entry("experimentationTitle", expe.getExperimentationTitle()),
                     Map.entry("keywords", expe.getKeywords()),
                     Map.entry("personalKeywords", expe.getPersonalKeywords() != null ? expe.getPersonalKeywords() : ""),
-                    Map.entry("institutionName", expe.getInstitution().getName()),
-                    Map.entry("institutionTown", expe.getInstitution().getTown()),
+                    Map.entry("institutionName", expe.getInstitution() != null? expe.getInstitution().getName() : ""),
+                    Map.entry("institutionTown", expe.getInstitution() != null? expe.getInstitution().getTown() : ""),
                     Map.entry("teachingTitle", expe.getPedagogicalContext().getTeachingTitle()),
                     Map.entry("studyField", expe.getPedagogicalContext().getStudyField()),
                     Map.entry("yearOfStudy", expe.getPedagogicalContext().getYearOfStudy()),
@@ -236,13 +239,14 @@ public class ExperimentationController {
         existingExperimentation.setIsSharingData(updatedExperimentation.getIsSharingData());
         
         // Mettre à jour l'institution si nécessaire
-        Optional<Institution> optionalInstitution = institutionService.findById(experimentationRequest.affiliationID());
-        if (!optionalInstitution.isEmpty()) {
-            existingExperimentation.setInstitution(optionalInstitution.get());
+        if (experimentationRequest.affiliationID() != null) {
+            Optional<Institution> optionalInstitution = institutionService.findById(experimentationRequest.affiliationID());
+            if (!optionalInstitution.isEmpty()) {
+                existingExperimentation.setInstitution(optionalInstitution.get());
+            }
         }
-        
         experimentationService.save(existingExperimentation);
-        
+
         return ResponseEntity.ok(Map.of("message", "L'expérimentation a bien été mise à jour"));
     }
 

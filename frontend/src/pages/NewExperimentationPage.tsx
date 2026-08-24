@@ -4,7 +4,7 @@ import { FirstStep } from "./newExperimentationSubPages/FirstStep";
 import { SecondStep } from "./newExperimentationSubPages/SecondStep";
 import { ThirdStep } from "./newExperimentationSubPages/ThirdStep";
 import { FourthStep } from "./newExperimentationSubPages/FourthStep";
-import { useNavigate, type NavigateFunction } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import preRegisteredData from "../data/preRegisteredData.json";
 import { apiFetch } from "../utils/apiFetch";
 import { Alert } from "../components/Alert";
@@ -16,8 +16,9 @@ type Affiliation = {
 }
 
 export type ExperimentationData = {
+    id: string|undefined;
     experimentationTitle: string;
-    keywords: Map<string, Boolean>; //Array<string>;
+    keywords: Map<string, Boolean>; 
     personalKeywords: string;
     learningDifficulty: string;
     learningDifficultyOrigin: string;
@@ -54,7 +55,7 @@ export type ExperimentationData = {
 export function NewExperimentationPage(){
     
     const initialExpeData: ExperimentationData = { 
-        pedagogyBeginningOld: "", pedagogyEndingOld: "", pedagogyBeginningNew: "",
+        id: "", pedagogyBeginningOld: "", pedagogyEndingOld: "", pedagogyBeginningNew: "",
         pedagogyEndingNew: "", experimentationTitle: "",
         keywords: new Map(preRegisteredData["keywords"].map(keyword => [keyword, false])),
         personalKeywords: "", learningDifficulty: "",learningDifficultyOrigin: "",
@@ -93,11 +94,19 @@ export function NewExperimentationPage(){
 
     const saveExperimentation = () => { 
         const data = buildExperimentationData(expeData);
-        sendPostRequest(data, setError, navigate); 
+        if (expeData.id === ""){
+            sendPostRequest(data, setError, setExpeData); 
+        } else {
+            sendUpdateRequest(expeData.id, data, setError);
+        }
+    }
+
+    const goToExpeSummary = () => {
+        navigate(`/experimentationSummary/${expeData.id}`);
     }
 
     return <>
-                <MultiStep clickableSteps={clickableSteps} onLastClick={saveExperimentation} >
+                <MultiStep clickableSteps={clickableSteps} onSave={saveExperimentation} onLastStep={goToExpeSummary}>
                     <FirstStep state={expeData} setState={setExpeData} handleClickOnCloud={handleClickOnCloud}/>
                     <SecondStep state={expeData} setState={setExpeData}/>
                     <ThirdStep state={expeData} setState={setExpeData}/>
@@ -166,7 +175,7 @@ function buildExperimentationData(expeData:ExperimentationData) {
     return data;
 }
 
-async function sendPostRequest(data: any, setError:Dispatch<SetStateAction<Error|null>>, navigate: NavigateFunction){
+async function sendPostRequest(data: any, setError:Dispatch<SetStateAction<Error|null>>, setExpeData: Dispatch<SetStateAction<ExperimentationData>>){
     const response = await apiFetch("/expe/create", {
             method: "POST",
             headers:{
@@ -182,8 +191,29 @@ async function sendPostRequest(data: any, setError:Dispatch<SetStateAction<Error
      
     if (response.ok){
         const result = await response.json();
-        navigate(`/experimentationSummary/${result.id}`);
+        setExpeData(prev => ({...prev, id: result.id}))
     } else {
+        setError(new Error(`Erreur ${response.status}: ${response.statusText}`));
+    } 
+
+    return response
+}
+
+async function sendUpdateRequest(id:string|undefined, data: any, setError:Dispatch<SetStateAction<Error|null>>){
+    const response = await apiFetch(`/expe/update/${id}`, {
+            method: "PUT",
+            headers:{
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify(data),
+            credentials: "include"})
+            .catch(error => {
+                setError(new Error(error?.message || String(error)))
+                throw error;
+        });
+     
+    if (!response.ok){
         setError(new Error(`Erreur ${response.status}: ${response.statusText}`));
     }
     return response

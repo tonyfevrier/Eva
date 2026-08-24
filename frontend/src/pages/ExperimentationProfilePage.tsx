@@ -4,11 +4,12 @@ import { FirstStep } from "./newExperimentationSubPages/FirstStep";
 import { SecondStep } from "./newExperimentationSubPages/SecondStep";
 import { ThirdStep } from "./newExperimentationSubPages/ThirdStep";
 import { FourthStep } from "./newExperimentationSubPages/FourthStep";
-import { useNavigate, useParams, type NavigateFunction } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useFetch } from "../hooks/useFetch";
 import { Spinner } from "../components/Spinner";
 import { apiFetch } from "../utils/apiFetch";
 import { Alert } from "../components/Alert";
+
 
 type Affiliation = {
     id: string,
@@ -16,6 +17,7 @@ type Affiliation = {
 }
 
 type ExperimentationData = {
+    id: string|undefined,
     experimentationTitle: string;
     keywords: Map<string, Boolean>; 
     personalKeywords: string;
@@ -51,8 +53,10 @@ type ExperimentationData = {
 }
 
 export function ExperimentationProfilePage(){
+    const {id} = useParams();
 
     const initialExpeData: ExperimentationData = {
+        id: id,
         pedagogyBeginningOld: "", pedagogyEndingOld: "", pedagogyBeginningNew: "",
         pedagogyEndingNew: "", experimentationTitle: "",
         keywords: new Map([["Attention", false], ["Motivation", false],
@@ -73,7 +77,6 @@ export function ExperimentationProfilePage(){
     const [expeData, setExpeData] = useState<ExperimentationData>(initialExpeData);
     const [updateError, setUpdateError] = useState<Error|null>(null);
     const navigate = useNavigate();
-    const {id} = useParams();
     const {loading, data, error} = useFetch(`/expe/get/${id}`);
     
     useEffect( () => {
@@ -84,9 +87,9 @@ export function ExperimentationProfilePage(){
 
 
     const oneKeyWordIsChosen = Array.from(expeData.keywords.values()).some(value => value === true) || expeData.personalKeywords !== "";
-    const firstPageIsFilled = oneKeyWordIsChosen && expeData.affiliation.name !== "" && expeData.learningDifficulty !== "" && expeData.learningDifficultyOrigin !== "" && expeData.oldPedagogy !== "" && expeData.newPedagogy !== "";
+    const firstPageIsFilled = expeData.experimentationTitle !== "" && oneKeyWordIsChosen && expeData.learningDifficulty !== "" && expeData.learningDifficultyOrigin !== "" && expeData.oldPedagogy !== "" && expeData.newPedagogy !== "";
     const secondPageIsFilled = expeData.protocol !== "";
-    const thirdPageIsFilled = expeData.studyField !== "" && expeData.teachingTitle !== "" && expeData.knowledges !== "" && expeData.prerequisite !== "" && expeData.organisationParticularities !== "" && expeData.classesFrequencies !== "" && expeData.classesDates !== "" && expeData.yearOfStudy !== "" && expeData.studentsNumber !== "" && expeData.studentsSpecificities !== "" ;
+    const thirdPageIsFilled = expeData.affiliation.name !== "" && expeData.studyField !== "" && expeData.teachingTitle !== "" && expeData.knowledges !== "" && expeData.prerequisite !== "" && expeData.organisationParticularities !== "" && expeData.classesFrequencies !== "" && expeData.classesDates !== "" && expeData.yearOfStudy !== "" && expeData.studentsNumber !== "" && expeData.studentsSpecificities !== "" ;
     const fourthPageIsFilled = expeData.initialEvaluationOld !== "" && expeData.immediateEvaluationOld !== "" && expeData.delayedEvaluationOld !== "" && expeData.initialEvaluationNew !== "" && expeData.immediateEvaluationNew !== "" && expeData.delayedEvaluationNew !== "";
 
     const clickableSteps = new Map([["1: Pédagogies impliquées", firstPageIsFilled],
@@ -104,7 +107,7 @@ export function ExperimentationProfilePage(){
 
     const saveExperimentation = () => { 
         const data = buildExperimentationData(expeData);
-        sendPostRequest(id, data, setUpdateError, navigate); 
+        sendUpdateRequest(id, data, setUpdateError); 
     }
 
     if (loading){
@@ -116,7 +119,7 @@ export function ExperimentationProfilePage(){
     }
 
     return <>
-                <MultiStep clickableSteps={clickableSteps} onLastClick={saveExperimentation} >
+                <MultiStep clickableSteps={clickableSteps} onSave={saveExperimentation} onLastStep={() => navigate(`/application/expe`)} >
                     <FirstStep state={expeData} setState={setExpeData} handleClickOnCloud={handleClickOnCloud}/>
                     <SecondStep state={expeData} setState={setExpeData}/>
                     <ThirdStep state={expeData} setState={setExpeData}/>
@@ -189,19 +192,26 @@ function fillInputsWithUserInfos(data: any, expeData:ExperimentationData, setExp
     const updates: any= {};
 
     // Remplissage des données d'évaluations de la bdd qui sont imbriquées dans pedagogicalContext
-    updates["pedagogyBeginningOld"] = data.pedagogicalContext.oldPedagogyEvaluations.pedagogyBeginning;
-    updates["pedagogyEndingOld"] = data.pedagogicalContext.oldPedagogyEvaluations.pedagogyEnding;
-    updates["pedagogyBeginningNew"] = data.pedagogicalContext.newPedagogyEvaluations.pedagogyBeginning;
-    updates["pedagogyEndingNew"] = data.pedagogicalContext.newPedagogyEvaluations.pedagogyEnding;
-    updates["initialEvaluationOld"] = data.pedagogicalContext.oldPedagogyEvaluations.initialEvaluation;
-    updates["immediateEvaluationOld"] = data.pedagogicalContext.oldPedagogyEvaluations.immediateEvaluation;
-    updates["delayedEvaluationOld"] = data.pedagogicalContext.oldPedagogyEvaluations.delayedEvaluation;
-    updates["accountedEvaluationOld"] = data.pedagogicalContext.oldPedagogyEvaluations.accountedEvaluation;
-    updates["initialEvaluationNew"] = data.pedagogicalContext.newPedagogyEvaluations.initialEvaluation;
-    updates["immediateEvaluationNew"] = data.pedagogicalContext.newPedagogyEvaluations.immediateEvaluation;
-    updates["delayedEvaluationNew"] = data.pedagogicalContext.newPedagogyEvaluations.delayedEvaluation;
-    updates["accountedEvaluationNew"] = data.pedagogicalContext.newPedagogyEvaluations.accountedEvaluation;
+    const oldPedagogyEvaluations = data.pedagogicalContext.oldPedagogyEvaluations;
+    const newPedagogyEvaluations = data.pedagogicalContext.newPedagogyEvaluations;
 
+    if (oldPedagogyEvaluations !== null){
+        updates["pedagogyBeginningOld"] = oldPedagogyEvaluations.pedagogyBeginning;
+        updates["pedagogyEndingOld"] = oldPedagogyEvaluations.pedagogyEnding;
+        updates["initialEvaluationOld"] = oldPedagogyEvaluations.initialEvaluation;
+        updates["immediateEvaluationOld"] = oldPedagogyEvaluations.immediateEvaluation;
+        updates["delayedEvaluationOld"] = oldPedagogyEvaluations.delayedEvaluation;
+        updates["accountedEvaluationOld"] = oldPedagogyEvaluations.accountedEvaluation;
+    }
+    if (newPedagogyEvaluations !== null){
+        updates["pedagogyBeginningNew"] = newPedagogyEvaluations.pedagogyBeginning;
+        updates["pedagogyEndingNew"] = newPedagogyEvaluations.pedagogyEnding;
+        updates["initialEvaluationNew"] = newPedagogyEvaluations.initialEvaluation;
+        updates["immediateEvaluationNew"] = newPedagogyEvaluations.immediateEvaluation;
+        updates["delayedEvaluationNew"] = newPedagogyEvaluations.delayedEvaluation;
+        updates["accountedEvaluationNew"] = newPedagogyEvaluations.accountedEvaluation;
+    }
+    
     // Remplissage des données du context pédagogique
     Object.entries(data.pedagogicalContext).forEach(([attribute, value]) => {
         if (attribute !== "oldPedagogyEvaluations" && attribute !== "newPedagogyEvaluations"){
@@ -228,7 +238,7 @@ function fillKeywords(data: any, expeData:ExperimentationData){
     return newKeywords
 }
 
-async function sendPostRequest(id:string|undefined, data: any, setError:Dispatch<SetStateAction<Error|null>>, navigate: NavigateFunction){
+async function sendUpdateRequest(id:string|undefined, data: any, setError:Dispatch<SetStateAction<Error|null>>){
     const response = await apiFetch(`/expe/update/${id}`, {
             method: "PUT",
             headers:{
@@ -242,9 +252,7 @@ async function sendPostRequest(id:string|undefined, data: any, setError:Dispatch
                 throw error;
         });
      
-    if (response.ok){
-        navigate(`/application/expe`);
-    } else {
+    if (!response.ok){
         setError(new Error(`Erreur ${response.status}: ${response.statusText}`));
     }
     return response

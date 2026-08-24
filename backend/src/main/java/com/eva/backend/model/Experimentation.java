@@ -51,7 +51,7 @@ public class Experimentation {
 
     @ToString.Exclude
     @ManyToOne
-    @JoinColumn(name = "institution_id", nullable = false)
+    @JoinColumn(name = "institution_id")
     private Institution institution;
 
     @Embedded
