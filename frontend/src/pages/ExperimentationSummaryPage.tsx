@@ -93,7 +93,6 @@ export function ExperimentationSummaryPage(){
                         <>
                             <div className={styles.btnContainer} >
                                 <Button onClick={()=> setPrintExportModal(true)}>Exporter le modèle de tableur</Button>
-                                <Button href={`/application/endExpe/${id}`}>Ajouter les données de l'expérimentation</Button>
                             </div>
                         </>}
                         <div>

@@ -110,6 +110,10 @@ export function ExperimentationProfilePage(){
         sendUpdateRequest(id, data, setUpdateError); 
     }
 
+     const quitExperimentation = () => {
+        navigate(`/experimentationSummary/${expeData.id}`)
+    }
+
     if (loading){
         return <Spinner/>
     }
@@ -119,7 +123,7 @@ export function ExperimentationProfilePage(){
     }
 
     return <>
-                <MultiStep clickableSteps={clickableSteps} onSave={saveExperimentation} onLastStep={() => navigate(`/application/expe`)} >
+                <MultiStep clickableSteps={clickableSteps} onSave={saveExperimentation} onLastStep={() => navigate(`/application/endExpe/${id}`)} onQuit={quitExperimentation}>
                     <FirstStep state={expeData} setState={setExpeData} handleClickOnCloud={handleClickOnCloud}/>
                     <SecondStep state={expeData} setState={setExpeData}/>
                     <ThirdStep state={expeData} setState={setExpeData}/>

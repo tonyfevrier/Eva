@@ -212,7 +212,7 @@ public class FileService {
         try (Stream<Path> files = Files.list(baseDir)) {
             Path fileToDelete = files
                             .filter(Files::isRegularFile)
-                            .filter(path -> path.getFileName().toString().equals("experimentation_summary_" + id + ".pdf"))
+                            .filter(path -> path.getFileName().toString().equals("experimentation_" + id + ".pdf"))
                             .findFirst()
                             .orElse(null);
             

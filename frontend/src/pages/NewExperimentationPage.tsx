@@ -101,12 +101,13 @@ export function NewExperimentationPage(){
         }
     }
 
-    const goToExpeSummary = () => {
-        navigate(`/experimentationSummary/${expeData.id}`);
+    const goToEndExpe = () => {
+        navigate(`/application/endExpe/${expeData.id}`);
     }
+ 
 
     return <>
-                <MultiStep clickableSteps={clickableSteps} onSave={saveExperimentation} onLastStep={goToExpeSummary}>
+                <MultiStep clickableSteps={clickableSteps} onSave={saveExperimentation} onLastStep={goToEndExpe} onQuit={() => navigate("/")}>
                     <FirstStep state={expeData} setState={setExpeData} handleClickOnCloud={handleClickOnCloud}/>
                     <SecondStep state={expeData} setState={setExpeData}/>
                     <ThirdStep state={expeData} setState={setExpeData}/>

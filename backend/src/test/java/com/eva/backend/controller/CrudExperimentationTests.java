@@ -665,7 +665,7 @@ public class CrudExperimentationTests {
         Path baseDir = Paths.get("target/test-imports").toAbsolutePath().normalize();
         Files.createDirectories(baseDir);
 
-        Path generatedPdf = baseDir.resolve("experimentation_summary_" + experimentationId + ".pdf");
+        Path generatedPdf = baseDir.resolve("experimentation_" + experimentationId + ".pdf");
         Path xlsxData = baseDir.resolve(experimentationId + "_test.xlsx");
         Path testPdf = baseDir.resolve("test_id" + experimentationId + ".pdf");
         Path questionnairePdf = baseDir.resolve("questionnaire_id" + experimentationId + ".pdf");
