@@ -1,6 +1,6 @@
 package com.eva.backend.service;
 
-import java.time.LocalDate;
+import java.time.Year;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,10 +77,17 @@ public class UserService {
     }
 
     public CookieEssentials refresh(String refreshToken){
-        String username = jwtService.extractUsername(refreshToken);
-        User user = userRepository.findByMail(username);
-        if (jwtService.validateToken(refreshToken, user)){
-            return cookieService.generateAccessCookie(user); 
+        User user = findByTokenSafely(refreshToken);
+        if (user == null){
+            return null;
+        }
+        try {
+            if (jwtService.validateToken(refreshToken, user)){
+                return cookieService.generateAccessCookie(user);
+            }
+        } catch (Exception e) {
+            // refresh token expiré ou invalide
+            return null;
         }
         return null;
     }
@@ -178,9 +185,9 @@ public class UserService {
             additionalData.setAcceptContact(acceptContact);
         }
 
-        String birthday = (String) body.get("birthday");
-        if (birthday != null){
-            additionalData.setBirthday(LocalDate.parse(birthday));
+        String birthYear = (String) body.get("birthYear");
+        if (birthYear != null){
+            additionalData.setBirthYear(Year.parse(birthYear));
         }
 
         String gender = (String) body.get("gender");

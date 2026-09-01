@@ -1,6 +1,7 @@
 package com.eva.backend.utils;
 
 import java.time.LocalDate;
+import java.time.Year;
 import java.util.Arrays;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +38,7 @@ public class JpaDataCreation {
 		.additionalData(new UserAdditionalData(
 			false,
 			true,
-			LocalDate.of(1990, 5, 15),
+			Year.of(1990),
 			"Femme",
 			"Enseignante",
 			"Mathématiques",
@@ -63,6 +64,8 @@ public class JpaDataCreation {
 
     public Long createAnExperimentation(User user, Institution institution) {
         Evaluations oldPedagogyEvaluations = Evaluations.builder()
+            .pedagogyBeginning(LocalDate.of(2025, 9, 1))
+            .pedagogyEnding(LocalDate.of(2025, 12, 15))
             .initialEvaluation(LocalDate.of(2026, 1, 15))
             .immediateEvaluation(LocalDate.of(2026, 2, 15))
             .delayedEvaluation(LocalDate.of(2026, 3, 15))
@@ -70,6 +73,8 @@ public class JpaDataCreation {
             .build();
 
         Evaluations newPedagogyEvaluations = Evaluations.builder()
+            .pedagogyBeginning(LocalDate.of(2026, 1, 1))
+            .pedagogyEnding(LocalDate.of(2026, 4, 30))
             .initialEvaluation(LocalDate.of(2026, 1, 20))
             .immediateEvaluation(LocalDate.of(2026, 2, 20))
             .delayedEvaluation(LocalDate.of(2026, 3, 20))
@@ -96,6 +101,7 @@ public class JpaDataCreation {
             .build();
 
         Experimentation experimentation = Experimentation.builder()
+            .experimentationTitle("Expérimentation maths collège")
             .keywords(Arrays.asList("mathématiques", "apprentissage actif", "collège"))
             .personalKeywords("motivation, collaboration")
             .protocol("Protocole 1")

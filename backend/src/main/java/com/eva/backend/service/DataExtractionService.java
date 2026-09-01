@@ -22,14 +22,15 @@ public class DataExtractionService {
     @Autowired
     private ExperimentationRepository experimentationRepository;
 
-    public Map<String, Map<String, Object>> extractExperimentationData(Long id){
+    public Map<String, Object> extractExperimentationData(Long id){
         Experimentation experimentation = experimentationRepository.findById(id).orElseThrow();
         User user = experimentation.getUser();
         Institution institution = experimentation.getInstitution();
         PedagogicalContext context = experimentation.getPedagogicalContext();
         
-        Map<String, Map<String, Object>> data = new LinkedHashMap<>();
-        
+        Map<String, Object> data = new LinkedHashMap<>();
+        data.put("experimentationTitle", experimentation.getExperimentationTitle());
+
         // Contact
         Map<String, Object> contact = new LinkedHashMap<>();
         contact.put("Affiliation", institution.getName());
@@ -74,6 +75,8 @@ public class DataExtractionService {
     private Map<String, Object> convertEvaluationsToMap(Evaluations evaluations) {
         Map<String, Object> evalMap = new LinkedHashMap<>();
         if (evaluations != null) {
+            evalMap.put("Début de la pédagogie", evaluations.getPedagogyBeginning());
+            evalMap.put("Fin de la pédagogie", evaluations.getPedagogyEnding());
             evalMap.put("Evaluation initiale", evaluations.getInitialEvaluation());
             evalMap.put("Evaluation immédiate", evaluations.getImmediateEvaluation());
             evalMap.put("Evaluation différée", evaluations.getDelayedEvaluation());

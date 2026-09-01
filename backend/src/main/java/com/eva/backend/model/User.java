@@ -60,6 +60,7 @@ public class User implements UserDetails {
     @Embedded
     private UserAdditionalData additionalData;
 
+    @ToString.Exclude
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Experimentation> experimentations;
 
@@ -72,6 +73,7 @@ public class User implements UserDetails {
     )
     private List<Institution> institutions;
 
+    @ToString.Exclude
     @OneToMany(mappedBy = "user")
     private List<Interpretation> interpretations;
 

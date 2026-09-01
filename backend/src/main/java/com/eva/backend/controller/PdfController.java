@@ -82,7 +82,7 @@ public class PdfController {
             
             List<byte[]> pdfToMerge = List.of(experimentationDataByte, testsByte, tabsByte, interpretationDataByte);
             byte[] pdfByte = mergeService.mergeMultipleFiles(pdfToMerge);
-            String generatedFileName = "experimentation_summary_" + id + ".pdf";
+            String generatedFileName = "experimentation_" + id + ".pdf";
             fileService.registerFile(generatedPdfDir, generatedFileName, pdfByte);
             addDataPathToExperimentation(id, generatedFileName);
             return ResponseEntity.ok(pdfByte);
@@ -103,7 +103,7 @@ public class PdfController {
     }
 
     private byte[] getExperimentationData(Long id) throws IOException{
-        Map<String, Map<String, Object>> experimentationData = dataExtractor.extractExperimentationData(id);
+        Map<String, Object> experimentationData = dataExtractor.extractExperimentationData(id);
         DataForHtml experimentationForHtml = new DataForHtml("experimentation-pdf", "experimentationData", experimentationData);
         return pdfService.createPdf(experimentationForHtml);
     }

@@ -13,7 +13,7 @@ type DescribeFormData = {
     acceptMap: boolean,
     acceptContact: boolean,
     gender: string,
-    birthday: string,
+    birthYear: string,
     job: string,
     specializedTopics: string,
     otherSpecialization: string,
@@ -25,7 +25,7 @@ export function DescribePage(){
     const {isProfileCompleted} = useTheme();
 
     const initialformData = {acceptMap: false, acceptContact: false,
-                             gender:"", birthday:"", job:"", specializedTopics:"",
+                             gender:"", birthYear:"", job:"", specializedTopics:"",
                              otherSpecialization: "",teacherBehaviour: "", freeField: ""};
     const [formData, setFormData] = useState<DescribeFormData>(initialformData);
     const [fetchError, setFetchError] = useState<Error|null>(null);
@@ -35,7 +35,7 @@ export function DescribePage(){
         e.preventDefault(); 
         const data = {acceptMap: formData.acceptMap, 
                       acceptContact: formData.acceptContact,
-                      gender: formData.gender, birthday: formData.birthday,
+                      gender: formData.gender, birthYear: formData.birthYear,
                       job: formData.job, specializedTopics: formData.specializedTopics,
                       otherSpecialization: formData.otherSpecialization,
                       teacherBehaviour: formData.teacherBehaviour, freeField: formData.freeField}
@@ -47,13 +47,13 @@ export function DescribePage(){
     }
 
     return <>
-                <h2>Te décrire</h2>
+                <h2>Vous décrire</h2>
                 <p> Votre inscription a bien été réalisée. 
                     Il vous reste quelques informations de profils à compléter avant de pouvoir accéder à l'application.
                 </p>
                 <form onSubmit={handleSubmit}>
-                    <Input title="Etes-vous d'accord pour que votre localisation d'établissement apparaisse sur une carte?" name="card-accept" type="checkbox" onChange={() => setFormData({...formData, acceptMap: !formData.acceptMap})}/>
-                    <Input title="Etes-vous d'accord pour que d'autres enseignants puissent vous contacter par email? Si oui vous pourrez rentrer votre numéro de téléphone" name="card-accept" type="checkbox" onChange={() => setFormData({...formData, acceptContact: !formData.acceptContact})}/>
+                    <Input title="Acceptez-vous d'apparaître sur la carte dans vos établissements?" name="card-accept" type="checkbox" onChange={() => setFormData({...formData, acceptMap: !formData.acceptMap})}/>
+                    <Input title="Etes-vous d'accord pour que d'autres enseignants puissent vous contacter par email?" name="card-accept" type="checkbox" onChange={() => setFormData({...formData, acceptContact: !formData.acceptContact})}/>
                     <h4 style={{"marginTop": "2em"}}>Les champs qui suivent sont facultatifs</h4>
                     <Select title="Genre" value={formData.gender} onChange={(e)=>{setFormData({...formData, gender: e.target.value})}}>
                         <option value="">Choisissez une des options suivantes</option>
@@ -62,12 +62,12 @@ export function DescribePage(){
                         <option value="Autre">Autre</option>
                         <option value="Ne souhaite pas répondre">Ne souhaite pas répondre</option>
                     </Select>
-                    <Input title="Date de naissance" type="date" name="birthday" value={formData.birthday} onChange={(e)=>{setFormData({...formData, birthday: e.target.value})}} max={new Date().toISOString().split('T')[0]}/>
+                    <Input title="Année de naissance" type="text" name="birthYear" value={formData.birthYear} onChange={(e)=>{setFormData({...formData, birthYear: e.target.value})}}/>
                     <Input title="Profession/Type de poste actuel" name="job" type="text" value={formData.job} onChange={(e)=>{setFormData({...formData, job: e.target.value})}}/>
                     <Input title="Discipline(s)/Spécialité(s)" name="specializedTopics" type="text" value={formData.specializedTopics} onChange={(e)=>{setFormData({...formData, specializedTopics: e.target.value})}}/>
                     <Input title="Autre spécialisation/Formation à mentionner" name="otherSpecialization" type="text" value={formData.otherSpecialization} onChange={(e)=>{setFormData({...formData, otherSpecialization: e.target.value})}}/>                    
-                    <Textarea title="Comment vous décririez-vous en tant qu'enseignant? (personnalité en classe, interactions avec les apprenants, philosophie de l'éducation" name="teacherBehaviour" value={formData.teacherBehaviour} onChange={(e)=>{setFormData({...formData, teacherBehaviour: e.target.value})}}/>
-                    <Textarea title="Vous souhaitez ajouter quelque chose sur vous en tant qu'enseignant? Nous vous y invitons dans cette partie de commentaire libre" name="freeField" value={formData.freeField} onChange={(e)=>{setFormData({...formData, freeField: e.target.value})}}/>
+                    <Textarea title="Comment vous décririez-vous en tant qu'enseignant (personnalité en classe, interactions avec les apprenants, philosophie de l'éducation)?" name="teacherBehaviour" value={formData.teacherBehaviour} onChange={(e)=>{setFormData({...formData, teacherBehaviour: e.target.value})}}/>
+                    <Textarea title="Souhaitez-vous ajouter quelque chose sur vous en tant qu'enseignant? Nous vous y invitons dans cette partie de commentaire libre" name="freeField" value={formData.freeField} onChange={(e)=>{setFormData({...formData, freeField: e.target.value})}}/>
 
                     <Button>Sauvegarder les informations</Button>
                     {fetchError?.message && <Alert message={fetchError?.message} onClose={() => {setFetchError(null)}}/>}

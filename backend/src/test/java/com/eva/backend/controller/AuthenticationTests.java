@@ -126,17 +126,20 @@ public class AuthenticationTests {
     public void testRefreshFails() throws Exception {
         // Tester le refresh sans cookie
         mockMvc.perform(get("/auth/refresh"))
-                        .andExpect(status().isBadRequest());
+                        .andExpect(status().isUnauthorized())
+                        .andExpect(jsonPath("$.message").value("Session expirée, veuillez vous reconnecter"));
 
         // Tester le refresh avec un token vide
         mockMvc.perform(get("/auth/refresh")
                         .cookie(new jakarta.servlet.http.Cookie("jwt-refresh", "")))
-                        .andExpect(status().isBadRequest());
+                        .andExpect(status().isUnauthorized())
+                        .andExpect(jsonPath("$.message").value("Session expirée, veuillez vous reconnecter"));
 
         // Tester le refresh avec un token invalide
         mockMvc.perform(get("/auth/refresh")
-                        .cookie(new jakarta.servlet.http.Cookie("jwt-refresh", "")))
-                        .andExpect(status().isBadRequest());
+                        .cookie(new jakarta.servlet.http.Cookie("jwt-refresh", "not.a.valid.token")))
+                        .andExpect(status().isUnauthorized())
+                        .andExpect(jsonPath("$.message").value("Session expirée, veuillez vous reconnecter"));
     }
 
     private String registerAUser() throws Exception{

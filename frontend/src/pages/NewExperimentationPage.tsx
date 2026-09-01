@@ -4,19 +4,21 @@ import { FirstStep } from "./newExperimentationSubPages/FirstStep";
 import { SecondStep } from "./newExperimentationSubPages/SecondStep";
 import { ThirdStep } from "./newExperimentationSubPages/ThirdStep";
 import { FourthStep } from "./newExperimentationSubPages/FourthStep";
-import { useNavigate, type NavigateFunction } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import preRegisteredData from "../data/preRegisteredData.json";
 import { apiFetch } from "../utils/apiFetch";
 import { Alert } from "../components/Alert";
 
 
-export type Affiliation = {
+type Affiliation = {
     id: string,
     name: string
 }
 
 export type ExperimentationData = {
-    keywords: Map<string, Boolean>; //Array<string>;
+    id: string|undefined;
+    experimentationTitle: string;
+    keywords: Map<string, Boolean>; 
     personalKeywords: string;
     learningDifficulty: string;
     learningDifficultyOrigin: string;
@@ -35,10 +37,14 @@ export type ExperimentationData = {
     newPedagogy: string;
     protocol: string;
     isSharingData: boolean;
+    pedagogyBeginningOld: string;
+    pedagogyEndingOld: string;
     initialEvaluationOld: string;
     immediateEvaluationOld: string;
     delayedEvaluationOld: string;
     accountedEvaluationOld: string;
+    pedagogyBeginningNew: string;
+    pedagogyEndingNew: string;
     initialEvaluationNew: string;
     immediateEvaluationNew: string;
     delayedEvaluationNew: string;
@@ -48,7 +54,9 @@ export type ExperimentationData = {
 
 export function NewExperimentationPage(){
     
-    const initialExpeData: ExperimentationData = {
+    const initialExpeData: ExperimentationData = { 
+        id: "", pedagogyBeginningOld: "", pedagogyEndingOld: "", pedagogyBeginningNew: "",
+        pedagogyEndingNew: "", experimentationTitle: "",
         keywords: new Map(preRegisteredData["keywords"].map(keyword => [keyword, false])),
         personalKeywords: "", learningDifficulty: "",learningDifficultyOrigin: "",
         affiliation: {id:"", name:""}, studyField: "",teachingTitle: "",
@@ -66,9 +74,9 @@ export function NewExperimentationPage(){
     const navigate = useNavigate();
 
     const oneKeyWordIsChosen = Array.from(expeData.keywords.values()).some(value => value === true) || expeData.personalKeywords !== "";
-    const firstPageIsFilled = oneKeyWordIsChosen && expeData.affiliation.name !== "" && expeData.learningDifficulty !== "" && expeData.learningDifficultyOrigin !== "" && expeData.oldPedagogy !== "" && expeData.newPedagogy !== "";
+    const firstPageIsFilled = expeData.experimentationTitle !== "" && oneKeyWordIsChosen && expeData.learningDifficulty !== "" && expeData.learningDifficultyOrigin !== "" && expeData.oldPedagogy !== "" && expeData.newPedagogy !== "";
     const secondPageIsFilled = expeData.protocol !== "";
-    const thirdPageIsFilled = expeData.studyField !== "" && expeData.teachingTitle !== "" && expeData.knowledges !== "" && expeData.prerequisite !== "" && expeData.organisationParticularities !== "" && expeData.classesFrequencies !== "" && expeData.classesDates !== "" && expeData.yearOfStudy !== "" && expeData.studentsNumber !== "" && expeData.studentsSpecificities !== "" ;
+    const thirdPageIsFilled = expeData.affiliation.name !== "" && expeData.studyField !== "" && expeData.teachingTitle !== "" && expeData.knowledges !== "" && expeData.prerequisite !== "" && expeData.organisationParticularities !== "" && expeData.classesFrequencies !== "" && expeData.classesDates !== "" && expeData.yearOfStudy !== "" && expeData.studentsNumber !== "" && expeData.studentsSpecificities !== "" ;
     const fourthPageIsFilled = expeData.initialEvaluationOld !== "" && expeData.immediateEvaluationOld !== "" && expeData.delayedEvaluationOld !== "" && expeData.initialEvaluationNew !== "" && expeData.immediateEvaluationNew !== "" && expeData.delayedEvaluationNew !== "";
 
     const clickableSteps = new Map([["1: Pédagogies impliquées", firstPageIsFilled],
@@ -86,11 +94,20 @@ export function NewExperimentationPage(){
 
     const saveExperimentation = () => { 
         const data = buildExperimentationData(expeData);
-        sendPostRequest(data, setError, navigate); 
+        if (expeData.id === ""){
+            sendPostRequest(data, setError, setExpeData); 
+        } else {
+            sendUpdateRequest(expeData.id, data, setError);
+        }
     }
 
+    const goToEndExpe = () => {
+        navigate(`/application/endExpe/${expeData.id}`);
+    }
+ 
+
     return <>
-                <MultiStep clickableSteps={clickableSteps} onLastClick={saveExperimentation} >
+                <MultiStep clickableSteps={clickableSteps} onSave={saveExperimentation} onLastStep={goToEndExpe} onQuit={() => navigate("/")}>
                     <FirstStep state={expeData} setState={setExpeData} handleClickOnCloud={handleClickOnCloud}/>
                     <SecondStep state={expeData} setState={setExpeData}/>
                     <ThirdStep state={expeData} setState={setExpeData}/>
@@ -110,6 +127,8 @@ function buildExperimentationData(expeData:ExperimentationData) {
         }
     
     const oldPedagogyEvaluations =  {
+                                        pedagogyBeginning: expeData.pedagogyBeginningOld,
+                                        pedagogyEnding: expeData.pedagogyEndingOld,
                                         initialEvaluation: expeData.initialEvaluationOld,
                                         immediateEvaluation: expeData.immediateEvaluationOld,
                                         delayedEvaluation: expeData.delayedEvaluationOld,
@@ -117,6 +136,8 @@ function buildExperimentationData(expeData:ExperimentationData) {
                                     }
     
     const newPedagogyEvaluations =  {
+                                        pedagogyBeginning: expeData.pedagogyBeginningNew,
+                                        pedagogyEnding: expeData.pedagogyEndingNew,
                                         initialEvaluation: expeData.initialEvaluationNew,
                                         immediateEvaluation: expeData.immediateEvaluationNew,
                                         delayedEvaluation: expeData.delayedEvaluationNew,
@@ -143,7 +164,8 @@ function buildExperimentationData(expeData:ExperimentationData) {
                                 };
 
     const data = {experimentation: 
-                     {keywords: keywords, 
+                     {experimentationTitle: expeData.experimentationTitle,
+                      keywords: keywords, 
                       personalKeywords: expeData.personalKeywords,
                       protocol: expeData.protocol, 
                       isSharingData: expeData.isSharingData, 
@@ -154,7 +176,7 @@ function buildExperimentationData(expeData:ExperimentationData) {
     return data;
 }
 
-async function sendPostRequest(data: any, setError:Dispatch<SetStateAction<Error|null>>, navigate: NavigateFunction){
+async function sendPostRequest(data: any, setError:Dispatch<SetStateAction<Error|null>>, setExpeData: Dispatch<SetStateAction<ExperimentationData>>){
     const response = await apiFetch("/expe/create", {
             method: "POST",
             headers:{
@@ -170,8 +192,29 @@ async function sendPostRequest(data: any, setError:Dispatch<SetStateAction<Error
      
     if (response.ok){
         const result = await response.json();
-        navigate(`/experimentationSummary/${result.id}`);
+        setExpeData(prev => ({...prev, id: result.id}))
     } else {
+        setError(new Error(`Erreur ${response.status}: ${response.statusText}`));
+    } 
+
+    return response
+}
+
+async function sendUpdateRequest(id:string|undefined, data: any, setError:Dispatch<SetStateAction<Error|null>>){
+    const response = await apiFetch(`/expe/update/${id}`, {
+            method: "PUT",
+            headers:{
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify(data),
+            credentials: "include"})
+            .catch(error => {
+                setError(new Error(error?.message || String(error)))
+                throw error;
+        });
+     
+    if (!response.ok){
         setError(new Error(`Erreur ${response.status}: ${response.statusText}`));
     }
     return response

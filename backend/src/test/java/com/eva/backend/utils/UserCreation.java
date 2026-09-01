@@ -62,7 +62,7 @@ public class UserCreation {
         Map<String, Object> additionalData = new HashMap<>();
         additionalData.put("acceptContact", true);
         additionalData.put("acceptMap", false);
-        additionalData.put("birthday", "1990-05-15");
+        additionalData.put("birthYear", "1990");
         additionalData.put("gender", "Homme");
         additionalData.put("job", "Enseignant");
         additionalData.put("specializedTopics", "Informatique");

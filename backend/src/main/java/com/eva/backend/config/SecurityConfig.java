@@ -1,10 +1,12 @@
 package com.eva.backend.config;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -15,11 +17,14 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import jakarta.servlet.http.HttpServletResponse;
 
 @Configuration
 @EnableWebSecurity //replace default security config 
@@ -64,10 +69,22 @@ public class SecurityConfig {
                                           .permitAll() //ces url sont accessibles à tous
                         .requestMatchers("/auth/users").hasRole("ADMIN")
                         .anyRequest().authenticated()) //filtre exigeant l'authentification pour tout requête
-                    .httpBasic(Customizer.withDefaults()) // popup obligeant à s'authentifier
+                    .exceptionHandling(exception -> exception.authenticationEntryPoint(restAuthenticationEntryPoint()))
                     .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Détruit la session à chaque requête
                     .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                     .build();
+    }
+
+    /* Réponse 401 en JSON (au lieu du popup Basic Auth) pour que le frontend puisse
+       rafraîchir son token puis rejouer la requête. */
+    @Bean
+    public AuthenticationEntryPoint restAuthenticationEntryPoint(){
+        return (request, response, authException) -> {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+            response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+            response.getWriter().write("{\"message\":\"Authentification requise ou expirée\"}");
+        };
     }
 
     /* Gestion des url qui peuvent effectuer des requêtes à l'api */

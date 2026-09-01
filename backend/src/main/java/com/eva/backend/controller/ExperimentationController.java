@@ -77,11 +77,14 @@ public class ExperimentationController {
         Experimentation experimentation = experimentationRequest.experimentation();
         User user = userService.findByMail(authenticatedUser.getMail());
         experimentation.setUser(user); // le jwt filter extrait du cookie le User actuel. Il ne reste qu'à l'associer
-       
-        Optional<Institution> optionalInstitution = institutionService.findById(experimentationRequest.affiliationID());
-        if (!optionalInstitution.isEmpty()){
-            experimentation.setInstitution(optionalInstitution.get());            
-        } 
+
+        if (experimentationRequest.affiliationID() != null){
+            Optional<Institution> optionalInstitution = institutionService.findById(experimentationRequest.affiliationID());
+            if (!optionalInstitution.isEmpty()){
+                experimentation.setInstitution(optionalInstitution.get());            
+            } 
+        }
+        
         experimentationService.save(experimentation);
         Experimentation lastExperimentation = experimentationService.findLast().orElseThrow();
         return  ResponseEntity.ok(Map.of("message", "L'expérimentation a bien été enregistrée",
@@ -104,18 +107,19 @@ public class ExperimentationController {
         Boolean userOwnsExpe = authenticatedUser != null? authenticatedUser.getId().equals(user.getId()):false;
 
         Institution institution = experimentation.getInstitution();
-        Map<String, Object> response = Map.of(
-            "id", experimentation.getId(),
-            "keywords", experimentation.getKeywords(),
-            "personalKeywords", experimentation.getPersonalKeywords() != null ? experimentation.getPersonalKeywords() : "",
-            "protocol", experimentation.getProtocol(),
-            "affiliation", Map.of("id", institution.getId(),
-                                      "name", institution.getName()),
-            "pedagogicalContext", experimentation.getPedagogicalContext(),
-            "inProgress", experimentation.getInProgress(),
-            "isSharingData", experimentation.getIsSharingData(),
-            "userOwnsExpe", userOwnsExpe,
-            "contactMail", user.getAdditionalData().isAcceptContact()?user.getMail():""
+        Map<String, Object> response = Map.ofEntries(
+            Map.entry("id", experimentation.getId()),
+            Map.entry("experimentationTitle", experimentation.getExperimentationTitle()),
+            Map.entry("keywords", experimentation.getKeywords()),
+            Map.entry("personalKeywords", experimentation.getPersonalKeywords() != null ? experimentation.getPersonalKeywords() : ""),
+            Map.entry("protocol", experimentation.getProtocol()),
+            Map.entry("affiliation", Map.of("id", institution != null ? institution.getId() : "",
+                                             "name", institution != null ? institution.getName(): "")),
+            Map.entry("pedagogicalContext", experimentation.getPedagogicalContext()),
+            Map.entry("inProgress", experimentation.getInProgress()),
+            Map.entry("isSharingData", experimentation.getIsSharingData()),
+            Map.entry("userOwnsExpe", userOwnsExpe),
+            Map.entry("contactMail", user.getAdditionalData().isAcceptContact()?user.getMail():"")
         );
         
         return ResponseEntity.ok(response);
@@ -127,12 +131,14 @@ public class ExperimentationController {
 
         List<Map<String, Object>> experimentationsList = user.getExperimentations().stream()
             .sorted((e1, e2) -> e2.getId().compareTo(e1.getId()))
-            .map(expe -> {
+            .map(expe -> { 
                 return Map.of(
                     "id", (Object) expe.getId(),
+                    "experimentationTitle", expe.getExperimentationTitle(),
                     "keywords", expe.getKeywords(),
                     "personalKeywords", expe.getPersonalKeywords() != null ? expe.getPersonalKeywords() : "",
-                    "institutionName", expe.getInstitution().getName(),
+                    "institutionName", expe.getInstitution() != null ? expe.getInstitution().getName() : "",
+                    "institutionTown", expe.getInstitution() != null ? expe.getInstitution().getTown() : "",
                     "teachingTitle", expe.getPedagogicalContext().getTeachingTitle(),
                     "studyField", expe.getPedagogicalContext().getStudyField(),
                     "yearOfStudy", expe.getPedagogicalContext().getYearOfStudy(),
@@ -154,17 +160,19 @@ public class ExperimentationController {
                 if (expe.getExpeWorked() != null){
                     expeWorked = expe.getExpeWorked()? "Oui": "Non";
                 };
-                return Map.of(
-                    "id", (Object) expe.getId(),
-                    "keywords", expe.getKeywords(),
-                    "personalKeywords", expe.getPersonalKeywords() != null ? expe.getPersonalKeywords() : "",
-                    "institutionName", expe.getInstitution().getName(),
-                    "teachingTitle", expe.getPedagogicalContext().getTeachingTitle(),
-                    "studyField", expe.getPedagogicalContext().getStudyField(),
-                    "yearOfStudy", expe.getPedagogicalContext().getYearOfStudy(),
-                    "inProgress", expe.getInProgress(),
-                    "newPedagogy", expe.getPedagogicalContext().getNewPedagogy(),
-                    "expeWorked", expeWorked
+                return Map.ofEntries(
+                    Map.entry("id", (Object) expe.getId()),
+                    Map.entry("experimentationTitle", expe.getExperimentationTitle()),
+                    Map.entry("keywords", expe.getKeywords()),
+                    Map.entry("personalKeywords", expe.getPersonalKeywords() != null ? expe.getPersonalKeywords() : ""),
+                    Map.entry("institutionName", expe.getInstitution() != null? expe.getInstitution().getName() : ""),
+                    Map.entry("institutionTown", expe.getInstitution() != null? expe.getInstitution().getTown() : ""),
+                    Map.entry("teachingTitle", expe.getPedagogicalContext().getTeachingTitle()),
+                    Map.entry("studyField", expe.getPedagogicalContext().getStudyField()),
+                    Map.entry("yearOfStudy", expe.getPedagogicalContext().getYearOfStudy()),
+                    Map.entry("inProgress", expe.getInProgress()),
+                    Map.entry("newPedagogy", expe.getPedagogicalContext().getNewPedagogy()),
+                    Map.entry("expeWorked", expeWorked)
                 );
             })
             .collect(Collectors.toList());
@@ -223,6 +231,7 @@ public class ExperimentationController {
         }
         
         Experimentation updatedExperimentation = experimentationRequest.experimentation();
+        existingExperimentation.setExperimentationTitle(updatedExperimentation.getExperimentationTitle());
         existingExperimentation.setKeywords(updatedExperimentation.getKeywords());
         existingExperimentation.setPersonalKeywords(updatedExperimentation.getPersonalKeywords());
         existingExperimentation.setProtocol(updatedExperimentation.getProtocol());
@@ -230,13 +239,14 @@ public class ExperimentationController {
         existingExperimentation.setIsSharingData(updatedExperimentation.getIsSharingData());
         
         // Mettre à jour l'institution si nécessaire
-        Optional<Institution> optionalInstitution = institutionService.findById(experimentationRequest.affiliationID());
-        if (!optionalInstitution.isEmpty()) {
-            existingExperimentation.setInstitution(optionalInstitution.get());
+        if (experimentationRequest.affiliationID() != null) {
+            Optional<Institution> optionalInstitution = institutionService.findById(experimentationRequest.affiliationID());
+            if (!optionalInstitution.isEmpty()) {
+                existingExperimentation.setInstitution(optionalInstitution.get());
+            }
         }
-        
         experimentationService.save(existingExperimentation);
-        
+
         return ResponseEntity.ok(Map.of("message", "L'expérimentation a bien été mise à jour"));
     }
 

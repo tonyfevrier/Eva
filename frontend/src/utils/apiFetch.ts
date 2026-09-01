@@ -4,6 +4,14 @@ du proxy (vite.config.js en dév) */
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "/api";
 
+/* Endpoints d'authentification : ne jamais tenter de les rejouer après un refresh */
+const NO_RETRY_PATHS = ["/auth/login", "/auth/register", "/auth/refresh", "/auth/logout"];
+
+export const SESSION_EXPIRED_EVENT = "auth:sessionExpired";
+
+/* Une seule requête de refresh à la fois, même si plusieurs appels échouent simultanément */
+let ongoingRefresh: Promise<boolean> | null = null;
+
 function toAbsoluteUrl(input: string): string {
   if (input.startsWith("http://") || input.startsWith("https://")) {
     return input;
@@ -17,89 +25,58 @@ function toAbsoluteUrl(input: string): string {
   return `${normalizedBase}${normalizedPath}`;
 }
 
-export async function apiFetch(input: string, options: RequestInit = {}): Promise<Response> {
-  const { credentials, ...requestInit } = options;
-  const url = toAbsoluteUrl(input);
-
-  return fetch(url, {
-    ...requestInit,
-    credentials: credentials ?? "include",
-  });
-}
-
-/*const API_BASE_URL = "http://localhost:9000";
-const REFRESH_PATH = "/auth/refresh";
-
-let refreshPromise: Promise<boolean> | null = null;
-
-type ApiFetchOptions = RequestInit & {
-    skipAuthRefresh?: boolean;
-};
-
-function toAbsoluteUrl(input: string): string {
-    if (input.startsWith("http://") || input.startsWith("https://")) {
-        return input;
-    }
-
-    const normalizedBase = API_BASE_URL.endsWith("/")
-        ? API_BASE_URL.slice(0, -1)
-        : API_BASE_URL;
-    const normalizedPath = input.startsWith("/") ? input : `/${input}`;
-
-    return `${normalizedBase}${normalizedPath}`;
-}
-
-function isRefreshRequest(url: string): boolean {
-    return url.endsWith(REFRESH_PATH);
+function isRetryable(input: string, options: RequestInit): boolean {
+  if (NO_RETRY_PATHS.some(path => input.includes(path))) {
+    return false;
+  }
+  // Un body de type flux ne peut pas être relu lors du rejeu de la requête
+  return !(options.body instanceof ReadableStream);
 }
 
 async function refreshAccessToken(): Promise<boolean> {
-    if (!refreshPromise) {
-        refreshPromise = (async () => {
-            try {
-                const response = await fetch(toAbsoluteUrl(REFRESH_PATH), {
-                    method: "GET",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Accept": "application/json",
-                    },
-                    credentials: "include",
-                });
+  const response = await fetch(toAbsoluteUrl("/auth/refresh"), {
+    headers: { Accept: "application/json" },
+    credentials: "include",
+  });
 
-                return response.ok;
-            } catch {
-                return false;
-            }
-        })();
-    }
+  if (!response.ok) {
+    localStorage.setItem("isAuthenticated", "false");
+    localStorage.setItem("expirationTime", "0");
+    window.dispatchEvent(new Event(SESSION_EXPIRED_EVENT));
+    return false;
+  }
 
-    const didRefreshSucceed = await refreshPromise;
-    refreshPromise = null;
-
-    return didRefreshSucceed;
+  const data = await response.json();
+  localStorage.setItem("expirationTime", String(Date.now() + data.accessExpiresIn));
+  return true;
 }
 
-export async function apiFetch(input: string, options: ApiFetchOptions = {}): Promise<Response> {
-    const { skipAuthRefresh = false, credentials, ...requestInit } = options;
-    const url = toAbsoluteUrl(input);
-    const shouldSkipRefresh = skipAuthRefresh || isRefreshRequest(url);
+function refreshOnce(): Promise<boolean> {
+  if (!ongoingRefresh) {
+    ongoingRefresh = refreshAccessToken()
+      .catch(() => false)
+      .finally(() => { ongoingRefresh = null; });
+  }
+  return ongoingRefresh;
+}
 
-    const response = await fetch(url, {
-        ...requestInit,
-        credentials: credentials ?? "include",
-    });
+export async function apiFetch(input: string, options: RequestInit = {}): Promise<Response> {
+  const { credentials, ...requestInit } = options;
+  const url = toAbsoluteUrl(input);
+  const init: RequestInit = { ...requestInit, credentials: credentials ?? "include" };
 
-    if (response.status !== 401 || shouldSkipRefresh) {
-        return response;
+  const response = await fetch(url, init);
+
+  /* Token d'accès expiré (page restée inactive) : on le renouvelle puis on rejoue
+     la requête, de façon transparente pour l'appelant. */
+  if (response.status === 401 && isRetryable(input, init)) {
+    const refreshed = await refreshOnce();
+    if (refreshed) {
+      return fetch(url, init);
     }
+  }
 
-    const didRefreshSucceed = await refreshAccessToken();
-    if (!didRefreshSucceed) {
-        return response;
-    }
+  return response;
+}
 
-    return fetch(url, {
-        ...requestInit,
-        credentials: credentials ?? "include",
-    });
-}*/
+

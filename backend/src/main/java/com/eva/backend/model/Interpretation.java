@@ -10,6 +10,7 @@ import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -21,9 +22,11 @@ public class Interpretation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ToString.Exclude
     @ManyToOne
     private User user;
 
+    @ToString.Exclude
     @ManyToOne
     private Experimentation experimentation;
 

@@ -34,8 +34,10 @@ export function ExperimentationSummaryPage(){
 
         const authenticatedUserOwnsExpe = data.userOwnsExpe;
         const ownerAcceptsContact = data.contactMail !== "";
-        const oldAccountedEvaluationExists = data.pedagogicalContext.oldPedagogyEvaluations.accountedEvaluation !== null;
-        const newAccountedEvaluationExists = data.pedagogicalContext.newPedagogyEvaluations.accountedEvaluation !== null;
+        const oldPedagogyEvaluationsAreFilled = data.pedagogicalContext.oldPedagogyEvaluations !== null;
+        const newPedagogyEvaluationsAreFilled = data.pedagogicalContext.newPedagogyEvaluations !== null;
+        const oldAccountedEvaluationExists = oldPedagogyEvaluationsAreFilled && data.pedagogicalContext.oldPedagogyEvaluations.accountedEvaluation !== null;
+        const newAccountedEvaluationExists = newPedagogyEvaluationsAreFilled && data.pedagogicalContext.newPedagogyEvaluations.accountedEvaluation !== null;
 
         const keywords = Array.from(data.keywords).join(", ");
 
@@ -57,7 +59,7 @@ export function ExperimentationSummaryPage(){
         }
 
         return <>
-                    <h2 className={styles.h2}>Récapitulatif de l'expérimentation</h2>
+                    <h2 className={styles.h2}>{data?.experimentationTitle}</h2>
                     {ownerAcceptsContact && 
                     <>
                         <h4>Contact</h4>
@@ -91,22 +93,29 @@ export function ExperimentationSummaryPage(){
                         <>
                             <div className={styles.btnContainer} >
                                 <Button onClick={()=> setPrintExportModal(true)}>Exporter le modèle de tableur</Button>
-                                <Button href={`/application/endExpe/${id}`}>Ajouter les données de l'expérimentation</Button>
                             </div>
                         </>}
                         <div>
-                            <h5>Ancienne pratique</h5>
-                            <Infos title="Évaluation initiale" info={data.pedagogicalContext.oldPedagogyEvaluations.initialEvaluation}/> 
-                            <Infos title="Évaluation immédiate" info={data.pedagogicalContext.oldPedagogyEvaluations.immediateEvaluation}/> 
-                            <Infos title="Évaluation différée" info={data.pedagogicalContext.oldPedagogyEvaluations.delayedEvaluation}/> 
-                            {oldAccountedEvaluationExists && <Infos title="Évaluation comptabilisée" info={data.pedagogicalContext.oldPedagogyEvaluations.accountedEvaluation}/>}  
+                            {oldPedagogyEvaluationsAreFilled &&
+                                <>
+                                    <h5>Ancienne pratique</h5>
+                                    <Infos title="Évaluation initiale" info={data.pedagogicalContext.oldPedagogyEvaluations.initialEvaluation}/> 
+                                    <Infos title="Évaluation immédiate" info={data.pedagogicalContext.oldPedagogyEvaluations.immediateEvaluation}/> 
+                                    <Infos title="Évaluation différée" info={data.pedagogicalContext.oldPedagogyEvaluations.delayedEvaluation}/> 
+                                    {oldAccountedEvaluationExists && <Infos title="Évaluation comptabilisée" info={data.pedagogicalContext.oldPedagogyEvaluations.accountedEvaluation}/>}  
+                                </>
+                            }
                         </div>
                         <div>
-                            <h5>Nouvelle pratique</h5>
-                            <Infos title="Évaluation initiale" info={data.pedagogicalContext.newPedagogyEvaluations.initialEvaluation}/> 
-                            <Infos title="Évaluation immédiate" info={data.pedagogicalContext.newPedagogyEvaluations.immediateEvaluation}/> 
-                            <Infos title="Évaluation différée" info={data.pedagogicalContext.newPedagogyEvaluations.delayedEvaluation}/> 
-                            {newAccountedEvaluationExists && <Infos title="Évaluation comptabilisée" info={data.pedagogicalContext.newPedagogyEvaluations.accountedEvaluation}/>}      
+                            {newPedagogyEvaluationsAreFilled && 
+                            <>
+                                <h5>Nouvelle pratique</h5>
+                                <Infos title="Évaluation initiale" info={data.pedagogicalContext.newPedagogyEvaluations.initialEvaluation}/> 
+                                <Infos title="Évaluation immédiate" info={data.pedagogicalContext.newPedagogyEvaluations.immediateEvaluation}/> 
+                                <Infos title="Évaluation différée" info={data.pedagogicalContext.newPedagogyEvaluations.delayedEvaluation}/> 
+                                {newAccountedEvaluationExists && <Infos title="Évaluation comptabilisée" info={data.pedagogicalContext.newPedagogyEvaluations.accountedEvaluation}/>}      
+                            </>
+                            }
                         </div>
                     </div>
                      

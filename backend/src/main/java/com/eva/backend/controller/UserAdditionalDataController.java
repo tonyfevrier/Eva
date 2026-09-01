@@ -1,6 +1,6 @@
 package com.eva.backend.controller;
 
-import java.time.LocalDate;
+import java.time.Year;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,9 +34,9 @@ public class UserAdditionalDataController {
         addData.setAcceptContact((boolean) body.get("acceptContact"));
         addData.setAcceptMap((boolean) body.get("acceptMap"));
         
-        String birthdayStr = (String) body.get("birthday");
-        if (birthdayStr != null && !birthdayStr.isEmpty()) {
-            addData.setBirthday(LocalDate.parse(birthdayStr));
+        String birthYearStr = (String) body.get("birthYear");
+        if (birthYearStr != null && !birthYearStr.isEmpty()) {
+            addData.setBirthYear(Year.parse(birthYearStr));
         }
         
         addData.setGender((String) body.get("gender"));

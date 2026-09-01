@@ -49,7 +49,7 @@ public class PdfServiceTests {
 		Institution institution = dataCreator.createAnInstitution();
 		Long experimentationId = dataCreator.createAnExperimentation(user, institution);
 
-		Map<String, Map<String, Object>> experimentationData = dataExtractionService.extractExperimentationData(experimentationId);
+		Map<String, Object> experimentationData = dataExtractionService.extractExperimentationData(experimentationId);
 		DataForHtml dataForHtml = new DataForHtml("experimentation-pdf", "experimentationData", experimentationData);
 		byte[] pdfBytes = pdfGenerationService.createPdf(dataForHtml);
 
@@ -62,7 +62,7 @@ public class PdfServiceTests {
 
 		try (PDDocument document = PDDocument.load(pdfBytes)) {
 			String text = new PDFTextStripper().getText(document);
-			assertThat(text).contains("Données de l'expérimentation");
+			assertThat(text).contains("Expérimentation maths collège");
 			assertThat(text).contains("Institution Test");
 			assertThat(text).contains("contact@test.fr");
 			assertThat(text).contains("Protocole 1");

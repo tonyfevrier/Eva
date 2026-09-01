@@ -130,6 +130,10 @@ public class UserController {
         /* Si le refreshToken n'est pas expiré, envoie un nouvel accessToken */
         String refreshToken = requestUtils.getTokenFromRequest(request, "jwt-refresh");
         CookieEssentials accessCookie = userService.refresh(refreshToken);
+        if (accessCookie == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                                 .body(Map.of("message", "Session expirée, veuillez vous reconnecter"));
+        }
         return ResponseEntity.ok()
                              .header(HttpHeaders.SET_COOKIE, accessCookie.cookie())
                              .body(Map.of("message", "Token rafraîchi",
@@ -153,7 +157,7 @@ public class UserController {
         if (additionalData != null){
             response.put("acceptContact", additionalData.isAcceptContact());
             response.put("acceptMap", additionalData.isAcceptMap());
-            response.put("birthday", additionalData.getBirthday());
+            response.put("birthYear", additionalData.getBirthYear());
             response.put("gender", additionalData.getGender());
             response.put("job", additionalData.getJob());
             response.put("specializedTopics", additionalData.getSpecializedTopics());
@@ -163,7 +167,7 @@ public class UserController {
         } else {
             response.put("acceptContact", false);
             response.put("acceptMap", false);
-            response.put("birthday", "");
+            response.put("birthYear", "");
             response.put("gender", "");
             response.put("job", "");
             response.put("specializedTopics", "");

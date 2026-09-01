@@ -70,7 +70,7 @@ public class AdditionalDataTests {
         assertNotNull(savedData, "Les données additionnelles devraient être enregistrées");
         assertTrue(savedData.isAcceptContact());
         assertFalse(savedData.isAcceptMap());
-        assertEquals("1990-05-15", savedData.getBirthday().toString());
+        assertEquals("1990", savedData.getBirthYear().toString());
         assertEquals("Femme", savedData.getGender());
         assertEquals("Enseignante", savedData.getJob());
         assertEquals("Mathématiques", savedData.getSpecializedTopics());
@@ -114,7 +114,7 @@ public class AdditionalDataTests {
         Map<String, Object> additionalData = new HashMap<>();
         additionalData.put("acceptContact", true);
         additionalData.put("acceptMap", false);
-        additionalData.put("birthday", "1990-05-15");
+        additionalData.put("birthYear", "1990");
         additionalData.put("gender", "Femme");
         additionalData.put("job", "Enseignante");
         additionalData.put("specializedTopics", "Mathématiques");

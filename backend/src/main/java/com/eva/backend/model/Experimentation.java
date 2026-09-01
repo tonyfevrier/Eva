@@ -13,6 +13,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -37,6 +38,10 @@ public class Experimentation {
     private User user;
 
     @Column(nullable = false)
+    @Size(max = 50)
+    private String experimentationTitle;
+
+    @Column(nullable = false)
     private List<String> keywords;
 
     private String personalKeywords;
@@ -46,7 +51,7 @@ public class Experimentation {
 
     @ToString.Exclude
     @ManyToOne
-    @JoinColumn(name = "institution_id", nullable = false)
+    @JoinColumn(name = "institution_id")
     private Institution institution;
 
     @Embedded

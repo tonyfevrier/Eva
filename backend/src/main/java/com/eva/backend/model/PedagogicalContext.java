@@ -61,6 +61,8 @@ public class PedagogicalContext {
 
     @Embedded
     @AttributeOverrides({
+        @AttributeOverride(name = "pedagogyBeginning", column = @Column(name = "old_pedagogyBeginning")),
+        @AttributeOverride(name = "pedagogyEnding", column = @Column(name = "old_pedagogyEnding")),
         @AttributeOverride(name = "initialEvaluation", column = @Column(name = "old_initialEvaluation")),
         @AttributeOverride(name = "immediateEvaluation", column = @Column(name = "old_immediateEvaluation")),
         @AttributeOverride(name = "delayedEvaluation", column = @Column(name = "old_delayedEvaluation")),
@@ -70,6 +72,8 @@ public class PedagogicalContext {
 
     @Embedded
     @AttributeOverrides({
+        @AttributeOverride(name = "pedagogyBeginning", column = @Column(name = "new_pedagogyBeginning")),
+        @AttributeOverride(name = "pedagogyEnding", column = @Column(name = "new_pedagogyEnding")),
         @AttributeOverride(name = "initialEvaluation", column = @Column(name = "new_initialEvaluation")),
         @AttributeOverride(name = "immediateEvaluation", column = @Column(name = "new_immediateEvaluation")),
         @AttributeOverride(name = "delayedEvaluation", column = @Column(name = "new_delayedEvaluation")),

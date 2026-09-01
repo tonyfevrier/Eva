@@ -31,20 +31,24 @@ public class ExtractionServiceTests {
         User user = dataCreator.createAUser();
         Institution institution = dataCreator.createAnInstitution();
         Long experimentationId = dataCreator.createAnExperimentation(user, institution);
-        Map<String, Map<String, Object>> extractedData = dataExtractionService.extractExperimentationData(experimentationId);
+        Map<String, Object> extractedData = dataExtractionService.extractExperimentationData(experimentationId);
 
-        assertThat(extractedData).containsKeys("Contact", "Catégories", "Contexte pédagogique", "Evaluations");
+        assertThat(extractedData).containsKeys("experimentationTitle", "Contact", "Catégories", "Contexte pédagogique", "Evaluations");
+        assertThat(extractedData.get("experimentationTitle")).isEqualTo("Expérimentation maths collège");
 
-        Map<String, Object> contact = extractedData.get("Contact");
+        @SuppressWarnings("unchecked")
+        Map<String, Object> contact = (Map<String, Object>) extractedData.get("Contact");
         assertThat(contact.get("Affiliation")).isEqualTo("Institution Test");
         assertThat(contact.get("Institution")).isEqualTo("contact@test.fr");
         assertThat(contact.get("Contact enseignant")).isEqualTo("marie.tremblay@mail.com");
 
-        Map<String, Object> categories = extractedData.get("Catégories");
+        @SuppressWarnings("unchecked")
+        Map<String, Object> categories = (Map<String, Object>) extractedData.get("Catégories");
         assertThat(categories.get("Mots-clés")).isEqualTo("mathématiques, apprentissage actif, collège");
         assertThat(categories.get("Mots-clés personnels")).isEqualTo("motivation, collaboration");
 
-        Map<String, Object> pedagogicalContext = extractedData.get("Contexte pédagogique");
+        @SuppressWarnings("unchecked")
+        Map<String, Object> pedagogicalContext = (Map<String, Object>) extractedData.get("Contexte pédagogique");
         assertThat(pedagogicalContext.get("Protocole")).isEqualTo("Protocole 1");
         assertThat(pedagogicalContext.get("Difficulté d'apprentissage")).isEqualTo("Difficulté d'apprentissage en mathématiques");
         assertThat(pedagogicalContext.get("Domaine d'étude")).isEqualTo("Mathématiques");
@@ -52,7 +56,8 @@ public class ExtractionServiceTests {
         assertThat(pedagogicalContext.get("Année d'étude")).isEqualTo("5ème A");
         assertThat(pedagogicalContext.get("Nombre d'étudiants")).isEqualTo("24");
 
-        Map<String, Object> evaluations = extractedData.get("Evaluations");
+        @SuppressWarnings("unchecked")
+        Map<String, Object> evaluations = (Map<String, Object>) extractedData.get("Evaluations");
         @SuppressWarnings("unchecked")
         Map<String, Object> oldEvaluations = (Map<String, Object>) evaluations.get("Evaluations pour l'ancienne pédagogie");
         @SuppressWarnings("unchecked")

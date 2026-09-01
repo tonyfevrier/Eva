@@ -1,5 +1,5 @@
-import { createContext, useContext, useState, type Dispatch, type PropsWithChildren, type SetStateAction } from "react"
-import { apiFetch } from "../utils/apiFetch";
+import { createContext, useContext, useEffect, useState, type Dispatch, type PropsWithChildren, type SetStateAction } from "react"
+import { apiFetch, SESSION_EXPIRED_EVENT } from "../utils/apiFetch";
 
 type ThemeContextType = {
     isAuthenticated: boolean,
@@ -89,6 +89,16 @@ export function ThemeProvider({children}:PropsWithChildren){
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(lastIsAuthenticated? lastIsAuthenticated === "true":false);
     const [expirationTime, setExpirationTime] = useState<number>(lastExpirationTime? Number(lastExpirationTime): 0);
     const [isProfileCompleted, setIsProfileCompleted] = useState<boolean>(lastIsProfileCompleted? lastIsProfileCompleted === "true" : false);
+
+    // apiFetch signale que le refresh token a expiré : la session est terminée
+    useEffect(() => {
+        const onSessionExpired = () => {
+            setIsAuthenticated(false);
+            setExpirationTime(0);
+        };
+        window.addEventListener(SESSION_EXPIRED_EVENT, onSessionExpired);
+        return () => window.removeEventListener(SESSION_EXPIRED_EVENT, onSessionExpired);
+    }, []);
 
     return <ThemeContext.Provider value={{isAuthenticated, setIsAuthenticated, expirationTime, setExpirationTime, isProfileCompleted, setIsProfileCompleted}}>
                 {children}
